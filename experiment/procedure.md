@@ -1,4 +1,3 @@
-
 ## Deploy  Network Interface
 
 ### 1. Deploy N1 Interface (UE ↔ AMF)
@@ -10,7 +9,7 @@
 
 ![N1 Interface](./images/prd1.png)
 
-**Fig: N1 Interface Deployment**
+*Fig: N1 Interface Deployment*
 
 ### 2. Deploy N2 Interface (gNB ↔ AMF)
 -   **Action**: Click on **"N2"** in the left sidebar.
@@ -21,7 +20,7 @@
 
 ![N2 Interface](./images/prd2.png)
 
-**Fig: N2 Interface Deployment**
+*Fig: N2 Interface Deployment*
 
 ### 3. Deploy N3 Interface (gNB ↔ UPF)
 -   **Action**: Click on **"N3"** in the left sidebar.
@@ -32,7 +31,7 @@
 
 ![N3 Interface](./images/prd3.png)
 
-**Fig: N3 Interface Deployment**
+*Fig: N3 Interface Deployment*
 
 ### 4. Deploy N4 Interface (SMF ↔ UPF)
 -   **Action**: Click on **"N4"** in the left sidebar.
@@ -43,7 +42,7 @@
 
 ![N4 Interface](./images/prd4.png)
 
-**Fig: N4 Interface Deployment**
+*Fig: N4 Interface Deployment*
 
 ### 5. Deploy N5 Interface (AF ↔ PCF)
 -   **Action**: Click on **"N5"** in the left sidebar.
@@ -54,7 +53,7 @@
 
 ![N5 Interface](./images/prd5.png)
 
-**Fig: N5 Interface Deployment**
+*Fig: N5 Interface Deployment*
 
 ### 6. Deploy N6 Interface (UPF ↔ DN)
 -   **Action**: Click on **"N6"** in the left sidebar.
@@ -65,7 +64,7 @@
 
 ![N6 Interface](./images/prd6.png)
 
-**Fig: N6 Interface Deployment**
+*Fig: N6 Interface Deployment*
 
 ### 7. Deploy N7 Interface (SMF ↔ PCF)
 -   **Action**: Click on **"N7"** in the left sidebar.
@@ -76,7 +75,7 @@
 
 ![N7 Interface](./images/prd7.png)
 
-**Fig: N7 Interface Deployment**
+*Fig: N7 Interface Deployment*
 
 ### 8. Deploy N8 Interface (AMF ↔ UDM)
 -   **Action**: Click on **"N8"** in the left sidebar.
@@ -87,7 +86,7 @@
 
 ![N8 Interface](./images/prd8.png)
 
-**Fig: N8 Interface Deployment**
+*Fig: N8 Interface Deployment*
 
 ### 9. Deploy N10 Interface (SMF ↔ UDM)
 -   **Action**: Click on **"N10"** in the left sidebar.
@@ -98,7 +97,7 @@
 
 ![N10 Interface](./images/prd10.png)
 
-**Fig: N10 Interface Deployment**
+*Fig: N10 Interface Deployment*
 
 ### 10. Deploy N11 Interface (AMF ↔ SMF)
 -   **Action**: Click on **"N11"** in the left sidebar.
@@ -109,7 +108,7 @@
 
 ![N11 Interface](./images/prd11.png)
 
-**Fig: N11 Interface Deployment**
+*Fig: N11 Interface Deployment*
 
 ### 12. Deploy N12 Interface (AMF ↔ AUSF)
 -   **Action**: Click on **"N12"** in the left sidebar.
@@ -120,7 +119,7 @@
 
 ![N12 Interface](./images/prd12.png)
 
-**Fig: N12 Interface Deployment**
+*Fig: N12 Interface Deployment*
 
 ### 13. Deploy N13 Interface (AMF ↔ NRF)
 -   **Action**: Click on **"N13"** in the left sidebar.
@@ -131,10 +130,7 @@
 
 ![N13 Interface](./images/prd13.png)
 
-**Fig: N13 Interface Deployment**
-
-
----
+*Fig: N13 Interface Deployment*
 
 ## Deploy  Network Interface (Automatic)
 
@@ -145,7 +141,7 @@ This acts as a "Fast Forward" button that executes Steps 1 through 13 automatica
 
 ![Core Network Deployment](./images/prd15.png)
 
-**Fig: Core Network Deployment**
+*Fig: Core Network Deployment*
 
 ## Check Running services by terminal
 
