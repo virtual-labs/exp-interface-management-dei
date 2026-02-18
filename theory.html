@@ -1,0 +1,1339 @@
+<!DOCTYPE html><html lang="en"><head>
+      <!--Google Tag Manager-->
+      <script class="gtm">
+        var dataLayer = [{
+        'labName': 'Virtual Lab',
+        'discipline': 'Test',
+        'college': 'DLBG',
+        'phase': 'Testing',
+        'expName': 'Demonstrate Interface Management Procedures',
+        'expShortName': 'interface-management'
+        }];
+    
+        (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+        new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+        j=d.createElement(s),dl=l!='dataLayer'?'&amp;l='+l:'';j.async=true;j.src=
+        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+        })(window,document,'script','dataLayer','GTM-5NMQ9NQ');
+      </script>
+      <!--End Google Tag Manager-->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="" name="description">
+    <meta content="" name="author">
+    
+    	<meta name="experiment-short-name" content="interface-management">
+    	<meta name="developer-institute" content="DLBG">
+    	<meta name="learning-unit" content="Demonstrate Interface Management Procedures">
+    	<meta name="task-name" content="Theory">
+    
+    <!-- For iPhone -->
+    <meta name="msapplication-TileColor" content="#4076e0">
+    <!-- Chrome, Firefox OS and Opera -->
+    <meta name="theme-color" content="#4076e0">
+    <!-- Windows Phone -->
+    <meta name="msapplication-navbutton-color" content="#4076e0">
+    <title>Virtual Labs</title>
+    <link rel="shortcut icon" href="./assets/images/favicon.ico">
+    <link rel="stylesheet" href="./assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/4.0.0/github-markdown.min.css" integrity="sha512-Oy18vBnbSJkXTndr2n6lDMO5NN31UljR8e/ICzVPrGpSud4Gkckb8yUpqhKuUNoE+o9gAb4O/rAxxw1ojyUVzg==" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans&amp;family=Raleway&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./assets/fonts/font-awesome-4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="./assets/css/github-markdown.min.css">
+    <link rel="stylesheet" href="./assets/css/vlabs-style.css">
+    <link rel="stylesheet" href="./assets/css/toast.css">
+    <link rel="stylesheet" href="./assets/katex_assets/katex.min.css">
+    
+    <script src="./assets/js/jquery-3.4.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js" integrity="sha384-q2kxQ16AaE6UbzuKqyBE9/u/KzioAlnx2maXQHiDX9d4/zp8Ok3f+M7DPm+Ib6IU" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.min.js" integrity="sha384-pQQkAEnwaBkjpqZ8RU1fF1AKtTcHJwFl3pblpTlHXybJjHpMYo79HY3hIi4NKxyj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+      h1 {
+      font-size: 1.8rem;
+      }
+      h2 {
+      font-size: 1.4rem;
+      }
+      h3 {
+      font-size: 1.2rem;
+      }
+
+      h2, h3 {
+      font-weight: 800;
+      }
+    </style>
+    
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css"></head>
+  <body class="p-0 container-fluid vlabs-page d-flex flex-column justify-content-between">
+      <!--Google Tag Manager (noscript)-->
+      <noscript class="gtm">
+        <iframe height="0" src="https://www.googletagmanager.com/ns.html?id=GTM-5NMQ9NQ" style="display:none;visibility:hidden" width="0">
+        </iframe>
+      </noscript>
+      <!--End Google Tag Manager (noscript)-->
+  
+      <header class="vlabs-header sticky-top bg-white">
+        <nav class="p-0 navbar navbar-light d-flex align-items-stretch">
+          
+          <button class="navbar-toggler px-4" type="button" onclick="toggle()">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+      
+          <div class="d-flex justify-content-center">        
+            <a href="https://vlab.co.in" class="navbar-brand">
+              <img src="./assets/images/vlabs-color-small-moe.jpg" alt="vlabs logo" class="vlabs-logo">
+            </a>
+          </div>
+          
+          <div id="headerNavbar" class="d-none border-top flex-grow-1 d-lg-flex align-items-center justify-content-end">
+            <div class="svc-rating-display">
+                <rating-display spreadsheetid="1x12nhpp0QvnsA6x-O1sV4IA9SAbfVsq_wiexWkutOmU" sheetname="Experiment-Database" columnname="Experiment Short Name" columnvalue="interface-management" imagesdirectory="/plugins/svc-rating/images/">
+                </rating-display>
+            </div>      <div class="svc-rating-submit">
+                <rating-submit title="Rate" this="" experiment="">
+                </rating-submit>
+            </div>      <bug-report id="bug-report" title="[BUG REPORT] Demonstrate Interface Management Procedures" page-type="text" context-info="{&quot;organisation&quot;:&quot;Virtual Labs&quot;,&quot;developer_institute&quot;:&quot;DLBG&quot;,&quot;expname&quot;:&quot;Demonstrate Interface Management Procedures&quot;,&quot;labname&quot;:&quot;Virtual Lab&quot;,&quot;phase&quot;:&quot;Testing&quot;}" checkbox-json="{&quot;text&quot;:[&quot;Insufficient Content&quot;],&quot;video&quot;:[&quot;Insufficient Content&quot;],&quot;assesment&quot;:[&quot;Incorrect Options&quot;,&quot;Incorrect Answer&quot;,&quot;Incorrect Question&quot;],&quot;assessment&quot;:[&quot;Incorrect Options&quot;,&quot;Incorrect Answer&quot;,&quot;Incorrect Question&quot;],&quot;simulation&quot;:[&quot;Simulation Not Working&quot;,&quot;Incorrect Results/Observations&quot;,&quot;Insufficient/Incorrect Instructions&quot;],&quot;DEFAULT&quot;:[&quot;Page Not Loading&quot;,&quot;Content Not Visible&quot;,&quot;Incorrect Content&quot;]}" button_style="border: none; color: #fff; background-color: #288ec8; text-align: center; font-size: 1.05rem; border-radius: 1em;padding: 0.6em 1.2em; margin: 0 10px" position="override" custom_button_class="v-button"></bug-report>
+          </div>
+        </nav>
+      </header>
+      <div class="container-fluid flex-fill d-flex flex-column vlabs-page-main">
+        <div class="row d-flex justify-content-between">
+          <div class="flex-column">
+          <div class="row py-4 px-4 breadcrumbs">
+          	<div class="title is-4 tools">Tools</div>
+          	<span class="mx-2">
+          		<i aria-hidden="true" class="fa fa-angle-right"></i>
+          	</span>
+          	<a href="performance-report.html" class="my-2 mx-3" target="_blank">
+          		<button class="v-button">Performance Tool</button>
+          	</a>
+          	<a href="validator-report.html" class="my-2 mx-3" target="_blank">
+          		<button class="v-button">Validation Tool</button>
+          	</a>
+          </div>
+          </div>
+        </div>
+        <div class="row flex-grow-1 d-flex flex-nowrap flex-column flex-lg-row">
+          <div class="modal fade popupmenu" id="popupMenu" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                  <div class="modal-content">
+                      <div class="modal-header">
+                          <h5 class="modal-title" id="exampleModalLabel">
+                              <a href="https://vlab.co.in" class="navbar-brand">
+                                  <img src="./assets/images/vlabs-color-small-moe.jpg" alt="vlabs logo" class="vlabs-logo">
+                              </a>
+                          </h5>
+                          <button type="button" class="btn-close align-self-center" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body nav-menu">
+                              <div>
+                                  <div class="d-flex nav-menu-body">
+                                      <a href="index.html" class="p-2 ">
+                                      Aim
+                                      </a>
+                                      
+                                  </div>
+                                  <div id="t-" class="collapse">
+                                      <div class="px-3 d-flex flex-column tasks align-items-center align-items-lg-start">
+                                      </div>
+                                  </div>
+                              </div>
+                              <div>
+                                  <div class="d-flex nav-menu-body">
+                                      <a href="theory.html" class="p-2  current-item ">
+                                      Theory
+                                      </a>
+                                      
+                                  </div>
+                                  <div id="t-" class="collapse">
+                                      <div class="px-3 d-flex flex-column tasks align-items-center align-items-lg-start">
+                                      </div>
+                                  </div>
+                              </div>
+                              <div>
+                                  <div class="d-flex nav-menu-body">
+                                      <a href="pretest.html" class="p-2 ">
+                                      Pretest
+                                      </a>
+                                      
+                                  </div>
+                                  <div id="t-" class="collapse">
+                                      <div class="px-3 d-flex flex-column tasks align-items-center align-items-lg-start">
+                                      </div>
+                                  </div>
+                              </div>
+                              <div>
+                                  <div class="d-flex nav-menu-body">
+                                      <a href="procedure.html" class="p-2 ">
+                                      Procedure
+                                      </a>
+                                      
+                                  </div>
+                                  <div id="t-" class="collapse">
+                                      <div class="px-3 d-flex flex-column tasks align-items-center align-items-lg-start">
+                                      </div>
+                                  </div>
+                              </div>
+                              <div>
+                                  <div class="d-flex nav-menu-body">
+                                      <a href="simulation.html" class="p-2 ">
+                                      Simulation
+                                      </a>
+                                      
+                                  </div>
+                                  <div id="t-" class="collapse">
+                                      <div class="px-3 d-flex flex-column tasks align-items-center align-items-lg-start">
+                                      </div>
+                                  </div>
+                              </div>
+                              <div>
+                                  <div class="d-flex nav-menu-body">
+                                      <a href="posttest.html" class="p-2 ">
+                                      Posttest
+                                      </a>
+                                      
+                                  </div>
+                                  <div id="t-" class="collapse">
+                                      <div class="px-3 d-flex flex-column tasks align-items-center align-items-lg-start">
+                                      </div>
+                                  </div>
+                              </div>
+                              <div>
+                                  <div class="d-flex nav-menu-body">
+                                      <a href="references.html" class="p-2 ">
+                                      References
+                                      </a>
+                                      
+                                  </div>
+                                  <div id="t-" class="collapse">
+                                      <div class="px-3 d-flex flex-column tasks align-items-center align-items-lg-start">
+                                      </div>
+                                  </div>
+                              </div>
+                              <div>
+                                  <div class="d-flex nav-menu-body">
+                                      <a href="contributors.html" class="p-2 ">
+                                      Contributors
+                                      </a>
+                                      
+                                  </div>
+                                  <div id="t-" class="collapse">
+                                      <div class="px-3 d-flex flex-column tasks align-items-center align-items-lg-start">
+                                      </div>
+                                  </div>
+                              </div>
+                              <div>
+                                  <div class="d-flex nav-menu-body">
+                                      <a href="feedback.html" class="p-2 ">
+                                      Feedback
+                                      </a>
+                                      
+                                  </div>
+                                  <div id="t-" class="collapse">
+                                      <div class="px-3 d-flex flex-column tasks align-items-center align-items-lg-start">
+                                      </div>
+                                  </div>
+                              </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+          <div class="nav flex-column sidebar nav-menu flex-shrink-0 px-lg-4 align-items-center align-items-lg-start hidden d-none d-lg-flex" id="menu">
+                <div>
+                    <div class="d-flex nav-menu-body">
+                        <a href="index.html" class="p-2 ">
+                        Aim
+                        </a>
+                        
+                    </div>
+                    <div id="t-" class="collapse">
+                        <div class="px-3 d-flex flex-column tasks align-items-center align-items-lg-start">
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="d-flex nav-menu-body">
+                        <a href="theory.html" class="p-2  current-item ">
+                        Theory
+                        </a>
+                        
+                    </div>
+                    <div id="t-" class="collapse">
+                        <div class="px-3 d-flex flex-column tasks align-items-center align-items-lg-start">
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="d-flex nav-menu-body">
+                        <a href="pretest.html" class="p-2 ">
+                        Pretest
+                        </a>
+                        
+                    </div>
+                    <div id="t-" class="collapse">
+                        <div class="px-3 d-flex flex-column tasks align-items-center align-items-lg-start">
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="d-flex nav-menu-body">
+                        <a href="procedure.html" class="p-2 ">
+                        Procedure
+                        </a>
+                        
+                    </div>
+                    <div id="t-" class="collapse">
+                        <div class="px-3 d-flex flex-column tasks align-items-center align-items-lg-start">
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="d-flex nav-menu-body">
+                        <a href="simulation.html" class="p-2 ">
+                        Simulation
+                        </a>
+                        
+                    </div>
+                    <div id="t-" class="collapse">
+                        <div class="px-3 d-flex flex-column tasks align-items-center align-items-lg-start">
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="d-flex nav-menu-body">
+                        <a href="posttest.html" class="p-2 ">
+                        Posttest
+                        </a>
+                        
+                    </div>
+                    <div id="t-" class="collapse">
+                        <div class="px-3 d-flex flex-column tasks align-items-center align-items-lg-start">
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="d-flex nav-menu-body">
+                        <a href="references.html" class="p-2 ">
+                        References
+                        </a>
+                        
+                    </div>
+                    <div id="t-" class="collapse">
+                        <div class="px-3 d-flex flex-column tasks align-items-center align-items-lg-start">
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="d-flex nav-menu-body">
+                        <a href="contributors.html" class="p-2 ">
+                        Contributors
+                        </a>
+                        
+                    </div>
+                    <div id="t-" class="collapse">
+                        <div class="px-3 d-flex flex-column tasks align-items-center align-items-lg-start">
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="d-flex nav-menu-body">
+                        <a href="feedback.html" class="p-2 ">
+                        Feedback
+                        </a>
+                        
+                    </div>
+                    <div id="t-" class="collapse">
+                        <div class="px-3 d-flex flex-column tasks align-items-center align-items-lg-start">
+                        </div>
+                    </div>
+                </div>
+          </div>          <div class="vlabs-page-content px-5 pb-4 flex-grow-1 markdown-body">
+            <div class="text-center fix-spacing">
+              <h1 id="demonstrate-interface-management-procedures">Demonstrate Interface Management Procedures</h1>
+          
+            </div>
+              <h2 id="introduction-to-5g-networks">Introduction to 5G Networks</h2>
+          <p>Consider a 5G network as a big company where various departments must communicate with one another in order to complete tasks. In 5G, various parts known as "network functions" that perform particular tasks must communicate with one another via standardized connections. These connections, which go by the names N1, N2, N3, and so forth, are referred to as interfaces.</p>
+          <p>Let's first examine the key participants in a 5G network before delving into the interfaces:</p>
+          <ul>
+          <li><strong>User equipment (UE)</strong>: This is your tablet, smartphone, or any other gadget that is linked to the 5G network.</li>
+          <li><strong>gNB (Next Generation NodeB)/RAN(Radio Access Network)</strong>: This is the 5G base station, the tower or antenna that your phone connects to wirelessly. It's the radio access point.</li>
+          <li><strong>AMF (Access and Mobility Management Function)</strong>: Think of this as the reception desk. It handles your device's registration, authentication (making sure you're allowed to use the network), and tracks where your device is.</li>
+          <li><strong>SMF (Session Management Function)</strong>: This is like the logistics manager. It sets up and manages your data sessions, deciding how your internet traffic should be routed.</li>
+          <li><strong>UPF (User Plane Function)</strong>: This is the actual data highway. All your internet traffic (videos, messages, web browsing) flows through here.</li>
+          <li><strong>PCF (Policy Control Function)</strong>: This is the rule maker. It decides what quality of service you get, how much data you can use, and at what speed.</li>
+          <li><strong>UDM (Unified Data Management)</strong>: This is the database that stores all information about subscribers, their subscriptions, and authentication details.</li>
+          <li><strong>DN (Data Network)</strong>: This is the outside world, basically the internet or private networks that you're trying to access.</li>
+          </ul>
+          <p>Now let's see how these components talk to each other.</p>
+          <img src="images/fig1.svg" alt="5G Network Components Overview" width="60%">
+          
+          <h2 id="5g-interfaces-overview">5G Interfaces Overview</h2>
+          <table>
+          <thead>
+          <tr>
+          <th>Interface</th>
+          <th>Between</th>
+          <th>Purpose</th>
+          <th>Plane</th>
+          <th>Key Protocols</th>
+          </tr>
+          </thead>
+          <tbody><tr>
+          <td>N1</td>
+          <td>UE ↔ AMF</td>
+          <td>NAS (Non-Access Stratum) signaling for registration, authentication, and session management.</td>
+          <td>Control</td>
+          <td>NAS over 5G NR</td>
+          </tr>
+          <tr>
+          <td>N2</td>
+          <td>gNB ↔ AMF</td>
+          <td>Control-plane signaling between RAN and core.</td>
+          <td>Control</td>
+          <td>NGAP over SCTP</td>
+          </tr>
+          <tr>
+          <td>N3</td>
+          <td>gNB ↔ UPF</td>
+          <td>User data transfer between RAN and core.</td>
+          <td>User</td>
+          <td>GTP-U</td>
+          </tr>
+          <tr>
+          <td>N4</td>
+          <td>SMF ↔ UPF</td>
+          <td>Control of user plane sessions and policies.</td>
+          <td>Control</td>
+          <td>PFCP</td>
+          </tr>
+          <tr>
+          <td>N5</td>
+          <td>PCF ↔ AF</td>
+          <td>Policy control and QoS management.</td>
+          <td>Control</td>
+          <td>REST/HTTP2</td>
+          </tr>
+          <tr>
+          <td>N6</td>
+          <td>UPF ↔ Data Network (DN)</td>
+          <td>Interface to external services (Internet, IMS, etc.).</td>
+          <td>User</td>
+          <td>IP/GTP-U</td>
+          </tr>
+          <tr>
+          <td>N7</td>
+          <td>SMF ↔ PCF</td>
+          <td>Policy and charging rules exchange.</td>
+          <td>Control</td>
+          <td>REST/HTTP2</td>
+          </tr>
+          <tr>
+          <td>N8</td>
+          <td>AMF ↔ UDM</td>
+          <td>User authentication and profile retrieval.</td>
+          <td>Control</td>
+          <td>REST/HTTP2</td>
+          </tr>
+          <tr>
+          <td>N9</td>
+          <td>UPF ↔ UPF</td>
+          <td>Data forwarding between user plane nodes.</td>
+          <td>User</td>
+          <td>GTP-U</td>
+          </tr>
+          <tr>
+          <td>N10</td>
+          <td>SMF ↔ UDM</td>
+          <td>Subscription and session data management.</td>
+          <td>Control</td>
+          <td>REST/HTTP2</td>
+          </tr>
+          <tr>
+          <td>N11</td>
+          <td>AMF ↔ SMF</td>
+          <td>Session and mobility coordination.</td>
+          <td>Control</td>
+          <td>REST/HTTP2</td>
+          </tr>
+          <tr>
+          <td>N12</td>
+          <td>AMF ↔ AUSF</td>
+          <td>Authentication signaling.</td>
+          <td>Control</td>
+          <td>REST/HTTP2</td>
+          </tr>
+          <tr>
+          <td>N13</td>
+          <td>AMF ↔ NRF</td>
+          <td>Discovery of network functions.</td>
+          <td>Control</td>
+          <td>REST/HTTP2</td>
+          </tr>
+          </tbody></table>
+          <details>
+          <summary><strong>What is the N1 Interface?</strong></summary>
+          
+          <h2 id="what-is-the-n1-interface">What is the N1 Interface?</h2>
+          <p>The N1 interface is a logical control-plane interface between the User Equipment (UE) — such as a smartphone, modem, or IoT device — and the Access and Mobility Management Function (AMF) in the 5G Core (5GC) network. It's not a direct physical connection. Your phone actually sends messages through the gNB, which acts like a messenger delivering letters between you and the AMF.</p>
+          <p>This interface is used to exchange Non-Access Stratum (NAS) messages, which carry all the signaling information necessary for registration, authentication, mobility management, and session establishment. These messages are encrypted for security, so even though they pass through the gNB, the base station cannot read them. gNB only acts as a transparent relay for NAS messages.</p>
+          <img src="images/fig2.svg" alt="N1 Interface - NAS Message Flow" width="50%">
+          
+          <h3 id="interface-flow">Interface Flow:</h3>
+          <ol>
+          <li><strong>Step 1</strong>: UE creates NAS messages (Registration Request)</li>
+          <li><strong>Step 2</strong>: Sends to gNB via RRC (Radio Resource Control)</li>
+          <li><strong>Step 3</strong>: gNB encapsulates NAS in NGAP and forwards to AMF via N2</li>
+          <li><strong>Step 4</strong>: AMF processes NAS message and responds back</li>
+          </ol>
+          <h3 id="initial-connection-setup">Initial Connection Setup</h3>
+          <ol>
+          <li>The UE powers on and searches for a 5G cell.</li>
+          <li>It establishes a Radio Resource Control (RRC) connection with the gNB.</li>
+          <li>The UE then sends a NAS Registration Request message, which contains information like IMSI (International Mobile Subscriber Identity) and security parameters.</li>
+          <li>This NAS message is encapsulated inside an RRC message and sent to the gNB.</li>
+          <li>The gNB passes it unchanged to the AMF via the N2 interface using Next Generation Application Protocol (NGAP).</li>
+          </ol>
+          <h3 id="nas-message-handling">NAS Message Handling</h3>
+          <ol>
+          <li>The AMF decapsulates and processes the NAS message.</li>
+          <li>Depending on the message type, the AMF may:<ul>
+          <li>Authenticate the user (with AUSF/UDM)</li>
+          <li>Register the UE into the network</li>
+          <li>Allocate a temporary identifier (like 5G Globally Unique Temporary Identity)</li>
+          <li>Coordinate with SMF to establish a data session</li>
+          </ul>
+          </li>
+          </ol>
+          <h3 id="main-nas-message-types-carried-on-n1">Main NAS Message Types Carried on N1</h3>
+          <table>
+          <thead>
+          <tr>
+          <th>Category</th>
+          <th>Message Example</th>
+          <th>Purpose</th>
+          </tr>
+          </thead>
+          <tbody><tr>
+          <td>Registration</td>
+          <td>Registration Request / Accept</td>
+          <td>Network entry and tracking area registration</td>
+          </tr>
+          <tr>
+          <td>Authentication</td>
+          <td>Authentication Request / Response</td>
+          <td>Mutual authentication</td>
+          </tr>
+          <tr>
+          <td>Security</td>
+          <td>Security Mode Command / Complete</td>
+          <td>Ciphering and integrity setup</td>
+          </tr>
+          <tr>
+          <td>Session Management</td>
+          <td>PDU Session Establishment Request</td>
+          <td>Create a data session</td>
+          </tr>
+          <tr>
+          <td>Mobility</td>
+          <td>Service Request / Paging</td>
+          <td>Reconnect to network</td>
+          </tr>
+          <tr>
+          <td>Deregistration</td>
+          <td>Deregistration Request / Accept</td>
+          <td>Logout or network detach</td>
+          </tr>
+          </tbody></table>
+          <h2 id="ue-user-equipment-device-identity--credentials">UE (User Equipment) Device Identity &amp; Credentials</h2>
+          <p>In a 5G network, the User Equipment (UE) maintains specific identities and security credentials to ensure secure access and communication with the 5G Core (5GC).</p>
+          <h3 id="1-imsi-permanent-identity">1. IMSI (Permanent Identity)</h3>
+          <ul>
+          <li><strong>Value</strong>: 404-45-1234567890</li>
+          <li><strong>Description</strong>: The International Mobile Subscriber Identity is the permanent, unique identifier for the user. It is stored securely within the SIM/USIM card.</li>
+          </ul>
+          <h3 id="2-security-key-k_i">2. Security Key ($K_i$)</h3>
+          <ul>
+          <li><strong>Value</strong>: **************** (Stored Securely)</li>
+          <li><strong>Description</strong>: This is a 128-bit secret key used for authentication. For maximum security, this key never leaves the SIM card; it is used locally to generate session keys during the authentication process.</li>
+          </ul>
+          <h3 id="3-security-capabilities">3. Security Capabilities</h3>
+          <ul>
+          <li><strong>Algorithms</strong>: 128-EEA1/2/3, 128-EIA1/2/3</li>
+          <li><strong>Description</strong>: These define the Encryption (EEA) and Integrity (EIA) algorithms supported by the device. They ensure that data transmitted between the UE and the network is both private and untampered with.</li>
+          </ul>
+          <h3 id="4-device-type">4. Device Type</h3>
+          <ul>
+          <li><strong>Category</strong>: 5G Smartphone</li>
+          <li><strong>Capability</strong>: Capable of eMBB (Enhanced Mobile Broadband).</li>
+          <li><strong>Description</strong>: Indicates the hardware's specific functional category, in this case, optimized for high-speed data transfer and high-capacity mobile broadband.</li>
+          </ul>
+          <h2 id="5g-registration-signalling">5G Registration Signalling</h2>
+          <p>The registration procedure allows the UE to authenticate, obtain authorized services, and update the network on its location.</p>
+          <h3 id="1-registration-request-ue-→-amf">1. Registration Request (UE → AMF)</h3>
+          <p>When the device powers on or moves to a new Tracking Area, it sends this message to the Access and Mobility Management Function (AMF) via the gNodeB.</p>
+          <table>
+          <thead>
+          <tr>
+          <th>Parameter</th>
+          <th>Value/Description</th>
+          </tr>
+          </thead>
+          <tbody><tr>
+          <td>5GS Mobile Identity</td>
+          <td>SUCI (Subscription Concealed Identifier): An encrypted version of the permanent identity (SUPI/IMSI) used to prevent eavesdropping over the air.</td>
+          </tr>
+          <tr>
+          <td>Registration Type</td>
+          <td>Initial Registration: Used when the device first connects to the network.</td>
+          </tr>
+          <tr>
+          <td>UE Security Capability</td>
+          <td>Lists supported encryption and integrity algorithms (e.g., 128-NEA1, 128-NIA1) to establish a secure channel.</td>
+          </tr>
+          <tr>
+          <td>Requested NSSAI</td>
+          <td>SST=1 (eMBB): Indicates the user wants to access the Enhanced Mobile Broadband network slice for high-speed data.</td>
+          </tr>
+          </tbody></table>
+          <h3 id="2-registration-accept-amf-→-ue">2. Registration Accept (AMF → UE)</h3>
+          <p>Once the core network (AUSF/UDM) authenticates the user, the AMF sends this message to confirm the UE is now "Registered".</p>
+          <ul>
+          <li><strong>5G-GUTI (Globally Unique Temporary Identity)</strong>: A temporary identity assigned to the UE for all future communication. It replaces the SUCI to ensure privacy and consists of:<ul>
+          <li><strong>GUAMI</strong>: Identifies the specific AMF serving the user (MCC, MNC, AMF ID).</li>
+          <li><strong>5G-TMSI</strong>: A random 32-bit value unique to that AMF.</li>
+          </ul>
+          </li>
+          <li><strong>Allowed NSSAI</strong>: The specific network slices (e.g., SST=1) the network has authorized the user to use based on their subscription.</li>
+          <li><strong>Registration Result</strong>: Confirms the success of the registration and the services granted (e.g., SMS, Voice, Data).</li>
+          </ul>
+          <p><strong>Key Takeaway: Privacy in 5G</strong></p>
+          <p>Unlike previous generations (2G/3G/4G), 5G never sends the permanent IMSI in cleartext. It uses the SUCI for the initial handshake and the 5G-GUTI for all subsequent messaging to protect the user from "IMSI Catcher" attacks.</p>
+          </details>
+          
+          <details>
+          <summary><strong>What is N2 Interface?</strong></summary>
+          
+          <h2 id="what-is-n2-interface">What is N2 Interface?</h2>
+          <p>The N2 interface connects the gNB to the AMF. This is where the base station and the core network's brain coordinate activities. When your phone sends a registration request over N1, the gNB uses N2 to forward context information to the AMF and receive instructions back. The N2 interface carries information about radio resources, handover procedures (when you move from one base station to another), and paging messages (when the network is trying to reach your device).</p>
+          <p>The protocol used here is NGAP (Next Generation Application Protocol). It's specifically designed for this control communication between the radio access network and the core. These messages use IP networks underneath, specifically using SCTP (Stream Control Transmission Protocol) as the transport mechanism. SCTP is chosen because it's reliable like Transmission Control Protocol but has additional features useful for signaling.</p>
+          <img src="images/fig3.svg" alt="N2 Interface - gNB to AMF Control Signaling" width="50%">
+          
+          <h3 id="n2-interface-purpose">N2 Interface Purpose:</h3>
+          <ul>
+          <li><strong>Control Plane</strong>: NG Setup, UE Context Management, Handover, Paging</li>
+          <li><strong>Key Functions</strong>: RAN node registration, configuration updates, mobility management</li>
+          </ul>
+          <h3 id="features-of-ngap-next-generation-application-protocol">Features of NGAP (Next Generation Application Protocol)</h3>
+          <p>It is used between the gNB and AMF to manage control-plane signaling. Features of NGAP are listed below:</p>
+          <ul>
+          <li>Operates over SCTP/IP</li>
+          <li>Responsible for setting up and maintaining NG connections</li>
+          <li>Transfers NAS messages between UE and AMF</li>
+          <li>Supports paging, handover, and context release</li>
+          </ul>
+          <h3 id="ng-setup-procedure">NG Setup Procedure</h3>
+          <p>The NG Setup procedure is the first step when a gNB connects to the AMF.
+          It allows both sides to exchange configuration information and establish an NG interface for communication.</p>
+          <ol>
+          <li><strong>NG Setup Request</strong> - Sent by the gNB to the AMF when it starts up; Contains gNB ID, supported PLMN (public land mobile network), and tracking area information.</li>
+          <li><strong>NG Setup Response</strong> - Sent by the AMF if the setup is successful; Includes AMF Name, Served PLMN list, and AMF region info.</li>
+          <li><strong>Error Indication (if any)</strong> - Sent when the AMF cannot accept the setup (e.g., mismatched PLMN).</li>
+          </ol>
+          <p>Once the NG Setup is complete, the gNB and AMF can start handling UE signaling messages.</p>
+          <h2 id="gnb-base-station-identity--core-network-setup">gNB (Base Station) Identity &amp; Core Network Setup</h2>
+          <p>The gNodeB (gNB) serves as the bridge between the User Equipment (UE) and the 5G Core. Before it can handle user traffic, it must identify itself and establish a connection with the Access and Mobility Management Function (AMF).</p>
+          <h3 id="1-what-gnb-has-base-station-identity--capabilities">1. What gNB Has (Base Station Identity &amp; Capabilities)</h3>
+          <p>These are the static parameters configured on the base station hardware.</p>
+          <ul>
+          <li><strong>Global gNB ID</strong>: gNB-001 (0x000001) — A unique identifier for this specific base station.</li>
+          <li><strong>PLMN Identity</strong>: MCC=999, MNC=70 — Identifies the network operator to which the base station belongs.</li>
+          <li><strong>Coverage Area</strong>: TAC=1 (Tracking Area Code) — Defines the geographical area served by this gNB.</li>
+          <li><strong>Radio Capabilities</strong>: 5G NR, FR1 (sub-6 GHz) — Specifies the supported frequency bands and radio technology used for transmission.</li>
+          </ul>
+          <h3 id="2-what-gnb-shares-with-amf-ng-setup-request">2. What gNB Shares with AMF (NG Setup Request)</h3>
+          <p>When a gNB powers up, it initiates an NG Setup Request to the AMF to register itself within the core network.</p>
+          <ul>
+          <li><strong>Global RAN Node ID</strong>: gNB-001 — The base station identifier used during the registration process.</li>
+          <li><strong>Supported TA List</strong>: TAC=1, PLMN=999-70 — Informs the AMF of the specific coverage areas and network operators this gNB is currently serving.</li>
+          <li><strong>Paging DRX</strong>: v128 (128 radio frames) — The default paging cycle used for power saving, telling the network how often it should check for incoming calls or data for idle devices.</li>
+          <li><strong>RAN Node Name</strong>: "gNB-Delhi-Central-001" — A human-readable name for easier identification and network management.</li>
+          </ul>
+          <h3 id="core-network-response-ng-setup-response">Core Network Response: NG Setup Response</h3>
+          <p>Once the gNodeB sends its setup request, the AMF responds to finalize the interface between the Radio Access Network (RAN) and the 5G Core (5GC).</p>
+          <h4 id="what-amf-provides-to-gnb-ng-setup-response">What AMF Provides to gNB (NG Setup Response)</h4>
+          <p>This message confirms that the AMF has accepted the connection and provides the gNodeB with the necessary core network operational parameters.</p>
+          <ul>
+          <li><strong>AMF Name</strong>: AMF-Region-1<ul>
+          <li>The specific identity of the AMF instance that is accepting and managing the connection for this gNB.</li>
+          </ul>
+          </li>
+          <li><strong>Served GUAMI</strong>: PLMN=999-70, AMF-Region=01<ul>
+          <li>The Globally Unique AMF Identifier (GUAMI) identifies the pool of AMFs serving the area. It includes the Public Land Mobile Network (PLMN) identity and the specific AMF region.</li>
+          </ul>
+          </li>
+          <li><strong>Relative AMF Capacity</strong>: 255 (Maximum)<ul>
+          <li>A load-balancing indicator ranging from 0 to 255. A value of 255 indicates this AMF has maximum capacity to handle new UEs compared to other AMFs in the same pool.</li>
+          </ul>
+          </li>
+          <li><strong>PLMN Support List</strong>: 999-70 with SST=1 (eMBB)<ul>
+          <li>Defines the network operators and specific network slices (like Enhanced Mobile Broadband) that this AMF supports for the connected gNodeB.</li>
+          </ul>
+          </li>
+          </ul>
+          <h3 id="ran-configuration-update-procedure">RAN Configuration Update Procedure</h3>
+          <p>In a dynamic 5G environment, the Radio Access Network (RAN) may need to update its configuration—for example, when expanding coverage or adding new frequency bands. This process ensures the Core Network remains synchronized with the hardware in the field.</p>
+          <h4 id="1-ran-configuration-update-procedure">1. RAN Configuration Update Procedure</h4>
+          <p>This procedure allows a gNodeB to update its application-level configuration data without resetting the entire NG interface.</p>
+          <ul>
+          <li><strong>Message Flow</strong>:<ul>
+          <li>gNB → AMF: RAN Configuration Update.</li>
+          <li>AMF → gNB: Configuration Update Acknowledgment.</li>
+          </ul>
+          </li>
+          <li><strong>Status</strong>: Once the AMF acknowledges the request, the RAN Configuration Update is considered complete.</li>
+          </ul>
+          <h4 id="2-interactive-demo-parameters">2. Interactive Demo Parameters</h4>
+          <p>Based on the simulation data, the following parameters are used to trigger and verify a configuration update:</p>
+          <table>
+          <thead>
+          <tr>
+          <th>Parameter</th>
+          <th>Value / Description</th>
+          </tr>
+          </thead>
+          <tbody><tr>
+          <td>UE IMSI</td>
+          <td>404451234567890: The 15-digit subscriber identity used for the simulation.</td>
+          </tr>
+          <tr>
+          <td>Extracted PLMN</td>
+          <td>404-45: The network operator code (MCC-MNC) derived from the IMSI.</td>
+          </tr>
+          <tr>
+          <td>Updated TAC</td>
+          <td>1: The new or verified Tracking Area Code assigned during the update.</td>
+          </tr>
+          </tbody></table>
+          </details>
+          
+          <details>
+          <summary><strong>What is N3 Interface?</strong></summary>
+          
+          <h2 id="what-is-n3-interface">What is N3 Interface?</h2>
+          <p>The N3 interface is where the actual data flows. It connects the gNB to the UPF, and this is the path your YouTube videos, WhatsApp messages, and web browsing data take. When you stream a video, the video data comes from the internet through the UPF, then travels over N3 to your gNB, and finally gets transmitted wirelessly to your phone.</p>
+          <p>The key protocol here is GTP-U (GPRS Tunneling Protocol - User Plane). A tunnel simply means that your data is packaged in a special way so it can be delivered to the right destination. Your data gets wrapped in GTP headers that contain information about which session this data belongs to.</p>
+          <p>The GTP-U protocol runs over UDP/IP. User Datagram Protocol is used instead of TCP because mobile networks can handle some packet loss, and UDP's lower overhead means better performance for real-time applications. Each data packet from your device gets a tunnel identifier, so even if the gNB is serving thousands of devices, it knows exactly which device each packet belongs to.</p>
+          <p>The IP addressing here is straightforward: the gNB has an IP address that can reach the UPF, and vice versa. When a data session is established, the SMF tells both the gNB and UPF which tunnel identifiers to use for that specific user's session.</p>
+          <img src="images/fig4.svg" alt="N3 Interface - GTP-U Tunneling Between gNB and UPF" width="50%">
+          
+          <h3 id="n3-interface-purpose">N3 Interface Purpose:</h3>
+          <ul>
+          <li><strong>User Plane</strong>: Carries actual user data through GTP-U tunnels</li>
+          <li><strong>Key Function</strong>: High-speed data transport between RAN and Core Network</li>
+          </ul>
+          <p>The N3 interface is responsible for:</p>
+          <ul>
+          <li>Transporting user traffic (IP packets) between RAN and Core</li>
+          <li>Carrying encapsulated PDU (Protocol Data Unit) session data</li>
+          <li>Supporting QoS enforcement</li>
+          <li>Enabling low-latency paths for applications</li>
+          <li>Handling mobility (handover between cells)</li>
+          <li>Supporting network slicing and differentiated services</li>
+          </ul>
+          <p>This interface becomes active after a PDU session is established by the SMF.</p>
+          <h3 id="working-principle-of-the-n3-interface">Working Principle of the N3 Interface</h3>
+          <p>Data over N3 travels using GTP-U (General packet radio service Tunneling Protocol - User Plane).</p>
+          <ol>
+          <li>UE sends uplink data to gNB.</li>
+          <li>gNB wraps the data into GTP-U packets.</li>
+          <li>gNB uses the TEID (Tunnel Endpoint Identifier) to forward the packet to the correct UPF over N3.</li>
+          <li>UPF removes the GTP-U header and forwards the packet to the Data Network (Internet, IMS, etc.) via N6 interface.</li>
+          <li>For downlink, the reverse process happens: UPF → gNB → UE</li>
+          </ol>
+          <img src="images/fig5.svg" alt="N3 Uplink and Downlink Data Flow" width="40%">
+          
+          <img src="images/fig6.svg" alt="N3 Packet Encapsulation Structure" width="40%">
+          
+          <p><strong>Important Point</strong>: The N3 interface carries ONLY user data, NOT control signaling.</p>
+          <p>Control signaling travels separately:</p>
+          <ul>
+          <li>UE → gNB via RRC</li>
+          <li>gNB → AMF via N2/NGAP</li>
+          <li>SMF → UPF via N4 (PFCP)</li>
+          </ul>
+          <h3 id="role-of-n3-in-handover">Role of N3 in Handover</h3>
+          <p>During inter-gNB handover:</p>
+          <ol>
+          <li>Old gNB → New gNB tunnel may be created temporarily (Xn or N2).</li>
+          <li>New gNB requests UPF to switch the path.</li>
+          <li>UPF redirects user traffic to new gNB's N3 interface.</li>
+          </ol>
+          <p>This ensures that there is no call drop or no session interruption.</p>
+          <img src="images/fig7.svg" alt="N3 Handover Process Between gNBs" width="40%">
+          
+          <h2 id="5g-uplink-data-flow-ue-→-internet">5G Uplink Data Flow (UE → Internet)</h2>
+          <p>This process describes how data generated by a user device (UE) travel through the 5G network to reach the external internet.</p>
+          <ol>
+          <li><p><strong>UE Sends Data</strong></p>
+          <ul>
+          <li>Action: The user performs an activity such as uploading a photo/video or starting a video call.</li>
+          <li>Mechanism: Data is transmitted over the Radio Bearer to the gNB.</li>
+          </ul>
+          </li>
+          <li><p><strong>gNB Encapsulation</strong></p>
+          <ul>
+          <li>Action: The base station prepares the data for the core network.</li>
+          <li>Mechanism: It wraps the user data into GTP-U packets.</li>
+          <li>Packet Structure: IP Packet — GTP-U Header — UDP — IP.</li>
+          </ul>
+          </li>
+          <li><p><strong>Tunnel Forwarding (N3)</strong></p>
+          <ul>
+          <li>Action: Data is routed toward the core network's user plane.</li>
+          <li>Mechanism: Uses the Tunnel Endpoint Identifier (TEID) to ensure data reaches the correct UPF (User Plane Function) tunnel.</li>
+          <li>Technical Details: TEID: 0x5678, UDP Port: 2152.</li>
+          </ul>
+          </li>
+          <li><p><strong>UPF Processing</strong></p>
+          <ul>
+          <li>Action: The core network processes the incoming stream.</li>
+          <li>Mechanism: The UPF removes the GTP-U header and applies network policies.</li>
+          <li>Functions: Decapsulation and QoS (Quality of Service) Enforcement.</li>
+          </ul>
+          </li>
+          <li><p><strong>Forward to Internet (N6)</strong></p>
+          <ul>
+          <li>Action: Data exits the mobile network.</li>
+          <li>Mechanism: Plain IP packets are sent to the external data network via the N6 Interface (Internet/IMS).</li>
+          </ul>
+          </li>
+          </ol>
+          <h3 id="n3-interface-technical-parameters">N3 Interface: Technical Parameters</h3>
+          <p>The N3 interface is the critical link between the Radio Access Network (gNB) and the User Plane Function (UPF).</p>
+          <ul>
+          <li><strong>Protocol</strong>: GTP-U (GPRS Tunneling Protocol - User Plane)<ul>
+          <li>The standard encapsulation protocol used to carry user data across the 5G system.</li>
+          </ul>
+          </li>
+          <li><strong>Transport</strong>: UDP Port 2152<ul>
+          <li>The standard, dedicated port utilized for all GTP-U traffic.</li>
+          </ul>
+          </li>
+          <li><strong>TEID (Tunnel Endpoint Identifier)</strong><ul>
+          <li>A 32-bit unique identifier used to multiplex and route packets to the correct PDU session.</li>
+          </ul>
+          </li>
+          <li><strong>QoS Flow Identifier (QFI)</strong><ul>
+          <li>A 6-bit value (0-63) that indicates the specific priority level of the traffic, ensuring critical data (like voice) is handled faster than background data.</li>
+          </ul>
+          </li>
+          </ul>
+          </details>
+          
+          <details>
+          <summary><strong>What is N4 Interface?</strong></summary>
+          
+          <h2 id="what-is-n4-interface">What is N4 Interface?</h2>
+          <p>The N4 interface connects the SMF to the UPF. Here, SMF is the manager that decides how data sessions should work, while the UPF is the one actually moving data. So N4 is where the SMF gives instructions to the UPF. When the UE wants to start using data, here's what happens: the AMF tells the SMF "this device wants a session," and the SMF uses N4 to program the UPF with rules about how to handle this device's traffic.</p>
+          <p>The SMF tells the UPF things like: "For this user, forward their traffic to this internet gateway," or "This user has a premium subscription, so give them higher priority," or "Apply a speed limit of 10 Mbps to this session."</p>
+          <p>The protocol used is PFCP (Packet Forwarding Control Protocol). It's specifically designed for controlling how the UPF forwards packets. The SMF sends PFCP messages over UDP/IP to the UPF's IP address. These messages contain rules about packet filtering, quality of service, traffic routing, and charging information.</p>
+          <img src="images/fig8.svg" alt="N4 Interface - SMF Controlling UPF via PFCP" width="50%">
+          
+          <h3 id="n4-interface-purpose">N4 Interface Purpose:</h3>
+          <ul>
+          <li><strong>Control Plane</strong>: SMF (brain) controls UPF (worker) on how to handle data packets</li>
+          <li><strong>Key Function</strong>: Session establishment, modification, QoS enforcement, traffic routing</li>
+          </ul>
+          <h3 id="pfcp-characteristics">PFCP Characteristics</h3>
+          <ul>
+          <li>Runs over UDP (port 8805)</li>
+          <li>All messages are encoded as TLV (Type-Length-Value)</li>
+          <li>Provides "rules" that define user-plane behaviour.</li>
+          </ul>
+          <table>
+          <thead>
+          <tr>
+          <th>SMF decides:</th>
+          <th>UPF executes:</th>
+          </tr>
+          </thead>
+          <tbody><tr>
+          <td>Where the UPF is located</td>
+          <td>Packet routing &amp; forwarding</td>
+          </tr>
+          <tr>
+          <td>Routing of the user session</td>
+          <td>QoS enforcement</td>
+          </tr>
+          <tr>
+          <td>QoS rules</td>
+          <td>Traffic filtering</td>
+          </tr>
+          <tr>
+          <td>Charging rules</td>
+          <td>Deep packet inspection</td>
+          </tr>
+          <tr>
+          <td>Traffic steering (to internet, MEC edge app, enterprise network)</td>
+          <td>Data routing to internet, local DN, or edge servers</td>
+          </tr>
+          </tbody></table>
+          <p><strong>SMF does not forward packets. UPF does not make decisions.</strong></p>
+          <h3 id="smf-the-session-controller">SMF: The Session Controller</h3>
+          <p>The SMF is responsible for managing PDU (Protocol Data Unit) Sessions, including IP address allocation and enforcing quality standards.</p>
+          <h4 id="1-core-smf-data--configurations">1. Core SMF Data &amp; Configurations</h4>
+          <p>The SMF maintains the following information to manage active user sessions:</p>
+          <ul>
+          <li><strong>PDU Session Information</strong>:<ul>
+          <li>Session ID: 1</li>
+          <li>DNN (Data Network Name): internet (Determines which external network to connect to)</li>
+          </ul>
+          </li>
+          <li><strong>QoS Profile</strong>:<ul>
+          <li>5QI: 9 (Non-GBR)</li>
+          <li>Priority: 8 (Defines the quality of service requirements for the session)</li>
+          </ul>
+          </li>
+          <li><strong>UE IP Address Pool</strong>:<ul>
+          <li>Range: 10.45.0.0/16 (The pool of IP addresses available to assign to devices)</li>
+          </ul>
+          </li>
+          <li><strong>Policy Rules (from PCF)</strong>:<ul>
+          <li>Includes Charging, Rate Limits, and Filters received from the Policy Control Function.</li>
+          </ul>
+          </li>
+          </ul>
+          <h4 id="2-pfcp-session-establishment-smf-→-upf">2. PFCP Session Establishment (SMF → UPF)</h4>
+          <p>To handle actual data traffic, the SMF sends specific rules to the UPF via the Packet Forwarding Control Protocol (PFCP).</p>
+          <table>
+          <thead>
+          <tr>
+          <th>Rule Type</th>
+          <th>Details &amp; Purpose</th>
+          </tr>
+          </thead>
+          <tbody><tr>
+          <td>PDR (Packet Detection Rules)</td>
+          <td>Match: UE IP 10.45.0.2, N3 TEID. Used to identify which incoming packets belong to this specific session.</td>
+          </tr>
+          <tr>
+          <td>FAR (Forwarding Action Rules)</td>
+          <td>Action: Forward to N6, Apply QoS. Dictates what the UPF should do with matched packets.</td>
+          </tr>
+          <tr>
+          <td>QER (QoS Enforcement Rules)</td>
+          <td>Max Bitrate: 100 Mbps, GBR: None. Sets speed limits and quality guarantees for the traffic.</td>
+          </tr>
+          <tr>
+          <td>URR (Usage Reporting Rules)</td>
+          <td>Report: Every 1 GB or 1 hour. Specifies when the UPF should send data usage reports to the SMF for billing purposes.</td>
+          </tr>
+          </tbody></table>
+          <h3 id="n4-working-principle">N4 Working Principle</h3>
+          <p>N4 follows the Control and User Plane Separation (CUPS) architecture.</p>
+          <ol>
+          <li>SMF is the brain (makes policies).</li>
+          <li>UPF is the worker (executes rules).</li>
+          <li>SMF programs UPF rules using PFCP.</li>
+          <li>UPF never makes policy decisions on its own.</li>
+          <li>Every user session has a PFCP session.</li>
+          <li>Every PFCP session has rules (PDR, FAR, QER, URR).</li>
+          <li>User-plane forwarding changes only when SMF updates N4 rules.</li>
+          </ol>
+          <img src="images/fig9.svg" alt="N4 Control and User Plane Separation (CUPS) Architecture" width="40%">
+          
+          </details>
+          
+          <details>
+          <summary><strong>What is N5 Interface?</strong></summary>
+          
+          <h2 id="what-is-n5-interface">What is N5 Interface?</h2>
+          <p>The N5 interface connects the AF (Application Function) to the PCF (Policy Control Function). This interface is used when applications (like video services, gaming apps, enterprise apps, edge applications) need to request specific network policies.</p>
+          <p>For example, video streaming service like Netflix or a video calling application like Zoom, might want to tell the network "I need better quality for this user's video call" or "This video stream needs priority."</p>
+          <p>The PCF uses N5 to receive these requests from application providers and then makes decisions about whether to grant them. If a video calling app requests low latency for a call, the AF sends this request to the PCF over N5. The PCF then evaluates this against the user's subscription and network policies. If approved, the PCF will instruct the SMF (over N7) to apply appropriate quality of service rules.</p>
+          <p>The protocol used here is HTTP/2-based RESTful APIs. The AF and PCF exchange JSON-formatted messages over secure HTTPS connections. Each has its IP address on the network, and the AF knows how to reach the PCF through configuration.</p>
+          <img src="images/fig10.svg" alt="N5 Interface - Application Function to Policy Control Function" width="50%">
+          
+          <h3 id="n5-interface-purpose">N5 Interface Purpose:</h3>
+          <ul>
+          <li><strong>Policy Control</strong>: AF requests network policies for application-specific QoS</li>
+          <li><strong>Key Function</strong>: Dynamic policy authorization based on application needs</li>
+          </ul>
+          <h3 id="1-application-function-af">1. Application Function (AF)</h3>
+          <p>The AF represents external applications requiring specific network behaviors.</p>
+          <ul>
+          <li><strong>Application Server</strong>: Includes Video Streaming, Gaming, and IMS (IP Multimedia Subsystem).</li>
+          <li><strong>Service Requirements</strong>: The application communicates its needs to the network, such as Low Latency, High Bandwidth, and Guaranteed Bitrate.</li>
+          <li><strong>Session Information</strong>: Contains details regarding the application session, including UE IP, Media Type, and Flow Description.</li>
+          <li><strong>Real-World Examples</strong>: Netflix, YouTube, and WhatsApp Call using the N5 interface.</li>
+          </ul>
+          <h3 id="2-policy-control-function-pcf">2. Policy Control Function (PCF)</h3>
+          <p>The PCF serves as the Policy Decision Point for the network.</p>
+          <ul>
+          <li><strong>Policy Decision</strong>: Responsible for authorizing or rejecting application requests based on whether the requested QoS can be provided.</li>
+          <li><strong>QoS Rules</strong>: Defines quality of service parameters, including 5QI, Bitrate, and Priority Level.</li>
+          <li><strong>Charging Rules</strong>: Dictates how to bill for the service, supporting both Online and Offline Charging.</li>
+          <li><strong>Traffic Control</strong>: Manages how traffic is handled through Gating, Redirection, and Bandwidth Limits.</li>
+          </ul>
+          <h3 id="3-n5-interface-technical-parameters">3. N5 Interface Technical Parameters</h3>
+          <p>The N5 interface is the reference point defined between the PCF and an AF. In the Service-Based Architecture (SBA), it is represented by the Npcf_PolicyAuthorization service.</p>
+          <table>
+          <thead>
+          <tr>
+          <th>Parameter</th>
+          <th>Details</th>
+          </tr>
+          </thead>
+          <tbody><tr>
+          <td>Connected Entities</td>
+          <td>PCF (Policy Control Function) and AF (Application Function)</td>
+          </tr>
+          <tr>
+          <td>Primary Protocol</td>
+          <td>HTTP/2 (standard for all 5G Service-Based Interfaces)</td>
+          </tr>
+          <tr>
+          <td>Data Format</td>
+          <td>JSON (JavaScript Object Notation)</td>
+          </tr>
+          <tr>
+          <td>Key Service Operations</td>
+          <td>Create, Update, Delete, and Notify for policy authorizations</td>
+          </tr>
+          <tr>
+          <td>Security</td>
+          <td>Protected via TLS (Transport Layer Security) for secure control plane communication</td>
+          </tr>
+          </tbody></table>
+          <h3 id="n5--working-principle">N5 – Working Principle</h3>
+          <ol>
+          <li>UE starts an application (e.g., video streaming).</li>
+          <li>The application server (AF) detects this and wants higher quality.</li>
+          <li>AF sends a Policy Authorization Request to PCF via N5.</li>
+          <li>PCF reviews:<ul>
+          <li>Subscriber profile</li>
+          <li>Current network load</li>
+          <li>Allowed services</li>
+          </ul>
+          </li>
+          <li>PCF decides:<ul>
+          <li>QoS</li>
+          <li>Priorities</li>
+          <li>Traffic routing</li>
+          </ul>
+          </li>
+          <li>PCF sends policy rules to SMF (via N7) to enforce in UPF.</li>
+          <li>UPF implements:<ul>
+          <li>QoS flow</li>
+          <li>Traffic filters</li>
+          <li>Routing changes</li>
+          </ul>
+          </li>
+          </ol>
+          <img src="images/fig11.svg" alt="N5 Working Principle - Policy Authorization Flow" width="40%">
+          
+          </details>
+          
+          <details>
+          <summary><strong>What is N6 Interface?</strong></summary>
+          
+          <h2 id="what-is-n6-interface">What is N6 Interface?</h2>
+          <p>The N6 interface is the connection between the UPF and the Data Network (internet). This is the exit point from the 5G network. After the data travels through N3 from the gNB to the UPF, it then goes out through N6 to reach the internet.</p>
+          <p>The UPF acts as a router here. The UE device is assigned an IP address that it uses to communicate with internet servers. This IP address assignment happens during session establishment, with the SMF coordinating the process.</p>
+          <p>The UPF performs NAT (Network Address Translation) or routes your traffic based on the network design. It also applies any filtering or policy enforcement that the PCF has specified. For instance, if a subscription doesn't include access to certain services, the UPF blocks that traffic here at N6.</p>
+          <p>When UE request a webpage, it's IP packet travels through N3 (wrapped in GTP), gets unwrapped at the UPF, and then goes out N6 as a regular IP packet to the web server. The response follows the reverse path.</p>
+          <img src="images/fig12.svg" alt="N6 Interface - UPF to Data Network Gateway" width="50%">
+          
+          <h3 id="n6-interface-purpose">N6 Interface Purpose:</h3>
+          <ul>
+          <li><strong>Gateway</strong>: Connects 5G Core Network to external data networks (Internet, IMS Enterprise Networks)</li>
+          <li><strong>Key Function</strong>: Routes user traffic between 5G network and outside world</li>
+          </ul>
+          <h3 id="responsibilities-of-n6">Responsibilities of N6</h3>
+          <p>N6 enables the delivery of user traffic (data packets) from the 5G network to external networks, and vice-versa.</p>
+          <p>It handles:</p>
+          <ul>
+          <li>IP packet routing</li>
+          <li>Traffic steering (e.g., to MEC)</li>
+          <li>Packet filtering</li>
+          <li>QoS enforcement</li>
+          </ul>
+          <h3 id="1-application-function-af-1">1. Application Function (AF)</h3>
+          <p>The AF is a control plane network function that provides application-related information to the 5G Core. It can be a trusted application residing within the operator's network or an external third-party application.</p>
+          <p><strong>Role and Responsibilities:</strong></p>
+          <ul>
+          <li><strong>Service Exposure</strong>: It exposes application-layer requirements to 5G network resources.</li>
+          <li><strong>Traffic Routing</strong>: It can influence traffic routing by providing information to the PCF or the Network Exposure Function (NEF).</li>
+          <li><strong>Event Subscription</strong>: Authorized network functions can subscribe to the AF for notifications regarding application events, such as user mobility or service experience.</li>
+          </ul>
+          <p><strong>Application Types</strong>: Typical applications include high-bandwidth video streaming (e.g., Netflix), low-latency gaming, and mission-critical voice services (IMS).</p>
+          <h3 id="2-policy-control-function-pcf-1">2. Policy Control Function (PCF)</h3>
+          <p>The PCF acts as the primary rule-maker for the network, serving as a unified policy framework that governs network behavior.</p>
+          <p><strong>Key Functions:</strong></p>
+          <ul>
+          <li><strong>QoS Management</strong>: It defines Quality of Service (QoS) rules, such as bitrates and priority levels, to meet the specific requirements of different network slices (e.g., eMBB, URLLC).</li>
+          <li><strong>Policy Decision</strong>: It authorizes or rejects service requests based on the subscriber's data and available network resources.</li>
+          <li><strong>Mobility and Slicing Control</strong>: The PCF manages policies for network slicing, roaming, and mobility management for all control plane functions.</li>
+          <li><strong>Charging Rules</strong>: It dictates how sessions should be billed, supporting both real-time online and traditional offline charging.</li>
+          </ul>
+          <h3 id="3-n6-interface-overview">3. N6 Interface Overview</h3>
+          <p>The N6 interface is the reference point between the User Plane Function (UPF) and the Data Network (DN). It is the final exit point for user traffic leaving the mobile core and the entry point for data returning from the internet or other services.</p>
+          <ul>
+          <li><strong>Primary Function</strong>: Provides connectivity between the UPF and external or internal networks, such as the public Internet, private enterprise clouds, or IP Multimedia Subsystems (IMS).</li>
+          <li><strong>Encapsulation</strong>: At this interface, the UPF performs GTP-U decapsulation for uplink traffic (removing the 5G-specific headers) and forwards plain IP packets to the Data Network.</li>
+          </ul>
+          <h3 id="4-connected-data-networks-dnns">4. Connected Data Networks (DNNs)</h3>
+          <p>Data networks are identified by a Data Network Name (DNN), which tells the 5G Core which specific external network a user is attempting to access. Common DNNs include:</p>
+          <table>
+          <thead>
+          <tr>
+          <th>DNN</th>
+          <th>Purpose</th>
+          </tr>
+          </thead>
+          <tbody><tr>
+          <td>internet</td>
+          <td>Standard public internet access for browsing and general apps.</td>
+          </tr>
+          <tr>
+          <td>ims</td>
+          <td>IP Multimedia Subsystem for voice (VoNR) and carrier messaging.</td>
+          </tr>
+          <tr>
+          <td>enterprise</td>
+          <td>Private networks for corporate employees or internal industrial systems.</td>
+          </tr>
+          <tr>
+          <td>iot</td>
+          <td>Dedicated networks for massive machine-type communications and sensors.</td>
+          </tr>
+          </tbody></table>
+          <h3 id="5-technical-interface-parameters">5. Technical Interface Parameters</h3>
+          <p>The N6 interface relies on standard IP routing and network-level protocols rather than 3GPP-specific encapsulation.</p>
+          <ul>
+          <li><strong>Protocol Stack</strong>: Plain IPv4, IPv6, or dual-stack IPv4v6 packets.</li>
+          <li><strong>Routing</strong>: The UPF acts as an IP router, often using static routes or dynamic routing protocols (like BGP) to exchange information with external routers behind the N6 interface.</li>
+          <li><strong>NAT (Network Address Translation)</strong>:<ul>
+          <li><strong>Function</strong>: Maps private UE IP addresses (e.g., from the 10.45.0.0/16 pool) to public global IP addresses.</li>
+          <li><strong>Types</strong>: Supports various configurations including NAT44, NAT64 (for IPv6-to-IPv4 transition), and NAPT (port translation).</li>
+          </ul>
+          </li>
+          <li><strong>Packet Inspection</strong>: The UPF performs Deep Packet Inspection (DPI) at the N6 border to enforce content policies and detect malware.</li>
+          </ul>
+          <h3 id="working-principle-of-n6">Working Principle of N6</h3>
+          <ol>
+          <li>UE generates data (e.g., browsing, video, IoT traffic).</li>
+          <li>Data reaches the gNB using N3.</li>
+          <li>gNB forwards traffic to UPF via N3.</li>
+          <li>UPF applies:<ul>
+          <li>Packet routing and forwarding</li>
+          <li>QoS rules (QoS Flow → PDR rules)</li>
+          <li>Traffic filtering</li>
+          <li>Charging rules</li>
+          <li>UL CL (uplink classifier)</li>
+          </ul>
+          </li>
+          <li>UPF forwards user traffic to DN via N6.</li>
+          </ol>
+          <p><strong>Downlink (reverse direction):</strong>
+          External network → UPF → gNB → UE.</p>
+          <img src="images/fig13.svg" alt="N6 Working Principle - User Data Routing" width="40%">
+          
+          
+          
+          </details>
+          
+          <details>
+          <summary><strong>Complete 5G Signalling Summary</strong></summary>
+          
+          <h2 id="complete-5g-signalling-summary">Complete 5G Signalling Summary</h2>
+          <p>To summarize, here is a consolidated view of the primary IDs and messages discussed across all sections:</p>
+          <table>
+          <thead>
+          <tr>
+          <th>Entity</th>
+          <th>Identity Used</th>
+          <th>Key Message Sent/Received</th>
+          </tr>
+          </thead>
+          <tbody><tr>
+          <td>User (UE)</td>
+          <td>IMSI, SUCI, 5G-GUTI</td>
+          <td>Registration Request / Accept</td>
+          </tr>
+          <tr>
+          <td>Base Station (gNB)</td>
+          <td>Global gNB ID</td>
+          <td>NG Setup Request</td>
+          </tr>
+          <tr>
+          <td>Core (AMF)</td>
+          <td>GUAMI, AMF Name</td>
+          <td>NG Setup Response</td>
+          </tr>
+          <tr>
+          <td>Interface (NG)</td>
+          <td>TAC, PLMN</td>
+          <td>RAN Config Update</td>
+          </tr>
+          </tbody></table>
+          <h2 id="key-network-functions-summary">Key Network Functions Summary</h2>
+          <h3 id="1-user-equipment-ue-identity--registration">1. User Equipment (UE) Identity &amp; Registration</h3>
+          <p>The UE manages permanent and temporary identities to maintain security and privacy within the 5G network.</p>
+          <p><strong>UE Identity &amp; Credentials:</strong></p>
+          <ul>
+          <li><strong>IMSI (Permanent Identity)</strong>: 404-45-1234567890. This is the International Mobile Subscriber Identity stored securely in the SIM card.</li>
+          <li><strong>Security Key ($K_i$)</strong>: A 128-bit secret key used for authentication that never leaves the SIM.</li>
+          <li><strong>Security Capabilities</strong>: Supports encryption and integrity algorithms 128-EEA1/2/3 and 128-EIA1/2/3.</li>
+          <li><strong>Device Type</strong>: 5G Smartphone capable of eMBB (Enhanced Mobile Broadband).</li>
+          </ul>
+          <p><strong>Registration Procedure:</strong></p>
+          <ul>
+          <li><strong>Registration Request (UE → AMF)</strong>:<ul>
+          <li>Type: Initial Registration.</li>
+          <li>SUCI (Concealed IMSI): Privacy-protected subscriber identity.</li>
+          <li>Requested Service: NSSAI: SST=1 (eMBB).</li>
+          </ul>
+          </li>
+          <li><strong>Registration Accept (AMF → UE)</strong>:<ul>
+          <li>5G-GUTI: Temporary identity for privacy (MCC=404, MNC=45, AMF-ID=01, TMSI=12345).</li>
+          <li>Tracking Area: Assigned TAC=1.</li>
+          <li>Update Timer: Periodic registration update interval set to 54 minutes.</li>
+          </ul>
+          </li>
+          </ul>
+          <h3 id="2-radio-access-network-gnb--amf-setup">2. Radio Access Network (gNB) &amp; AMF Setup</h3>
+          <p>Before handling traffic, the gNodeB (gNB) must establish a relationship with the Access and Mobility Management Function (AMF).</p>
+          <p><strong>gNB Identity &amp; Capabilities:</strong></p>
+          <ul>
+          <li><strong>Global gNB ID</strong>: gNB-001 (0x000001).</li>
+          <li><strong>Radio Capabilities</strong>: 5G NR, FR1 (sub-6 GHz).</li>
+          <li><strong>NG Setup Request</strong>: The gNB shares its Global RAN Node ID and Supported TA List (TAC=1, PLMN=999-70) with the AMF.</li>
+          </ul>
+          <p><strong>AMF Response to gNB:</strong></p>
+          <ul>
+          <li><strong>Served GUAMI</strong>: Provides the Globally Unique AMF Identifier (PLMN=999-70, AMF-Region=01).</li>
+          <li><strong>Relative AMF Capacity</strong>: 255 (Maximum load balancing indicator).</li>
+          <li><strong>PLMN Support List</strong>: Confirms support for 999-70 with SST=1 (eMBB).</li>
+          </ul>
+          <h3 id="3-session-management--user-plane-flow">3. Session Management &amp; User Plane Flow</h3>
+          <p>Once registered, the Session Management Function (SMF) controls the data path through the User Plane Function (UPF).</p>
+          <p><strong>SMF (Session Controller):</strong></p>
+          <ul>
+          <li><strong>PDU Session Info</strong>: Session ID 1, DNN "internet".</li>
+          <li><strong>QoS Profile</strong>: 5QI: 9 (Non-GBR), Priority 8.</li>
+          <li><strong>UE IP Pool</strong>: 10.45.0.0/16.</li>
+          <li><strong>PFCP Rules (SMF → UPF)</strong>:<ul>
+          <li>PDR (Packet Detection): Matches packets via UE IP 10.45.0.2 and N3 TEID.</li>
+          <li>FAR (Forwarding): Actions include forwarding to N6 and applying QoS.</li>
+          <li>QER (QoS Enforcement): Max Bitrate 100 Mbps.</li>
+          <li>URR (Usage Reporting): Reports every 1 GB or 1 hour.</li>
+          </ul>
+          </li>
+          </ul>
+          <p><strong>UPF (Packet Processing Worker):</strong></p>
+          <ul>
+          <li><strong>Packet Classification</strong>: Identifies sessions using PDR rules.</li>
+          <li><strong>Traffic Forwarding</strong>: Routes packets to N3, N6, or N9 interfaces.</li>
+          <li><strong>QoS Enforcement</strong>: Applies rate limiting and prioritization.</li>
+          <li><strong>Usage Monitoring</strong>: Counts bytes and reports to SMF for billing.</li>
+          </ul>
+          <h3 id="4-data-flow--interface-parameters">4. Data Flow &amp; Interface Parameters</h3>
+          <p><strong>Uplink Data Flow (UE → Internet):</strong></p>
+          <ol>
+          <li>UE Sends Data: Via Radio Bearer to gNB.</li>
+          <li>gNB Encapsulation: Wraps data into GTP-U packets (IP - GTP-U - UDP - IP).</li>
+          <li>Tunnel Forwarding (N3): Uses TEID: 0x5678 and UDP Port: 2152.</li>
+          <li>UPF Processing: Performs decapsulation and QoS enforcement.</li>
+          <li>Forward to Internet (N6): Sends plain IP packets to the data network.</li>
+          </ol>
+          <p><strong>N3 Interface Technicals:</strong></p>
+          <ul>
+          <li><strong>Protocol</strong>: GTP-U (GPRS Tunneling Protocol - User Plane).</li>
+          <li><strong>TEID</strong>: 32-bit unique identifier to route packets to the correct PDU session.</li>
+          <li><strong>QFI (QoS Flow Identifier)</strong>: 6-bit value (0-63) indicating traffic priority.</li>
+          </ul>
+          <p><strong>N4 Interface Technicals:</strong></p>
+          <ul>
+          <li><strong>Protocol</strong>: PFCP (Packet Forwarding Control Protocol).</li>
+          <li><strong>Transport</strong>: UDP Port 8805 (Default port for PFCP communication).</li>
+          <li><strong>Message Types</strong>: Session: Establish/Modify/Delete (PFCP manages entire session lifecycle).</li>
+          <li><strong>Session Context</strong>: F-SEID (Fully Qualified Session ID) (Unique identifier: IP + Session ID).</li>
+          </ul>
+          </details>
+          
+          
+          </div>
+          <div class="bug-report-mobile">
+              <bug-report id="bug-report" title="[BUG REPORT] Demonstrate Interface Management Procedures" page-type="text" context-info="{&quot;organisation&quot;:&quot;Virtual Labs&quot;,&quot;developer_institute&quot;:&quot;DLBG&quot;,&quot;expname&quot;:&quot;Demonstrate Interface Management Procedures&quot;,&quot;labname&quot;:&quot;Virtual Lab&quot;,&quot;phase&quot;:&quot;Testing&quot;}" checkbox-json="{&quot;text&quot;:[&quot;Insufficient Content&quot;],&quot;video&quot;:[&quot;Insufficient Content&quot;],&quot;assesment&quot;:[&quot;Incorrect Options&quot;,&quot;Incorrect Answer&quot;,&quot;Incorrect Question&quot;],&quot;assessment&quot;:[&quot;Incorrect Options&quot;,&quot;Incorrect Answer&quot;,&quot;Incorrect Question&quot;],&quot;simulation&quot;:[&quot;Simulation Not Working&quot;,&quot;Incorrect Results/Observations&quot;,&quot;Insufficient/Incorrect Instructions&quot;],&quot;DEFAULT&quot;:[&quot;Page Not Loading&quot;,&quot;Content Not Visible&quot;,&quot;Incorrect Content&quot;]}" position="override" button_style="
+                          position: fixed; 
+                          bottom: 20px;
+                          right: 20px;
+                          z-index: 1;
+                          font-size: 0;
+                          padding: 25px;
+                          border-radius: 50%;
+                          border: none;
+                          background-color: #0fc0ff;
+                          background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAC0AAAAtCAYAAAA6GuKaAAAAAXNSR0IArs4c6QAABiFJREFUaEPFmVuMFEUUhv/TM7uwoBGVyG22u7ZnYGG5REETo8RA1BhFIka8ABFf0PCgDxhFEpCLqAlE1OiTiSj4gFGjD0QBETQaEqPRICALSHdPV+8YQQJBA+wuO1PHdMNcWGame2ZWqMfuc/nq1KlT1acJAzhShjFVAUsYdL8G3HjRdA7gHwna5uahLR91dnaeb9QlNWrA1+/o6GjuPnv2DQ30LICKNhk4qLF63PK8g434rejATJhjKa6m9WazOzOZzKlKTmYAcc8QnxEwJwqIAk5STpvpZJwD1eTHjR43PKflhtkZ2+ovVxbaTJiTSVM/gzCYGIebu4fc1nmi80w5J0nDWA7Qq1GACzLMR3pV7pZMJtNdTs/UzelE6msAQ0BYb7vuS6VyZaGTungGhPfygkRYZ7nusv4OEonEDc2xuEfA0JqgATBhieO6b/fXE0IM1pgPECgVvGP+x/bksFDo1JhUguPZI8FMAz0+zzFtSjqd9p8VRlJvew7E79QKHNgEDjrSndRfNyXEGmasLK4KttmeOysU2hdIGm0vA/xKUZh32VLeW6psCrGMmO+uB5qIeEh398P7jx8/m9cP9pGm9vtpmQ9WjHDzUSkPRYJOpVKDuK9vP0Dj8goMfsSR8ot6IKPoJI22XUBpEHitLWUx6heNVC15pmHMItCXBYeKPUZsLlFWVYNQsVg2nU7v82XaW1tHZ4lGhUEztOlEKOQ4A/b5XHZyuc0aWqdNIbYSY3aY00veM/9te3KE/ywlxGpmrKpJP8h5ftCR8qtyeqHQY3XdVNAO5vMskvMGoRWrT9Ke90QlX6HQF6N16Y4OI28Ampn/jatcxx+ZzJ8NQScSiZZBWvzJwAhhJoCKUQhkaoVmnAZoJcC9WowOH02nf6gWl0iRLpQk3ZwOym0n0DVVg10rNAAF7Ig1xedYltUbtpCRoZO6Po1J+z7S6VcHdLCIClusLnfBgED7NVv1ZX8lYGKYwbrSo8Qogxc4Um5pOD1Mo20DgZ+PBFxPTpcYJuBUljDRdd1jdW/EcYnEmKwWSxNR05WADnwo2mB3pV+oGzopxDowlkYGbjDSF9ILpwd1D2mtdB2uuhEv3D+yfwG4/opCB5WVnrZk+v1yfqtCJ3X9TpC2pybggYj0BYcf29KdXwe0WArCuqsCzSxtT4qq0GareStIXXo3JjxGwNSrAh0crMFFq3jYEJ9wpPygkB6mYZwg0PCaAcsp1Hm4RPFtS5eK0LpxvqayVs3DlYIO7r0K8xUhlufRGKNrupLmFQcImsEZBhWaOxq4y5ZyRvXqIcSnYDwaZdkukRkgaGqK32RZ1on+/qt/buliFRFWXxXokonXBJ3S22Yz8darAc2sdjqed1/NddpvnMQUHwPRdTWBD0R6EBbbrltoGJX6D71PJ3V9E0h76kpCMzirNTWNLpfPPkcodNDXi6m9QLGqhE6gwUgzaKMj04sq+QmF9hVrjnYj0IwejmvtjuN4DUEbhjEqztgLoqCXEToagQavsKV8rZqPSJH2DaSEmMGMXZHSpE5oZnzneK7fL8w1DJ1sTU6CltvEwPj/88OWwRYx77Y9b3HD0KYuvqUL/Y5oo85I542TooesrnTF8yE0PUwh5hGj6tfxZTNpEBqKvUE9QyfW9bnV3t5+bV9P7yECxuTBFGOvRn5v5eJgTLzsUhUFmuGCcLJoBiNL/ZT7bVFYiWrrnTSM9QC9WBSmzy2ZnluqI4QYGQcWM/O8Qi+7EjSjB4xtTNqHjuf4HVHO20q1tiZZi/k/j1r8Z8zcRxyfanfZv/dnrJgeYw1jQo6xr+SOfY5j2oRq9VMIIWLA7QSMslz3raDGG8ZMJhoPpR1QmvrFdd2eSoFKGm0rAF5bfM97bCnvKp2c/64idFLXd4C0woWFwMstKV+PthPrk/L/R/aeOfcbCBOKq8uLLCk3llos/0tON+8hUt+U5O1Rao5PjtIcrA+3qOWvDEC78wFlIO1I1wyFTuptC0G8uWSZHrCl3N4oUFT9NiE2a4yFQW6DLUfKsaHQU0aMGHq2pWULM98Bpncdzy35yxXVdf1yftXK9vS8CUVjtBjWHHXdn0qt/Qf/x1JblU8EiAAAAABJRU5ErkJggg==);
+                          background-repeat: no-repeat;
+                          background-position: center;
+                          background-size: 30px;
+                          filter: invert(1);">
+              </bug-report>
+          </div>        </div>
+      </div>
+      <footer class="text-light pt-2 vlabs-footer d-flex flex-column">
+        <div class="row px-5 mx-0">
+          <div class="col d-flex flex-column">
+            <span class="font-weight-bold vlabs-footer-sect-name pb-2 mb-3">Community Links</span>
+            <a href="https://www.sakshat.ac.in/" class="text-light">Sakshat Portal</a>
+            <a href="http://outreach.vlabs.ac.in/" class="text-light">Outreach Portal</a>
+            <a href="https://vlab.co.in/faq" class="text-light">FAQ: Virtual Labs</a>
+          </div>
+          <div class="col d-flex flex-column">
+            <span class="font-weight-bold vlabs-footer-sect-name pb-2 mb-3">Contact Us</span>
+            <span> Phone: General Information: 011-26582050 </span>
+            <span> Email: support@vlabs.ac.in </span>
+          </div>
+          <div class="col d-flex flex-column">
+            <span class="font-weight-bold vlabs-footer-sect-name pb-2 mb-3">Follow Us</span>
+            <div class="social-links">
+      	<a class="p-2 mt-1 mr-2 d-inline-flex justify-content-center align-items-center" style="background: #55acee;" href="https://twitter.com/TheVirtualLabs">
+      	  <i class="fab fa-twitter"></i>
+      	</a>
+      	<a class="p-2 mt-1 mr-2 d-inline-flex justify-content-center align-items-center" style="background: #3b5998;" href="https://www.facebook.com/Virtual-Labs-IIT-Delhi-301510159983871/">
+      	  <i class="fab fa-facebook"></i>
+      	</a>
+      	<a class="p-2 mt-1 mr-2 d-inline-flex justify-content-center align-items-center" style="background: #e52d27;" href="https://www.youtube.com/watch?v=asxRaOgk6a0">
+      	  <i class="fab fa-youtube"></i>
+      	</a>
+      	<a class="p-2 mt-1 mr-2 d-inline-flex justify-content-center align-items-center" style="background: #2867B2;" href="https://in.linkedin.com/in/virtual-labs-008ba9136">
+      	  <i class="fab fa-linkedin"></i>
+      	</a>
+            </div>
+          </div>
+        </div>
+        <div class="m-0 py-2 text-center" style="font-family: &quot;Open Sans&quot;, sans-serif; background: #212121;">
+          <a class="text-primary font-weight-bold" href="https://www.gnu.org/licenses/agpl-3.0.en.html"> AGPL 3.0 </a>
+          &nbsp;&amp;&nbsp;
+          <a class="text-primary font-weight-bold" href="https://creativecommons.org/licenses/by-nc-sa/4.0/"> Creative Commons (CC BY-NC-SA 4.0) </a>
+        </div>
+      </footer>
+    <script src="./assets/js/toggleSidebar.js"></script>
+    <script src="./assets/js/event-handler.js"></script>
+
+
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register("sw.js");
+        });
+      }
+    </script>
+  
+
+<script type="module" src="https://cdn.vlabs.ac.in/bug-report/vlabs-bug-report.js"></script><script type="module" src="/exp-interface-management-dei/plugins/svc-rating/index.js"></script><script type="module" src="/exp-interface-management-dei/plugins/svc-rating/config.js"></script><script type="module" src="https://apis.google.com/js/api.js"></script></body></html>

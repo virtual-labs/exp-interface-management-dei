@@ -1,0 +1,260 @@
+{
+  "version": 2.0,
+  "questions": [
+    {
+      "question": "Which interface connects the User Equipment (UE) to the Access and Mobility Management Function (AMF)?",
+      "answers": {
+        "a": "N2",
+        "b": "N3",
+        "c": "N1",
+        "d": "N4"
+      },
+      "explanations": {
+        "a": "Incorrect. N2 connects the gNB to the AMF.",
+        "b": "Incorrect. N3 carries user-plane data between gNB and UPF.",
+        "c": "Correct. N1 is the NAS signaling interface between UE and AMF.",
+        "d": "Incorrect. N4 connects SMF and UPF."
+      },
+      "correctAnswer": "c",
+      "difficulty": "beginner"
+    },
+    {
+      "question": "What protocol is used on the N2 interface between gNB and AMF?",
+      "answers": {
+        "a": "GTP-U",
+        "b": "PFCP",
+        "c": "NGAP",
+        "d": "NAS"
+      },
+      "explanations": {
+        "a": "Incorrect. GTP-U is used for user-plane data.",
+        "b": "Incorrect. PFCP is used on the N4 interface.",
+        "c": "Correct. NGAP is used for control signaling between gNB and AMF.",
+        "d": "Incorrect. NAS is exchanged end-to-end between UE and AMF."
+      },
+      "correctAnswer": "c",
+      "difficulty": "beginner"
+    },
+    {
+      "question": "The N3 interface primarily carries:",
+      "answers": {
+        "a": "Control signaling messages",
+        "b": "User data traffic",
+        "c": "Policy rules",
+        "d": "Authentication information"
+      },
+      "explanations": {
+        "a": "Incorrect. Control signaling uses N2 and NAS.",
+        "b": "Correct. N3 carries user-plane traffic between gNB and UPF.",
+        "c": "Incorrect. Policy rules are handled by PCF.",
+        "d": "Incorrect. Authentication is handled via AUSF and AMF."
+      },
+      "correctAnswer": "b",
+      "difficulty": "beginner"
+    },
+    {
+      "question": "Which protocol runs over the N3 interface?",
+      "answers": {
+        "a": "PFCP over UDP",
+        "b": "NGAP over SCTP",
+        "c": "GTP-U over UDP",
+        "d": "HTTP/2 over TCP"
+      },
+      "explanations": {
+        "a": "Incorrect. PFCP runs on N4.",
+        "b": "Incorrect. NGAP runs on N2.",
+        "c": "Correct. GTP-U over UDP is used for user-plane tunneling on N3.",
+        "d": "Incorrect. HTTP/2 is used for service-based interfaces."
+      },
+      "correctAnswer": "c",
+      "difficulty": "beginner"
+    },
+    {
+      "question": "What is the primary purpose of the N4 interface?",
+      "answers": {
+        "a": "User authentication",
+        "b": "SMF controlling UPF forwarding rules",
+        "c": "Radio resource management",
+        "d": "External data network connection"
+      },
+      "explanations": {
+        "a": "Incorrect. Authentication is handled by AUSF.",
+        "b": "Correct. N4 allows SMF to control UPF via PFCP.",
+        "c": "Incorrect. Radio resource management is handled by gNB.",
+        "d": "Incorrect. External data network uses N6."
+      },
+      "correctAnswer": "b",
+      "difficulty": "beginner"
+    },
+    {
+      "question": "The N5 interface connects which two network functions?",
+      "answers": {
+        "a": "SMF and UPF",
+        "b": "AMF and UDM",
+        "c": "PCF and AF",
+        "d": "gNB and AMF"
+      },
+      "explanations": {
+        "a": "Incorrect. SMF and UPF connect via N4.",
+        "b": "Incorrect. AMF and UDM connect via N8.",
+        "c": "Correct. N5 connects the PCF and the Application Function.",
+        "d": "Incorrect. gNB and AMF connect via N2."
+      },
+      "correctAnswer": "c",
+      "difficulty": "beginner"
+    },
+    {
+      "question": "Which transport protocol does NGAP use on the N2 interface?",
+      "answers": {
+        "a": "UDP",
+        "b": "TCP",
+        "c": "SCTP",
+        "d": "HTTP"
+      },
+      "explanations": {
+        "a": "Incorrect. UDP is used for GTP-U.",
+        "b": "Incorrect. TCP is not used for NGAP.",
+        "c": "Correct. NGAP uses SCTP for reliable signaling.",
+        "d": "Incorrect. HTTP is used for service-based interfaces."
+      },
+      "correctAnswer": "c",
+      "difficulty": "beginner"
+    },
+    {
+      "question": "What does TEID stand for in the context of the N3 interface?",
+      "answers": {
+        "a": "Transmission Endpoint Identifier",
+        "b": "Tunnel Endpoint Identifier",
+        "c": "Transfer Encryption ID",
+        "d": "Traffic Endpoint Indicator"
+      },
+      "explanations": {
+        "a": "Incorrect. This is not a standard 3GPP term.",
+        "b": "Correct. TEID identifies GTP-U tunnels.",
+        "c": "Incorrect. Encryption is handled separately.",
+        "d": "Incorrect. This term is not defined in 5G."
+      },
+      "correctAnswer": "b",
+      "difficulty": "beginner"
+    },
+    {
+      "question": "NAS messages on the N1 interface are:",
+      "answers": {
+        "a": "Read and processed by the gNB",
+        "b": "Transparently relayed by the gNB",
+        "c": "Modified by the gNB before forwarding",
+        "d": "Only used for data sessions"
+      },
+      "explanations": {
+        "a": "Incorrect. gNB does not interpret NAS messages.",
+        "b": "Correct. NAS messages are transparently relayed by the gNB.",
+        "c": "Incorrect. NAS messages are integrity protected and encrypted.",
+        "d": "Incorrect. NAS is also used for mobility and registration."
+      },
+      "correctAnswer": "b",
+      "difficulty": "beginner"
+    },
+    {
+      "question": "Which interface connects the UPF to the Data Network (Internet)?",
+      "answers": {
+        "a": "N3",
+        "b": "N4",
+        "c": "N5",
+        "d": "N6"
+      },
+      "explanations": {
+        "a": "Incorrect. N3 connects gNB and UPF.",
+        "b": "Incorrect. N4 connects SMF and UPF.",
+        "c": "Incorrect. N5 connects PCF and AF.",
+        "d": "Correct. N6 connects UPF to the external data network."
+      },
+      "correctAnswer": "d",
+      "difficulty": "beginner"
+    },
+    {
+      "question": "The PFCP protocol on the N4 interface uses which port number?",
+      "answers": {
+        "a": "8080",
+        "b": "8805",
+        "c": "2152",
+        "d": "443"
+      },
+      "explanations": {
+        "a": "Incorrect. 8080 is commonly used for HTTP services.",
+        "b": "Correct. PFCP uses UDP port 8805.",
+        "c": "Incorrect. 2152 is used for GTP-U.",
+        "d": "Incorrect. 443 is used for HTTPS."
+      },
+      "correctAnswer": "b",
+      "difficulty": "beginner"
+    },
+    {
+      "question": "What type of API is used on the N5 interface?",
+      "answers": {
+        "a": "SOAP-based",
+        "b": "HTTP/2-based RESTful APIs",
+        "c": "FTP-based",
+        "d": "SNMP-based"
+      },
+      "explanations": {
+        "a": "Incorrect. SOAP is not used in 5G SBI.",
+        "b": "Correct. N5 uses HTTP/2-based RESTful APIs.",
+        "c": "Incorrect. FTP is not used for control signaling.",
+        "d": "Incorrect. SNMP is used for network management."
+      },
+      "correctAnswer": "b",
+      "difficulty": "beginner"
+    },
+    {
+      "question": "During a handover, which interface is used to update the UPF's data forwarding path?",
+      "answers": {
+        "a": "N2",
+        "b": "N3",
+        "c": "N4",
+        "d": "N6"
+      },
+      "explanations": {
+        "a": "Incorrect. N2 is used for access signaling.",
+        "b": "Incorrect. N3 carries user-plane traffic.",
+        "c": "Correct. SMF updates UPF via PFCP on N4.",
+        "d": "Incorrect. N6 connects to external networks."
+      },
+      "correctAnswer": "c",
+      "difficulty": "beginner"
+    },
+    {
+      "question": "What does CUPS stand for in the context of the N4 interface?",
+      "answers": {
+        "a": "Core User Plane System",
+        "b": "Control and User Plane Separation",
+        "c": "Centralized UPF Processing System",
+        "d": "Connected User Plane Services"
+      },
+      "explanations": {
+        "a": "Incorrect. This is not the standard term.",
+        "b": "Correct. CUPS stands for Control and User Plane Separation.",
+        "c": "Incorrect. UPF processing can be distributed.",
+        "d": "Incorrect. This is not a 3GPP term."
+      },
+      "correctAnswer": "b",
+      "difficulty": "beginner"
+    },
+    {
+      "question": "The N8 interface connects AMF to which network function?",
+      "answers": {
+        "a": "SMF",
+        "b": "UDM",
+        "c": "PCF",
+        "d": "UPF"
+      },
+      "explanations": {
+        "a": "Incorrect. AMF and SMF communicate via SBI.",
+        "b": "Correct. N8 connects AMF to UDM.",
+        "c": "Incorrect. PCF connects via N7/N15.",
+        "d": "Incorrect. UPF does not connect to AMF directly."
+      },
+      "correctAnswer": "b",
+      "difficulty": "beginner"
+    }
+  ]
+}
