@@ -1,4 +1,4 @@
-## Introduction to 5G Networks
+## 1. Introduction to 5G Networks
 
 Consider a 5G network as a big company where various departments must communicate with one another in order to complete tasks. In 5G, various parts known as "network functions" that perform particular tasks must communicate with one another via standardized connections. These connections, which go by the names N1, N2, N3, and so forth, are referred to as interfaces.
 
@@ -17,7 +17,9 @@ Now let's see how these components talk to each other.
 
 <img src="images/fig1.svg" alt="5G Network Components Overview" width="60%">
 
-## 5G Interfaces Overview
+*Fig: 5G Network Components Overview*
+
+### 1.1 5G Interfaces Overview
 
 | Interface | Between | Purpose | Plane | Key Protocols |
 |-----------|---------|---------|-------|---------------|
@@ -35,10 +37,7 @@ Now let's see how these components talk to each other.
 | N12 | AMF ↔ AUSF | Authentication signaling. | Control | REST/HTTP2 |
 | N13 | AMF ↔ NRF | Discovery of network functions. | Control | REST/HTTP2 |
 
-<details>
-<summary><strong>What is the N1 Interface?</strong></summary>
-
-## What is the N1 Interface?
+## 2. What is the N1 Interface?
 
 The N1 interface is a logical control-plane interface between the User Equipment (UE) — such as a smartphone, modem, or IoT device — and the Access and Mobility Management Function (AMF) in the 5G Core (5GC) network. It's not a direct physical connection. Your phone actually sends messages through the gNB, which acts like a messenger delivering letters between you and the AMF.
 
@@ -46,31 +45,40 @@ This interface is used to exchange Non-Access Stratum (NAS) messages, which carr
 
 <img src="images/fig2.svg" alt="N1 Interface - NAS Message Flow" width="50%">
 
-### Interface Flow:
+*Fig: N1 Interface - NAS Message Flow*
 
-1. **Step 1**: UE creates NAS messages (Registration Request)
-2. **Step 2**: Sends to gNB via RRC (Radio Resource Control)
-3. **Step 3**: gNB encapsulates NAS in NGAP and forwards to AMF via N2
-4. **Step 4**: AMF processes NAS message and responds back
+### 2.1 Interface Flow:
 
-### Initial Connection Setup
+- **Step 1**: UE creates NAS messages (Registration Request)
+- **Step 2**: Sends to gNB via RRC (Radio Resource Control)
+- **Step 3**: gNB encapsulates NAS in NGAP and forwards to AMF via N2
+- **Step 4**: AMF processes NAS message and responds back
 
-1. The UE powers on and searches for a 5G cell.
-2. It establishes a Radio Resource Control (RRC) connection with the gNB.
-3. The UE then sends a NAS Registration Request message, which contains information like IMSI (International Mobile Subscriber Identity) and security parameters.
-4. This NAS message is encapsulated inside an RRC message and sent to the gNB.
-5. The gNB passes it unchanged to the AMF via the N2 interface using Next Generation Application Protocol (NGAP).
+### 2.2 Initial Connection Setup
 
-### NAS Message Handling
+<ol type="a">
+  <li>The UE powers on and searches for a 5G cell.</li>
+  <li>It establishes a Radio Resource Control (RRC) connection with the gNB.</li>
+  <li>The UE then sends a NAS Registration Request message, which contains information like IMSI (International Mobile Subscriber Identity) and security parameters.</li>
+  <li>This NAS message is encapsulated inside an RRC message and sent to the gNB.</li>
+  <li>The gNB passes it unchanged to the AMF via the N2 interface using Next Generation Application Protocol (NGAP).</li>
+</ol>
 
-1. The AMF decapsulates and processes the NAS message.
-2. Depending on the message type, the AMF may:
-   - Authenticate the user (with AUSF/UDM)
-   - Register the UE into the network
-   - Allocate a temporary identifier (like 5G Globally Unique Temporary Identity)
-   - Coordinate with SMF to establish a data session
+### 2.3 NAS Message Handling
 
-### Main NAS Message Types Carried on N1
+<ol type="a">
+  <li>The AMF decapsulates and processes the NAS message.</li>
+  <li>Depending on the message type, the AMF may:
+    <ul>
+      <li>Authenticate the user (with AUSF/UDM)</li>
+      <li>Register the UE into the network</li>
+      <li>Allocate a temporary identifier (like 5G Globally Unique Temporary Identity)</li>
+      <li>Coordinate with SMF to establish a data session</li>
+    </ul>
+  </li>
+</ol>
+
+### 2.4 Main NAS Message Types Carried on N1
 
 | Category | Message Example | Purpose |
 |----------|-----------------|---------|
@@ -81,32 +89,32 @@ This interface is used to exchange Non-Access Stratum (NAS) messages, which carr
 | Mobility | Service Request / Paging | Reconnect to network |
 | Deregistration | Deregistration Request / Accept | Logout or network detach |
 
-## UE (User Equipment) Device Identity & Credentials
+### 2.5 UE (User Equipment) Device Identity & Credentials
 
 In a 5G network, the User Equipment (UE) maintains specific identities and security credentials to ensure secure access and communication with the 5G Core (5GC).
 
-### 1. IMSI (Permanent Identity)
+**a) IMSI (Permanent Identity)**
 - **Value**: 404-45-1234567890
 - **Description**: The International Mobile Subscriber Identity is the permanent, unique identifier for the user. It is stored securely within the SIM/USIM card.
 
-### 2. Security Key ($K_i$)
+**b) Security Key ($K_i$)**
 - **Value**: **************** (Stored Securely)
 - **Description**: This is a 128-bit secret key used for authentication. For maximum security, this key never leaves the SIM card; it is used locally to generate session keys during the authentication process.
 
-### 3. Security Capabilities
+**c) Security Capabilities**
 - **Algorithms**: 128-EEA1/2/3, 128-EIA1/2/3
 - **Description**: These define the Encryption (EEA) and Integrity (EIA) algorithms supported by the device. They ensure that data transmitted between the UE and the network is both private and untampered with.
 
-### 4. Device Type
+**d) Device Type**
 - **Category**: 5G Smartphone
 - **Capability**: Capable of eMBB (Enhanced Mobile Broadband).
 - **Description**: Indicates the hardware's specific functional category, in this case, optimized for high-speed data transfer and high-capacity mobile broadband.
 
-## 5G Registration Signalling
+### 2.6 5G Registration Signalling
 
 The registration procedure allows the UE to authenticate, obtain authorized services, and update the network on its location.
 
-### 1. Registration Request (UE → AMF)
+**a) Registration Request (UE → AMF)**
 
 When the device powers on or moves to a new Tracking Area, it sends this message to the Access and Mobility Management Function (AMF) via the gNodeB.
 
@@ -117,7 +125,7 @@ When the device powers on or moves to a new Tracking Area, it sends this message
 | UE Security Capability | Lists supported encryption and integrity algorithms (e.g., 128-NEA1, 128-NIA1) to establish a secure channel. |
 | Requested NSSAI | SST=1 (eMBB): Indicates the user wants to access the Enhanced Mobile Broadband network slice for high-speed data. |
 
-### 2. Registration Accept (AMF → UE)
+**b) Registration Accept (AMF → UE)**
 
 Once the core network (AUSF/UDM) authenticates the user, the AMF sends this message to confirm the UE is now "Registered".
 
@@ -131,12 +139,7 @@ Once the core network (AUSF/UDM) authenticates the user, the AMF sends this mess
 
 Unlike previous generations (2G/3G/4G), 5G never sends the permanent IMSI in cleartext. It uses the SUCI for the initial handshake and the 5G-GUTI for all subsequent messaging to protect the user from "IMSI Catcher" attacks.
 
-</details>
-
-<details>
-<summary><strong>What is N2 Interface?</strong></summary>
-
-## What is N2 Interface?
+## 3. What is N2 Interface?
 
 The N2 interface connects the gNB to the AMF. This is where the base station and the core network's brain coordinate activities. When your phone sends a registration request over N1, the gNB uses N2 to forward context information to the AMF and receive instructions back. The N2 interface carries information about radio resources, handover procedures (when you move from one base station to another), and paging messages (when the network is trying to reach your device).
 
@@ -144,12 +147,14 @@ The protocol used here is NGAP (Next Generation Application Protocol). It's spec
 
 <img src="images/fig3.svg" alt="N2 Interface - gNB to AMF Control Signaling" width="50%">
 
-### N2 Interface Purpose:
+*Fig: N2 Interface - gNB to AMF Control Signaling*
+
+**a) N2 Interface Purpose:**
 
 - **Control Plane**: NG Setup, UE Context Management, Handover, Paging
 - **Key Functions**: RAN node registration, configuration updates, mobility management
 
-### Features of NGAP (Next Generation Application Protocol)
+**b) Features of NGAP (Next Generation Application Protocol)**
 
 It is used between the gNB and AMF to manage control-plane signaling. Features of NGAP are listed below:
 
@@ -158,22 +163,22 @@ It is used between the gNB and AMF to manage control-plane signaling. Features o
 - Transfers NAS messages between UE and AMF
 - Supports paging, handover, and context release
 
-### NG Setup Procedure
+**c) NG Setup Procedure**
 
-The NG Setup procedure is the first step when a gNB connects to the AMF.
+- The NG Setup procedure is the first step when a gNB connects to the AMF.
 It allows both sides to exchange configuration information and establish an NG interface for communication.
 
-1. **NG Setup Request** - Sent by the gNB to the AMF when it starts up; Contains gNB ID, supported PLMN (public land mobile network), and tracking area information.
-2. **NG Setup Response** - Sent by the AMF if the setup is successful; Includes AMF Name, Served PLMN list, and AMF region info.
-3. **Error Indication (if any)** - Sent when the AMF cannot accept the setup (e.g., mismatched PLMN).
+- **NG Setup Request** - Sent by the gNB to the AMF when it starts up; Contains gNB ID, supported PLMN (public land mobile network), and tracking area information.
+- **NG Setup Response** - Sent by the AMF if the setup is successful; Includes AMF Name, Served PLMN list, and AMF region info.
+- **Error Indication (if any)** - Sent when the AMF cannot accept the setup (e.g., mismatched PLMN).
 
 Once the NG Setup is complete, the gNB and AMF can start handling UE signaling messages.
 
-## gNB (Base Station) Identity & Core Network Setup
+### 3.1 gNB (Base Station) Identity & Core Network Setup
 
 The gNodeB (gNB) serves as the bridge between the User Equipment (UE) and the 5G Core. Before it can handle user traffic, it must identify itself and establish a connection with the Access and Mobility Management Function (AMF).
 
-### 1. What gNB Has (Base Station Identity & Capabilities)
+**a) What gNB Has (Base Station Identity & Capabilities)**
 
 These are the static parameters configured on the base station hardware.
 
@@ -182,7 +187,7 @@ These are the static parameters configured on the base station hardware.
 - **Coverage Area**: TAC=1 (Tracking Area Code) — Defines the geographical area served by this gNB.
 - **Radio Capabilities**: 5G NR, FR1 (sub-6 GHz) — Specifies the supported frequency bands and radio technology used for transmission.
 
-### 2. What gNB Shares with AMF (NG Setup Request)
+**b) What gNB Shares with AMF (NG Setup Request)**
 
 When a gNB powers up, it initiates an NG Setup Request to the AMF to register itself within the core network.
 
@@ -191,11 +196,11 @@ When a gNB powers up, it initiates an NG Setup Request to the AMF to register it
 - **Paging DRX**: v128 (128 radio frames) — The default paging cycle used for power saving, telling the network how often it should check for incoming calls or data for idle devices.
 - **RAN Node Name**: "gNB-Delhi-Central-001" — A human-readable name for easier identification and network management.
 
-### Core Network Response: NG Setup Response
+**c) Core Network Response: NG Setup Response**
 
 Once the gNodeB sends its setup request, the AMF responds to finalize the interface between the Radio Access Network (RAN) and the 5G Core (5GC).
 
-#### What AMF Provides to gNB (NG Setup Response)
+- #### What AMF Provides to gNB (NG Setup Response)
 
 This message confirms that the AMF has accepted the connection and provides the gNodeB with the necessary core network operational parameters.
 
@@ -208,11 +213,11 @@ This message confirms that the AMF has accepted the connection and provides the 
 - **PLMN Support List**: 999-70 with SST=1 (eMBB)
   - Defines the network operators and specific network slices (like Enhanced Mobile Broadband) that this AMF supports for the connected gNodeB.
 
-### RAN Configuration Update Procedure
+- #### RAN Configuration Update Procedure
 
 In a dynamic 5G environment, the Radio Access Network (RAN) may need to update its configuration—for example, when expanding coverage or adding new frequency bands. This process ensures the Core Network remains synchronized with the hardware in the field.
 
-#### 1. RAN Configuration Update Procedure
+#### 3.1.1 RAN Configuration Update Procedure
 
 This procedure allows a gNodeB to update its application-level configuration data without resetting the entire NG interface.
 
@@ -221,7 +226,7 @@ This procedure allows a gNodeB to update its application-level configuration dat
   - AMF → gNB: Configuration Update Acknowledgment.
 - **Status**: Once the AMF acknowledges the request, the RAN Configuration Update is considered complete.
 
-#### 2. Interactive Demo Parameters
+#### 3.1.2 Interactive Demo Parameters
 
 Based on the simulation data, the following parameters are used to trigger and verify a configuration update:
 
@@ -231,12 +236,7 @@ Based on the simulation data, the following parameters are used to trigger and v
 | Extracted PLMN | 404-45: The network operator code (MCC-MNC) derived from the IMSI. |
 | Updated TAC | 1: The new or verified Tracking Area Code assigned during the update. |
 
-</details>
-
-<details>
-<summary><strong>What is N3 Interface?</strong></summary>
-
-## What is N3 Interface?
+## 4. What is N3 Interface?
 
 The N3 interface is where the actual data flows. It connects the gNB to the UPF, and this is the path your YouTube videos, WhatsApp messages, and web browsing data take. When you stream a video, the video data comes from the internet through the UPF, then travels over N3 to your gNB, and finally gets transmitted wirelessly to your phone.
 
@@ -247,6 +247,8 @@ The GTP-U protocol runs over UDP/IP. User Datagram Protocol is used instead of T
 The IP addressing here is straightforward: the gNB has an IP address that can reach the UPF, and vice versa. When a data session is established, the SMF tells both the gNB and UPF which tunnel identifiers to use for that specific user's session.
 
 <img src="images/fig4.svg" alt="N3 Interface - GTP-U Tunneling Between gNB and UPF" width="50%">
+
+*Fig: N3 Interface - GTP-U Tunneling Between gNB and UPF*
 
 ### N3 Interface Purpose:
 
@@ -264,19 +266,25 @@ The N3 interface is responsible for:
 
 This interface becomes active after a PDU session is established by the SMF.
 
-### Working Principle of the N3 Interface
+#### Working Principle of the N3 Interface
 
 Data over N3 travels using GTP-U (General packet radio service Tunneling Protocol - User Plane).
 
-1. UE sends uplink data to gNB.
-2. gNB wraps the data into GTP-U packets.
-3. gNB uses the TEID (Tunnel Endpoint Identifier) to forward the packet to the correct UPF over N3.
-4. UPF removes the GTP-U header and forwards the packet to the Data Network (Internet, IMS, etc.) via N6 interface.
-5. For downlink, the reverse process happens: UPF → gNB → UE
+<ol type="a">
+  <li>UE sends uplink data to gNB.</li>
+  <li>gNB wraps the data into GTP-U packets.</li>
+  <li>gNB uses the TEID (Tunnel Endpoint Identifier) to forward the packet to the correct UPF over N3.</li>
+  <li>UPF removes the GTP-U header and forwards the packet to the Data Network (Internet, IMS, etc.) via N6 interface.</li>
+  <li>For downlink, the reverse process happens: UPF → gNB → UE.</li>
+</ol>
 
 <img src="images/fig5.svg" alt="N3 Uplink and Downlink Data Flow" width="40%">
 
+*Fig: N3 Uplink and Downlink Data Flow*
+
 <img src="images/fig6.svg" alt="N3 Packet Encapsulation Structure" width="40%">
+
+*Fig: N3 Packet Encapsulation Structure*
 
 **Important Point**: The N3 interface carries ONLY user data, NOT control signaling.
 
@@ -285,7 +293,7 @@ Control signaling travels separately:
 - gNB → AMF via N2/NGAP
 - SMF → UPF via N4 (PFCP)
 
-### Role of N3 in Handover
+#### Role of N3 in Handover
 
 During inter-gNB handover:
 
@@ -297,34 +305,36 @@ This ensures that there is no call drop or no session interruption.
 
 <img src="images/fig7.svg" alt="N3 Handover Process Between gNBs" width="40%">
 
-## 5G Uplink Data Flow (UE → Internet)
+*Fig: N3 Handover Process Between gNBs*
+
+### 4.1 5G Uplink Data Flow (UE → Internet)
 
 This process describes how data generated by a user device (UE) travel through the 5G network to reach the external internet.
 
-1. **UE Sends Data**
+a. **UE Sends Data**
    - Action: The user performs an activity such as uploading a photo/video or starting a video call.
    - Mechanism: Data is transmitted over the Radio Bearer to the gNB.
 
-2. **gNB Encapsulation**
+b. **gNB Encapsulation**
    - Action: The base station prepares the data for the core network.
    - Mechanism: It wraps the user data into GTP-U packets.
    - Packet Structure: IP Packet — GTP-U Header — UDP — IP.
 
-3. **Tunnel Forwarding (N3)**
+c. **Tunnel Forwarding (N3)**
    - Action: Data is routed toward the core network's user plane.
    - Mechanism: Uses the Tunnel Endpoint Identifier (TEID) to ensure data reaches the correct UPF (User Plane Function) tunnel.
    - Technical Details: TEID: 0x5678, UDP Port: 2152.
 
-4. **UPF Processing**
+d. **UPF Processing**
    - Action: The core network processes the incoming stream.
    - Mechanism: The UPF removes the GTP-U header and applies network policies.
    - Functions: Decapsulation and QoS (Quality of Service) Enforcement.
 
-5. **Forward to Internet (N6)**
+e. **Forward to Internet (N6)**
    - Action: Data exits the mobile network.
    - Mechanism: Plain IP packets are sent to the external data network via the N6 Interface (Internet/IMS).
 
-### N3 Interface: Technical Parameters
+#### N3 Interface: Technical Parameters
 
 The N3 interface is the critical link between the Radio Access Network (gNB) and the User Plane Function (UPF).
 
@@ -337,12 +347,7 @@ The N3 interface is the critical link between the Radio Access Network (gNB) and
 - **QoS Flow Identifier (QFI)**
   - A 6-bit value (0-63) that indicates the specific priority level of the traffic, ensuring critical data (like voice) is handled faster than background data.
 
-</details>
-
-<details>
-<summary><strong>What is N4 Interface?</strong></summary>
-
-## What is N4 Interface?
+## 5. What is N4 Interface?
 
 The N4 interface connects the SMF to the UPF. Here, SMF is the manager that decides how data sessions should work, while the UPF is the one actually moving data. So N4 is where the SMF gives instructions to the UPF. When the UE wants to start using data, here's what happens: the AMF tells the SMF "this device wants a session," and the SMF uses N4 to program the UPF with rules about how to handle this device's traffic.
 
@@ -351,6 +356,8 @@ The SMF tells the UPF things like: "For this user, forward their traffic to this
 The protocol used is PFCP (Packet Forwarding Control Protocol). It's specifically designed for controlling how the UPF forwards packets. The SMF sends PFCP messages over UDP/IP to the UPF's IP address. These messages contain rules about packet filtering, quality of service, traffic routing, and charging information.
 
 <img src="images/fig8.svg" alt="N4 Interface - SMF Controlling UPF via PFCP" width="50%">
+
+*Fig: N4 Interface - SMF Controlling UPF via PFCP*
 
 ### N4 Interface Purpose:
 
@@ -377,7 +384,7 @@ The protocol used is PFCP (Packet Forwarding Control Protocol). It's specificall
 
 The SMF is responsible for managing PDU (Protocol Data Unit) Sessions, including IP address allocation and enforcing quality standards.
 
-#### 1. Core SMF Data & Configurations
+#### 5.1 Core SMF Data & Configurations
 
 The SMF maintains the following information to manage active user sessions:
 
@@ -392,7 +399,7 @@ The SMF maintains the following information to manage active user sessions:
 - **Policy Rules (from PCF)**:
   - Includes Charging, Rate Limits, and Filters received from the Policy Control Function.
 
-#### 2. PFCP Session Establishment (SMF → UPF)
+#### 5.2 PFCP Session Establishment (SMF → UPF)
 
 To handle actual data traffic, the SMF sends specific rules to the UPF via the Packet Forwarding Control Protocol (PFCP).
 
@@ -403,7 +410,7 @@ To handle actual data traffic, the SMF sends specific rules to the UPF via the P
 | QER (QoS Enforcement Rules) | Max Bitrate: 100 Mbps, GBR: None. Sets speed limits and quality guarantees for the traffic. |
 | URR (Usage Reporting Rules) | Report: Every 1 GB or 1 hour. Specifies when the UPF should send data usage reports to the SMF for billing purposes. |
 
-### N4 Working Principle
+#### N4 Working Principle
 
 N4 follows the Control and User Plane Separation (CUPS) architecture.
 
@@ -417,12 +424,9 @@ N4 follows the Control and User Plane Separation (CUPS) architecture.
 
 <img src="images/fig9.svg" alt="N4 Control and User Plane Separation (CUPS) Architecture" width="40%">
 
-</details>
+*Fig: N4 Control and User Plane Separation (CUPS) Architecture*
 
-<details>
-<summary><strong>What is N5 Interface?</strong></summary>
-
-## What is N5 Interface?
+## 6. What is N5 Interface?
 
 The N5 interface connects the AF (Application Function) to the PCF (Policy Control Function). This interface is used when applications (like video services, gaming apps, enterprise apps, edge applications) need to request specific network policies.
 
@@ -434,12 +438,14 @@ The protocol used here is HTTP/2-based RESTful APIs. The AF and PCF exchange JSO
 
 <img src="images/fig10.svg" alt="N5 Interface - Application Function to Policy Control Function" width="50%">
 
+*Fig: N5 Interface - Application Function to Policy Control Function*
+
 ### N5 Interface Purpose:
 
 - **Policy Control**: AF requests network policies for application-specific QoS
 - **Key Function**: Dynamic policy authorization based on application needs
 
-### 1. Application Function (AF)
+### 6.1 Application Function (AF)
 
 The AF represents external applications requiring specific network behaviors.
 
@@ -448,7 +454,7 @@ The AF represents external applications requiring specific network behaviors.
 - **Session Information**: Contains details regarding the application session, including UE IP, Media Type, and Flow Description.
 - **Real-World Examples**: Netflix, YouTube, and WhatsApp Call using the N5 interface.
 
-### 2. Policy Control Function (PCF)
+### 6.2 Policy Control Function (PCF)
 
 The PCF serves as the Policy Decision Point for the network.
 
@@ -457,7 +463,7 @@ The PCF serves as the Policy Decision Point for the network.
 - **Charging Rules**: Dictates how to bill for the service, supporting both Online and Offline Charging.
 - **Traffic Control**: Manages how traffic is handled through Gating, Redirection, and Bandwidth Limits.
 
-### 3. N5 Interface Technical Parameters
+### 6.3 N5 Interface Technical Parameters
 
 The N5 interface is the reference point defined between the PCF and an AF. In the Service-Based Architecture (SBA), it is represented by the Npcf_PolicyAuthorization service.
 
@@ -469,7 +475,7 @@ The N5 interface is the reference point defined between the PCF and an AF. In th
 | Key Service Operations | Create, Update, Delete, and Notify for policy authorizations |
 | Security | Protected via TLS (Transport Layer Security) for secure control plane communication |
 
-### N5 – Working Principle
+#### N5 – Working Principle
 
 1. UE starts an application (e.g., video streaming).
 2. The application server (AF) detects this and wants higher quality.
@@ -490,12 +496,9 @@ The N5 interface is the reference point defined between the PCF and an AF. In th
 
 <img src="images/fig11.svg" alt="N5 Working Principle - Policy Authorization Flow" width="40%">
 
-</details>
+*Fig: N5 Working Principle - Policy Authorization Flow*
 
-<details>
-<summary><strong>What is N6 Interface?</strong></summary>
-
-## What is N6 Interface?
+## 7. What is N6 Interface?
 
 The N6 interface is the connection between the UPF and the Data Network (internet). This is the exit point from the 5G network. After the data travels through N3 from the gNB to the UPF, it then goes out through N6 to reach the internet.
 
@@ -507,12 +510,14 @@ When UE request a webpage, it's IP packet travels through N3 (wrapped in GTP), g
 
 <img src="images/fig12.svg" alt="N6 Interface - UPF to Data Network Gateway" width="50%">
 
-### N6 Interface Purpose:
+*Fig: N6 Interface - UPF to Data Network Gateway*
+
+#### N6 Interface Purpose:
 
 - **Gateway**: Connects 5G Core Network to external data networks (Internet, IMS Enterprise Networks)
 - **Key Function**: Routes user traffic between 5G network and outside world
 
-### Responsibilities of N6
+#### Responsibilities of N6
 
 N6 enables the delivery of user traffic (data packets) from the 5G network to external networks, and vice-versa.
 
@@ -525,7 +530,7 @@ It handles:
 - Packet filtering
 - QoS enforcement
 
-### 1. Application Function (AF)
+### 7.1 Application Function (AF)
 
 The AF is a control plane network function that provides application-related information to the 5G Core. It can be a trusted application residing within the operator's network or an external third-party application.
 
@@ -537,7 +542,7 @@ The AF is a control plane network function that provides application-related inf
 
 **Application Types**: Typical applications include high-bandwidth video streaming (e.g., Netflix), low-latency gaming, and mission-critical voice services (IMS).
 
-### 2. Policy Control Function (PCF)
+### 7.2 Policy Control Function (PCF)
 
 The PCF acts as the primary rule-maker for the network, serving as a unified policy framework that governs network behavior.
 
@@ -548,14 +553,14 @@ The PCF acts as the primary rule-maker for the network, serving as a unified pol
 - **Mobility and Slicing Control**: The PCF manages policies for network slicing, roaming, and mobility management for all control plane functions.
 - **Charging Rules**: It dictates how sessions should be billed, supporting both real-time online and traditional offline charging.
 
-### 3. N6 Interface Overview
+### 7.3 N6 Interface Overview
 
 The N6 interface is the reference point between the User Plane Function (UPF) and the Data Network (DN). It is the final exit point for user traffic leaving the mobile core and the entry point for data returning from the internet or other services.
 
 - **Primary Function**: Provides connectivity between the UPF and external or internal networks, such as the public Internet, private enterprise clouds, or IP Multimedia Subsystems (IMS).
 - **Encapsulation**: At this interface, the UPF performs GTP-U decapsulation for uplink traffic (removing the 5G-specific headers) and forwards plain IP packets to the Data Network.
 
-### 4. Connected Data Networks (DNNs)
+### 7.4 Connected Data Networks (DNNs)
 
 Data networks are identified by a Data Network Name (DNN), which tells the 5G Core which specific external network a user is attempting to access. Common DNNs include:
 
@@ -566,7 +571,7 @@ Data networks are identified by a Data Network Name (DNN), which tells the 5G Co
 | enterprise | Private networks for corporate employees or internal industrial systems. |
 | iot | Dedicated networks for massive machine-type communications and sensors. |
 
-### 5. Technical Interface Parameters
+### 7.5 Technical Interface Parameters
 
 The N6 interface relies on standard IP routing and network-level protocols rather than 3GPP-specific encapsulation.
 
@@ -577,7 +582,7 @@ The N6 interface relies on standard IP routing and network-level protocols rathe
   - **Types**: Supports various configurations including NAT44, NAT64 (for IPv6-to-IPv4 transition), and NAPT (port translation).
 - **Packet Inspection**: The UPF performs Deep Packet Inspection (DPI) at the N6 border to enforce content policies and detect malware.
 
-### Working Principle of N6
+#### Working Principle of N6
 
 1. UE generates data (e.g., browsing, video, IoT traffic).
 2. Data reaches the gNB using N3.
@@ -595,14 +600,10 @@ External network → UPF → gNB → UE.
 
 <img src="images/fig13.svg" alt="N6 Working Principle - User Data Routing" width="40%">
 
+*Fig: N6 Working Principle - User Data Routing*
 
+## 8. 5G Signalling Summary
 
-</details>
-
-<details>
-<summary><strong>Complete 5G Signalling Summary</strong></summary>
-
-## Complete 5G Signalling Summary
 
 To summarize, here is a consolidated view of the primary IDs and messages discussed across all sections:
 
@@ -613,9 +614,9 @@ To summarize, here is a consolidated view of the primary IDs and messages discus
 | Core (AMF) | GUAMI, AMF Name | NG Setup Response |
 | Interface (NG) | TAC, PLMN | RAN Config Update |
 
-## Key Network Functions Summary
+#### Key Network Functions Summary
 
-### 1. User Equipment (UE) Identity & Registration
+**a) User Equipment (UE) Identity & Registration**
 
 The UE manages permanent and temporary identities to maintain security and privacy within the 5G network.
 
@@ -637,7 +638,7 @@ The UE manages permanent and temporary identities to maintain security and priva
   - Tracking Area: Assigned TAC=1.
   - Update Timer: Periodic registration update interval set to 54 minutes.
 
-### 2. Radio Access Network (gNB) & AMF Setup
+**b) Radio Access Network (gNB) & AMF Setup**
 
 Before handling traffic, the gNodeB (gNB) must establish a relationship with the Access and Mobility Management Function (AMF).
 
@@ -653,7 +654,7 @@ Before handling traffic, the gNodeB (gNB) must establish a relationship with the
 - **Relative AMF Capacity**: 255 (Maximum load balancing indicator).
 - **PLMN Support List**: Confirms support for 999-70 with SST=1 (eMBB).
 
-### 3. Session Management & User Plane Flow
+**c) Session Management & User Plane Flow**
 
 Once registered, the Session Management Function (SMF) controls the data path through the User Plane Function (UPF).
 
@@ -675,7 +676,7 @@ Once registered, the Session Management Function (SMF) controls the data path th
 - **QoS Enforcement**: Applies rate limiting and prioritization.
 - **Usage Monitoring**: Counts bytes and reports to SMF for billing.
 
-### 4. Data Flow & Interface Parameters
+**d) Data Flow & Interface Parameters**
 
 **Uplink Data Flow (UE → Internet):**
 
@@ -698,6 +699,7 @@ Once registered, the Session Management Function (SMF) controls the data path th
 - **Message Types**: Session: Establish/Modify/Delete (PFCP manages entire session lifecycle).
 - **Session Context**: F-SEID (Fully Qualified Session ID) (Unique identifier: IP + Session ID).
 
-</details>
+
+ 
 
  
