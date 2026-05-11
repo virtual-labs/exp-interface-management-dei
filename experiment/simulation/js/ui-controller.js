@@ -152,9 +152,6 @@ class UIController {
         item.title = ni.tooltip;
 
         item.innerHTML = `
-            <div class="ni-icon" style="background: ${ni.color};">
-                ${ni.icon}
-            </div>
             <div class="ni-details">
                 <div class="ni-name">${ni.id}</div>
                 <div class="ni-desc">${ni.description}</div>
@@ -288,25 +285,32 @@ setupDeployAllButton() {
 /**
  * Deploy all network interfaces sequentially with topology from 5g.json and logs from 5g-logs.json
  */
-async deployAllInterfaces() {
+async deployAllInterfaces(options = {}) {
+    const {
+        skipConfirmation = false,
+        suppressCompletionAlert = false
+    } = options;
+
     if (!window.interfaceManager) {
         alert('❌ Interface Manager not available. Please refresh the page.');
-        return;
+        return { successCount: 0, failCount: 0, skipped: true };
     }
 
-    // Confirm before deploying
-    const confirmed = confirm(
-        '🚀 Deploy All Network Interfaces\n\n' +
-        'This will:\n' +
-        '• Clear canvas\n' +
-        '• Create Service Bus' +
-        '• Deploy all 12 interfaces one by one\n' +
-        'Any existing topology will be cleared.\n\n' +
-        'Continue?'
-    );
+    if (!skipConfirmation) {
+        // Confirm before deploying
+        const confirmed = confirm(
+            '🚀 Deploy All Network Interfaces\n\n' +
+            'This will:\n' +
+            '• Clear canvas\n' +
+            '• Create Service Bus' +
+            '• Deploy all 12 interfaces one by one\n' +
+            'Any existing topology will be cleared.\n\n' +
+            'Continue?'
+        );
 
-    if (!confirmed) {
-        return;
+        if (!confirmed) {
+            return { successCount: 0, failCount: 0, skipped: true };
+        }
     }
 
     // Disable button during deployment
@@ -686,15 +690,20 @@ async deployAllInterfaces() {
         }
 
         // Show success message
-        alert(
-            '✅ Deployment Complete!\n\n' +
-            `Successfully deployed: ${successCount} interfaces\n` +
-            `Failed: ${failCount} interfaces\n\n` 
-        );
+        if (!suppressCompletionAlert) {
+            alert(
+                '✅ Deployment Complete!\n\n' +
+                `Successfully deployed: ${successCount} interfaces\n` +
+                `Failed: ${failCount} interfaces\n\n`
+            );
+        }
+
+        return { successCount, failCount, skipped: false };
 
     } catch (error) {
         console.error('❌ Deployment failed:', error);
         alert(`❌ Deployment failed: ${error.message}\n\nCheck console for details.`);
+        return { successCount: 0, failCount: 0, skipped: false, error: error.message };
     } finally {
         // Re-enable button
         if (deployAllBtn) {
@@ -1313,7 +1322,10 @@ if (clickedInterface) {
         }
 
         console.log('✅ Topology cleared');
-        alert('Topology cleared successfully!');
+        alert('Topology cleared successfully! Dashboard will now refresh.');
+
+        // Full refresh ensures complete re-initialization of all managers and UI state
+        window.location.reload();
     }
 
     setupValidateButton() {
@@ -1370,10 +1382,25 @@ if (clickedInterface) {
         const helpBtn = document.getElementById('btn-help');
         if (!helpBtn) return;
 
+        const helpPanel = document.getElementById('help-panel');
+        const helpPanelClose = document.getElementById('help-panel-close');
+
         helpBtn.addEventListener('click', () => {
-            console.log('❓ Help clicked');
-            this.showHelpModal();
+            if (helpPanel) helpPanel.style.display = 'flex';
         });
+
+        if (helpPanelClose) {
+            helpPanelClose.addEventListener('click', () => {
+                helpPanel.style.display = 'none';
+            });
+        }
+
+        // Close on backdrop click
+        if (helpPanel) {
+            helpPanel.addEventListener('click', (e) => {
+                if (e.target === helpPanel) helpPanel.style.display = 'none';
+            });
+        }
     }
 
     setupTerminalButton() {
@@ -1527,14 +1554,11 @@ if (clickedInterface) {
             <button class="btn btn-primary btn-block" id="btn-save-config">Save Changes</button>
             <button class="btn btn-danger btn-block" id="btn-delete-nf">Delete NF</button>
             
-            <div class="troubleshoot-section">
-                <h4>🔧 Troubleshoot</h4>
-                <p class="config-hint">Open Windows-style terminal for network diagnostics</p>
-                
-                <button class="btn btn-terminal btn-block" id="btn-open-terminal">
-                    💻 Open Command Prompt
-                </button>
-            </div>
+           
+            <button class="btn btn-terminal btn-block" id="btn-open-terminal">
+                💻 Open Command Prompt
+            </button>
+           
         `;
 
         const protocolSelect = document.getElementById('config-http-protocol');
@@ -2091,26 +2115,68 @@ if (clickedInterface) {
                         Command Prompt - ${nf.name} (${nf.config.ipAddress})
                     </div>
                     <div class="terminal-controls">
-                        <button class="terminal-btn minimize">−</button>
-                        <button class="terminal-btn maximize">□</button>
                         <button class="terminal-btn close" id="terminal-close">×</button>
                     </div>
                 </div>
-                <div class="windows-terminal-content" id="terminal-content">
-                    <div class="terminal-header">
-                        Microsoft Windows [Version 10.0.19045.3570]<br>
-                        (c) Microsoft Corporation. All rights reserved.<br><br>
-                    </div>
+                <div class="windows-terminal-content" id="terminal-content" tabindex="0">
                     <div class="terminal-output" id="terminal-output"></div>
-                    <div class="terminal-input-line">
-                        <span class="terminal-prompt">C:\\${nf.name}></span>
-                        <input type="text" id="terminal-input" class="terminal-input" autocomplete="off" spellcheck="false">
-                    </div>
                 </div>
             </div>
         `;
 
         document.body.appendChild(terminalModal);
+
+        // Position the window centered on screen using fixed coords (not flexbox)
+        // so drag works without any jump
+        const terminalWindow = terminalModal.querySelector('.windows-terminal-window');
+        const titlebar = terminalModal.querySelector('.windows-terminal-titlebar');
+
+        // Set initial centered position as explicit left/top on the window
+        const initW = terminalWindow.offsetWidth || 800;
+        const initH = terminalWindow.offsetHeight || 600;
+        terminalWindow.style.position = 'fixed';
+        terminalWindow.style.left = Math.max(0, (window.innerWidth  - initW) / 2) + 'px';
+        terminalWindow.style.top  = Math.max(0, (window.innerHeight - initH) / 2) + 'px';
+        terminalWindow.style.margin = '0';
+
+        let isDragging = false, dragOffsetX = 0, dragOffsetY = 0;
+
+        titlebar.style.cursor = 'move';
+
+        titlebar.addEventListener('mousedown', (e) => {
+            if (e.target.closest('.terminal-btn')) return;
+            isDragging = true;
+            const rect = terminalWindow.getBoundingClientRect();
+            dragOffsetX = e.clientX - rect.left;
+            dragOffsetY = e.clientY - rect.top;
+            e.preventDefault();
+        });
+
+        const onMouseMove = (e) => {
+            if (!isDragging) return;
+            let newLeft = e.clientX - dragOffsetX;
+            let newTop  = e.clientY - dragOffsetY;
+            // Keep within viewport
+            newLeft = Math.max(0, Math.min(newLeft, window.innerWidth  - terminalWindow.offsetWidth));
+            newTop  = Math.max(0, Math.min(newTop,  window.innerHeight - terminalWindow.offsetHeight));
+            terminalWindow.style.left = newLeft + 'px';
+            terminalWindow.style.top  = newTop  + 'px';
+        };
+
+        const onMouseUp = () => { isDragging = false; };
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup',   onMouseUp);
+
+        // Cleanup listeners when terminal is removed
+        const observer = new MutationObserver(() => {
+            if (!document.contains(terminalModal)) {
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup',   onMouseUp);
+                observer.disconnect();
+            }
+        });
+        observer.observe(document.body, { childList: true });
 
         this.setupWindowsTerminal(nf, terminalModal);
 
@@ -2118,19 +2184,23 @@ if (clickedInterface) {
             terminalModal.classList.add('show');
         }, 10);
 
-        const input = document.getElementById('terminal-input');
-        if (input) {
-            input.focus();
+        // Focus on terminal content for keyboard input
+        const content = document.getElementById('terminal-content');
+        if (content) {
+            content.focus();
         }
     }
 
     setupWindowsTerminal(nf, terminalModal) {
-        const input = document.getElementById('terminal-input');
+        const content = document.getElementById('terminal-content');
         const output = document.getElementById('terminal-output');
         const closeBtn = document.getElementById('terminal-close');
         
         let commandHistory = [];
         let historyIndex = -1;
+        let currentCommand = '';
+        let currentInputLine = null;
+        let cursorVisible = true;
 
         closeBtn.addEventListener('click', () => {
             terminalModal.classList.remove('show');
@@ -2145,40 +2215,169 @@ if (clickedInterface) {
             }
         });
 
-        input.addEventListener('keydown', async (e) => {
+        // Create initial input line
+        const createInputLine = () => {
+            const line = document.createElement('div');
+            line.className = 'terminal-line terminal-input-active';
+            line.innerHTML = `<span class="terminal-prompt">C:\\${nf.name}></span><span class="terminal-cursor-line"></span>`;
+            output.appendChild(line);
+            output.scrollTop = output.scrollHeight;
+            return line;
+        };
+
+        // Update input line display
+        const updateInputLine = () => {
+            if (currentInputLine) {
+                const cursorChar = cursorVisible ? '▋' : '';
+                currentInputLine.innerHTML = `<span class="terminal-prompt">C:\\${nf.name}></span><span class="terminal-command-text">${this.escapeHtml(currentCommand)}</span><span class="terminal-cursor">${cursorChar}</span>`;
+            }
+        };
+
+        // Cursor blink
+        const cursorInterval = setInterval(() => {
+            cursorVisible = !cursorVisible;
+            updateInputLine();
+        }, 500);
+
+        // Cleanup on terminal close
+        terminalModal.addEventListener('remove', () => {
+            clearInterval(cursorInterval);
+        });
+
+        content.addEventListener('keydown', async (e) => {
+            // Handle Ctrl+C (cancel)
+            if (e.ctrlKey && e.key === 'c') {
+                e.preventDefault();
+                // Convert current input line to regular line showing cancelled command
+                if (currentInputLine && currentCommand) {
+                    currentInputLine.innerHTML = `<span class="terminal-prompt">C:\\${nf.name}></span><span class="terminal-command-text">${this.escapeHtml(currentCommand)}</span><span class="terminal-cursor"></span>`;
+                    currentInputLine.classList.remove('terminal-input-active');
+                }
+                this.addTerminalLine(output, '^C', 'info');
+                currentCommand = '';
+                currentInputLine = createInputLine();
+                updateInputLine();
+                return;
+            }
+
             if (e.key === 'Enter') {
-                const command = input.value.trim();
+                e.preventDefault();
+                const command = currentCommand.trim();
+                
+                // Convert input line to regular line
+                if (currentInputLine) {
+                    currentInputLine.innerHTML = `<span class="terminal-prompt">C:\\${nf.name}></span><span class="terminal-command-text">${this.escapeHtml(currentCommand)}</span>`;
+                    currentInputLine.classList.remove('terminal-input-active');
+                }
+                
                 if (command) {
                     commandHistory.push(command);
                     historyIndex = commandHistory.length;
 
-                    this.addTerminalLine(output, `C:\\${nf.name}>${command}`, 'command');
-                    
-                    input.value = '';
-
                     await this.processWindowsCommand(nf, command, output);
                 }
+                
+                // Create new input line
+                currentCommand = '';
+                currentInputLine = createInputLine();
+                updateInputLine();
             } else if (e.key === 'ArrowUp') {
                 e.preventDefault();
                 if (historyIndex > 0) {
                     historyIndex--;
-                    input.value = commandHistory[historyIndex];
+                    currentCommand = commandHistory[historyIndex];
+                    updateInputLine();
                 }
             } else if (e.key === 'ArrowDown') {
                 e.preventDefault();
                 if (historyIndex < commandHistory.length - 1) {
                     historyIndex++;
-                    input.value = commandHistory[historyIndex];
+                    currentCommand = commandHistory[historyIndex];
+                    updateInputLine();
                 } else {
                     historyIndex = commandHistory.length;
-                    input.value = '';
+                    currentCommand = '';
+                    updateInputLine();
                 }
+            } else if (e.key === 'Backspace') {
+                e.preventDefault();
+                currentCommand = currentCommand.slice(0, -1);
+                updateInputLine();
+            } else if (e.key === 'Tab') {
+                e.preventDefault();
+                const allCommands = [
+                    'help',
+                    'ipconfig',
+                    'ifconfig',
+                    'ping',
+                    'ping subnet',
+                    'systeminfo',
+                    'netstat',
+                    'cls',
+                    'clear',
+                    'exit',
+                ];
+                const input = currentCommand;
+                const matches = allCommands.filter(cmd =>
+                    cmd.toLowerCase().startsWith(input.toLowerCase())
+                );
+                if (matches.length === 0) {
+                    // no match
+                } else {
+                    const lcp = matches.reduce((acc, cmd) => {
+                        let i = 0;
+                        while (i < acc.length && i < cmd.length && acc[i].toLowerCase() === cmd[i].toLowerCase()) i++;
+                        return acc.slice(0, i);
+                    });
+                    const afterInput = lcp.slice(input.length);
+                    const nextSpaceIdx = afterInput.indexOf(' ');
+                    const oneWord = nextSpaceIdx === -1 ? afterInput : afterInput.slice(0, nextSpaceIdx);
+                    const completed = input + oneWord;
+                    if (completed.length > input.length) {
+                        currentCommand = completed;
+                        updateInputLine();
+                    } else {
+                        if (currentInputLine) {
+                            currentInputLine.innerHTML = `<span class="terminal-prompt">C:\\${nf.name}></span><span class="terminal-command-text">${this.escapeHtml(currentCommand)}</span>`;
+                            currentInputLine.classList.remove('terminal-input-active');
+                        }
+                        this.addTerminalLine(output, '', 'blank');
+                        matches.forEach(m => this.addTerminalLine(output, m, 'info'));
+                        this.addTerminalLine(output, '', 'blank');
+                        currentInputLine = createInputLine();
+                        updateInputLine();
+                    }
+                }
+            } else if (e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey) {
+                e.preventDefault();
+                currentCommand += e.key;
+                updateInputLine();
             }
+        });
+
+        // Focus content on click
+        content.addEventListener('click', () => {
+            content.focus();
         });
 
         this.addTerminalLine(output, `Connected to ${nf.name} (${nf.config.ipAddress})`, 'info');
         this.addTerminalLine(output, 'Type "help" for available commands.', 'info');
         this.addTerminalLine(output, '', 'blank');
+        
+        // Create initial input line
+        currentInputLine = createInputLine();
+        updateInputLine();
+    }
+
+    /**
+     * Escape HTML special characters
+     * @param {string} text - Text to escape
+     * @returns {string} Escaped text
+     */
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
 
     async processWindowsCommand(nf, command, output) {
@@ -2187,8 +2386,8 @@ if (clickedInterface) {
 
         if (cmd === 'help' || cmd === '?') {
             this.showWindowsHelp(output);
-        } else if (cmd === 'ipconfig') {
-            this.showIPConfig(nf, output);
+        } else if (cmd === 'ifconfig') {
+            this.showifconfig(nf, output);
         } else if (cmd.startsWith('ping ')) {
             const target = args[1];
             if (target) {
@@ -2231,7 +2430,7 @@ if (clickedInterface) {
             'Available commands:',
             '',
             'HELP        - Display this help message',
-            'IPCONFIG    - Display network configuration',
+            'ifconfig    - Display network configuration',
             'PING        - Test network connectivity',
             'SYSTEMINFO  - Display system information',
             'NETSTAT     - Display network connections',
@@ -2245,7 +2444,7 @@ if (clickedInterface) {
         });
     }
 
-    showIPConfig(nf, output) {
+    showifconfig(nf, output) {
         const lines = [
             'Windows IP Configuration',
             '',
