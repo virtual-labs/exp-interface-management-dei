@@ -2310,7 +2310,6 @@ if (clickedInterface) {
                     'ipconfig',
                     'ifconfig',
                     'ping',
-                    'ping subnet',
                     'systeminfo',
                     'netstat',
                     'cls',
@@ -2388,6 +2387,9 @@ if (clickedInterface) {
             this.showWindowsHelp(output);
         } else if (cmd === 'ifconfig') {
             this.showifconfig(nf, output);
+        } else if (cmd === 'ping subnet') {
+            this.addTerminalLine(output, `'ping subnet' is not recognized as an internal or external command,`, 'error');
+            this.addTerminalLine(output, 'operable program or batch file.', 'error');
         } else if (cmd.startsWith('ping ')) {
             const target = args[1];
             if (target) {
@@ -2395,8 +2397,6 @@ if (clickedInterface) {
             } else {
                 this.addTerminalLine(output, 'Usage: ping <hostname or IP address>', 'error');
             }
-        } else if (cmd === 'ping subnet') {
-            await this.executeWindowsPingSubnet(nf, output);
         } else if (cmd === 'cls' || cmd === 'clear') {
             output.innerHTML = '';
         } else if (cmd === 'exit') {
