@@ -270,7 +270,6 @@ class DockerTerminal {
                     'ls -l',
                     'vi docker-compose.yml',
                     'ping',
-                    'ping subnet',
                     'watch docker compose -f docker-compose.yml ps -a',
                     'docker compose -f docker-compose.yml up -d',
                     'docker compose -f docker-compose-gnb.yml up -d',
@@ -445,7 +444,8 @@ class DockerTerminal {
             const serviceName = args.slice(2).join(' ');
             await this.dockerStop(serviceName, output);
         } else if (cmd === 'ping subnet') {
-            await this.pingSubnet(output);
+            this.addTerminalLine(output, `'ping subnet' is not recognized as an internal or external command,`, 'error');
+            this.addTerminalLine(output, 'Type "help" for available commands.', 'info');
         } else if (cmd.startsWith('ping ')) {
             const targetIP = args[1];
             await this.pingIP(targetIP, output);
