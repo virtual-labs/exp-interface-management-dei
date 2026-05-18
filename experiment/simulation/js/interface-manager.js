@@ -93,7 +93,7 @@ class InterfaceManager {
                 id: 'N6',
                 name: 'N6 Interface',
                 from: 'UPF',
-                to: 'DN',
+                to: 'ext-dn',
                 protocol: 'IP',
                 type: 'User Plane',
                 description: 'UPF to Data Network interface',
@@ -179,8 +179,150 @@ class InterfaceManager {
     icon: '🔍',
     requiredNFs: ['AMF', 'NRF'],
     flow: []
+},
+'N22': {
+    id: 'N22',
+    name: 'N22 Interface',
+    from: 'AMF',
+    to: 'NSSF',
+    protocol: 'HTTP/2',
+    type: 'Service Based',
+    description: 'AMF to NSSF network slice selection',
+    color: '#1abc9c',
+    icon: '📶',
+    requiredNFs: ['AMF', 'NSSF'],
+    flow: []
+},
+'N35': {
+    id: 'N35',
+    name: 'N35 Interface',
+    from: 'UDM',
+    to: 'UDR',
+    protocol: 'HTTP/2',
+    type: 'Service Based',
+    description: 'UDM to UDR data repository',
+    color: '#8e44ad',
+    icon: '🗄️',
+    requiredNFs: ['UDM', 'UDR'],
+    flow: []
 }
         };
+    }
+
+    /**
+     * N2 above N1 between gNB and AMF (negative = upper, positive = lower)
+     */
+    applyGnbAmfLineOffsets(gnb, amf) {
+        if (!window.dataStore || !gnb || !amf) return;
+
+        const connections = window.dataStore.getAllConnections() || [];
+        connections.forEach(conn => {
+            const betweenGnbAmf =
+                (conn.sourceId === gnb.id && conn.targetId === amf.id) ||
+                (conn.sourceId === amf.id && conn.targetId === gnb.id);
+            if (!betweenGnbAmf || !conn.options) return;
+
+            const isN2 =
+                conn.options.interfaceType === 'N2' ||
+                (conn.options.label && String(conn.options.label).includes('N2'));
+            const isN1 =
+                conn.options.interfaceType === 'N1' ||
+                conn.options.interfaceType === 'N1-extended' ||
+                (conn.options.label && String(conn.options.label).startsWith('N1'));
+
+            if (isN2) {
+                conn.options.lineOffset = -8;
+            } else if (isN1) {
+                conn.options.lineOffset = 8;
+            }
+        });
+
+        if (window.canvasRenderer) {
+            window.canvasRenderer.render();
+        }
+    }
+
+    /**
+     * Create or return ext-dn Data Network node (N6 anchor to UPF)
+     */
+    createExtDnDataNetwork(position = { x: 850, y: 150 }) {
+        const existing = window.dataStore?.getAllNFs().find(nf =>
+            nf.type === 'DataNetwork' ||
+            nf.id === 'data-network-ext-dn' ||
+            nf.id === 'data-network-internet'
+        );
+        if (existing) {
+            if (existing.name !== 'ext-dn') {
+                existing.name = 'ext-dn';
+                window.dataStore.updateNF(existing.id, existing);
+            }
+            return existing;
+        }
+
+        const dataNetwork = {
+            id: 'data-network-ext-dn',
+            type: 'DataNetwork',
+            name: 'ext-dn',
+            position,
+            color: '#16a085',
+            icon: null,
+            status: 'active',
+            config: {
+                ipAddress: '192.168.4.1',
+                port: 8088,
+                capacity: 999999,
+                load: 0,
+                httpProtocol: 'IPv4/IPv6',
+                type: 'External Network'
+            }
+        };
+
+        if (window.dataStore) {
+            window.dataStore.addNF(dataNetwork);
+            console.log('✅ Data Network (ext-dn) created');
+        }
+        return dataNetwork;
+    }
+
+    /**
+     * Add gNB → AMF N2 (NGAP) connection if missing
+     */
+    async ensureN2Connection(gnb, amf) {
+        if (!window.dataStore || !gnb || !amf) return;
+
+        const existingConnections = window.dataStore.getAllConnections() || [];
+        const n2Exists = existingConnections.some(conn =>
+            conn.options?.interfaceType === 'N2' &&
+            conn.sourceId === gnb.id &&
+            conn.targetId === amf.id
+        );
+
+        if (n2Exists) {
+            console.log('ℹ️ N2 connection already exists');
+            return;
+        }
+
+        const gnbToAmfN2 = {
+            id: `conn-${Date.now()}-n2`,
+            sourceId: gnb.id,
+            targetId: amf.id,
+            type: 'manual',
+            showVisual: true,
+            createdAt: new Date(),
+            options: {
+                label: 'N2 (NGAP)',
+                color: '#e91e63',
+                style: 'solid',
+                interfaceType: 'N2',
+                lineWidth: 3,
+                lineOffset: -8
+            }
+        };
+
+        window.dataStore.addConnection(gnbToAmfN2);
+        console.log('✅ gNB → AMF N2 connection created');
+        await this.delay(300);
+        this.applyGnbAmfLineOffsets(gnb, amf);
     }
 
     /**
@@ -228,7 +370,7 @@ if (window.connectionManager) {
     console.log('✅ UE → gNB connection created with N1 label');
     await this.delay(300);
 
-    // Connection 2: gNB → AMF (Blue line, N1 label) - UPPER LINE
+    // Connection 2: gNB → AMF (Blue line, N1 label) - LOWER LINE (N2 uses upper when deployed)
     const gnbToAmfN1 = {
         id: `conn-${Date.now()}-2`,
         sourceId: gnb.id,
@@ -237,39 +379,18 @@ if (window.connectionManager) {
         showVisual: true,
         createdAt: new Date(),
         options: {
-            label: 'N1',  // ✅ NOW HAS LABEL
-            color: '#3498db',  // Blue
+            label: 'N1',
+            color: '#3498db',
             style: 'solid',
             interfaceType: 'N1-extended',
             lineWidth: 3,
-            lineOffset: -8  // Offset upward (negative = above)
+            lineOffset: 8
         }
     };
     
     window.dataStore.addConnection(gnbToAmfN1);
-    console.log('✅ gNB → AMF blue line created (N1 extension, upper)');
-    await this.delay(300);
-
-    // Connection 3: gNB → AMF (Pink line with N2 label) - LOWER LINE
-    const gnbToAmfN2 = {
-        id: `conn-${Date.now()}-3`,
-        sourceId: gnb.id,
-        targetId: amf.id,
-        type: 'manual',
-        showVisual: true,
-        createdAt: new Date(),
-        options: {
-            label: 'N2 (NGAP)',
-            color: '#e91e63',  // Pink
-            style: 'solid',
-            interfaceType: 'N2',
-            lineWidth: 3,
-            lineOffset: 8  // Offset downward (positive = below)
-        }
-    };
-    
-    window.dataStore.addConnection(gnbToAmfN2);
-    console.log('✅ gNB → AMF pink line created (N2, lower)');
+    console.log('✅ gNB → AMF blue line created (N1, lower)');
+    this.applyGnbAmfLineOffsets(gnb, amf);
 }
 
     // Step 5: Connect ONLY AMF to Service Bus (NOT UE or gNB)
@@ -312,7 +433,7 @@ if (serviceBus && window.busManager) {
             components: 'UE, gNB, AMF',
             protocol: 'NAS',
             type: 'Control Plane',
-            flow: 'UE → gNB (N1/RRC) → AMF (N2/NGAP)',
+            flow: 'UE → gNB (N1/RRC) → AMF (N1)',
             connectedToBus: true
         });
     }
@@ -339,6 +460,9 @@ async deployN2Interface() {
         // Get existing N1 NFs
         const n1Config = this.deployedInterfaces.get('N1');
         const { gNB, AMF } = n1Config.nfs;
+
+        await this.ensureN2Connection(gNB, AMF);
+        this.applyGnbAmfLineOffsets(gNB, AMF);
         
         // Mark N2 as deployed (shares topology with N1)
         this.deployedInterfaces.set('N2', {
@@ -405,7 +529,7 @@ async deployN2Interface() {
         console.log('✅ UE → gNB connection created with N1 label');
         await this.delay(300);
 
-        // Connection 2: gNB → AMF (Blue line, N1) - UPPER LINE
+        // Connection 2: gNB → AMF (N1) - lower line
         const gnbToAmfN1 = {
             id: `conn-${Date.now()}-2`,
             sourceId: gnb.id,
@@ -419,15 +543,15 @@ async deployN2Interface() {
                 style: 'solid',
                 interfaceType: 'N1-extended',
                 lineWidth: 3,
-                lineOffset: -8
+                lineOffset: 8
             }
         };
         
         window.dataStore.addConnection(gnbToAmfN1);
-        console.log('✅ gNB → AMF blue line created (N1 extension, upper)');
+        console.log('✅ gNB → AMF blue line created (N1, lower)');
         await this.delay(300);
 
-        // Connection 3: gNB → AMF (Pink line with N2 label) - LOWER LINE
+        // Connection 3: gNB → AMF (N2) - upper line
         const gnbToAmfN2 = {
             id: `conn-${Date.now()}-3`,
             sourceId: gnb.id,
@@ -441,12 +565,13 @@ async deployN2Interface() {
                 style: 'solid',
                 interfaceType: 'N2',
                 lineWidth: 3,
-                lineOffset: 8
+                lineOffset: -8
             }
         };
         
         window.dataStore.addConnection(gnbToAmfN2);
-        console.log('✅ gNB → AMF pink line created (N2, lower)');
+        console.log('✅ gNB → AMF pink line created (N2, upper)');
+        this.applyGnbAmfLineOffsets(gnb, amf);
     }
 
     // Step 5: Connect AMF to Service Bus
@@ -523,34 +648,9 @@ async deployN3Interface() {
     const upf = await this.deployNF('UPF', { x: 600, y: 150 });
     await this.delay(500);
 
-    // Step 4: Create visual representation of Data Network (Internet)
-const dataNetwork = {
-    id: 'data-network-internet',
-    type: 'DataNetwork',
-    name: 'Internet',
-    position: { x: 850, y: 150 },
-    color: '#16a085',
-    icon: null,
-    status: 'active',
-    config: {
-        ipAddress: '192.168.4.1',   // ✅ PUBLIC GATEWAY IP
-        port: 8088,                  // ✅ GATEWAY PORT
-        capacity: 999999,
-        load: 0,
-        httpProtocol: 'IPv4/IPv6',   // ✅ MORE APPROPRIATE
-        type: 'External Network'
-    }
-};
-
-    // Add Data Network to data store (as special NF)
-    if (window.dataStore) {
-        window.dataStore.addNF(dataNetwork);
-        console.log('✅ Data Network (Internet) created');
-    }
-
     await this.delay(500);
 
-    // Step 5: Create connections
+    // Step 4: Create connections (N3 only — N6 is deployed separately via N6 interface)
     console.log('🔗 Creating N3 interface connections...');
 
     if (window.connectionManager) {
@@ -595,33 +695,12 @@ const ueToGnb = {
         
         window.dataStore.addConnection(gnbToUpf);
         console.log('✅ gNB → UPF connection created (N3 Tunnel)');
-        await this.delay(300);
-
-        // Connection 3: UPF → Data Network (N6)
-        const upfToInternet = {
-            id: `conn-${Date.now()}-3`,
-            sourceId: upf.id,
-            targetId: dataNetwork.id,
-            type: 'manual',
-            showVisual: true,
-            createdAt: new Date(),
-            options: {
-                label: 'N6',
-                color: '#16a085',  // Teal
-                style: 'solid',
-                interfaceType: 'N6',
-                lineWidth: 4
-            }
-        };
-        
-        window.dataStore.addConnection(upfToInternet);
-        console.log('✅ UPF → Internet connection created (N6)');
     }
 
-    // Step 6: Mark N3 as deployed
+    // Step 5: Mark N3 as deployed
     this.deployedInterfaces.set('N3', {
         interface: n3Def,
-        nfs: { UE: ue, gNB: gnb, UPF: upf, DataNetwork: dataNetwork },
+        nfs: { UE: ue, gNB: gnb, UPF: upf },
         deployedAt: new Date()
     });
 
@@ -632,18 +711,18 @@ const ueToGnb = {
     if (window.logEngine) {
         window.logEngine.addLog('system', 'SUCCESS',
             'N3 Interface deployed successfully', {
-            components: 'UE, gNB, UPF, Internet',
+            components: 'UE, gNB, UPF',
             protocol: 'GTP-U (GPRS Tunneling Protocol - User Plane)',
             type: 'User Plane',
-            flow: 'UE → gNB (Radio) → UPF (N3 Tunnel) → Internet (N6)',
+            flow: 'UE → gNB (Radio) → UPF (N3 Tunnel)',
             dataPath: 'Complete user data path established',
             note: 'No connections to service bus - pure data plane'
         });
     }
 
     console.log('✅ N3 Interface deployment complete');
-    console.log('📊 Data Path: UE → gNB → UPF → Internet');
-    return { ue, gnb, upf, dataNetwork };
+    console.log('📊 Data Path: UE → gNB → UPF (N3)');
+    return { ue, gnb, upf };
 }
 
 /**
@@ -945,7 +1024,7 @@ async deployN6Interface() {
         ue = n3Config.nfs.UE;
         gnb = n3Config.nfs.gNB;
         upf = n3Config.nfs.UPF;
-        dataNetwork = n3Config.nfs.DataNetwork;
+        dataNetwork = n3Config.nfs.DataNetwork || this.createExtDnDataNetwork({ x: 850, y: 150 });
         
         console.log('✅ Reusing: UE, gNB, UPF from N3');
     } else {
@@ -963,30 +1042,7 @@ async deployN6Interface() {
         upf = await this.deployNF('UPF', { x: 600, y: 150 });
         await this.delay(500);
 
-        // Step 4: Create Data Network
-        dataNetwork = {
-            id: 'data-network-internet',
-            type: 'DataNetwork',
-            name: 'Internet',
-            position: { x: 850, y: 150 },
-            color: '#16a085',
-            icon: null,
-            status: 'active',
-            config: {
-                ipAddress: '192.168.4.1',
-                port: 8088,
-                capacity: 999999,
-                load: 0,
-                httpProtocol: 'IPv4/IPv6',
-                type: 'External Network'
-            }
-        };
-
-        if (window.dataStore) {
-            window.dataStore.addNF(dataNetwork);
-            console.log('✅ Data Network (Internet) created');
-        }
-
+        dataNetwork = this.createExtDnDataNetwork({ x: 850, y: 150 });
         await this.delay(500);
 
         // Step 5: Create connections (N1, N3)
@@ -1038,7 +1094,7 @@ async deployN6Interface() {
     }
 
     // =============================================
-    // ALWAYS CREATE N6 CONNECTION (UPF → Internet)
+    // ALWAYS CREATE N6 CONNECTION (UPF → ext-dn)
     // =============================================
     console.log('🔗 Creating N6 connection...');
 
@@ -1068,7 +1124,7 @@ async deployN6Interface() {
         };
         
         window.dataStore.addConnection(upfToInternet);
-        console.log('✅ UPF → Internet connection created (N6)');
+        console.log('✅ UPF → ext-dn connection created (N6)');
     } else {
         console.log('ℹ️ N6 connection already exists');
     }
@@ -1087,10 +1143,10 @@ async deployN6Interface() {
     if (window.logEngine) {
         window.logEngine.addLog('system', 'SUCCESS',
             'N6 Interface deployed successfully', {
-            components: n3Deployed ? 'Reused existing NFs' : 'UE, gNB, UPF, Internet',
+            components: n3Deployed ? 'Reused existing NFs' : 'UE, gNB, UPF, ext-dn',
             protocol: 'IP',
             type: 'User Plane',
-            flow: 'UE → gNB → UPF → Internet (N6)',
+            flow: 'UPF → ext-dn (N6)',
             reusedFromN3: n3Deployed
         });
     }
@@ -1751,6 +1807,290 @@ async deployN13Interface() {
     console.log('📊 Communication: AMF ↔ NRF (Direct N13 + Service Bus)');
     return { amf, nrf };
 }
+
+/**
+ * Deploy N22 Interface (AMF to NSSF)
+ */
+async deployN22Interface() {
+    console.log('🚀 Deploying N22 Interface...');
+    const n22Def = this.interfaceDefinitions['N22'];
+
+    const amf = await this.deployNF('AMF', { x: 300, y: 150 });
+    await this.delay(500);
+    const nssf = await this.deployNF('NSSF', { x: 650, y: 150 });
+    await this.delay(500);
+
+    let serviceBus = window.dataStore?.getAllBuses().find(b => b.name === 'Service Bus');
+    if (!serviceBus && window.busManager) {
+        serviceBus = window.busManager.createBusLine({
+            position: { x: 200, y: 300 },
+            length: 700,
+            orientation: 'horizontal',
+            name: 'Service Bus'
+        });
+    }
+
+    if (serviceBus && window.busManager) {
+        await this.delay(300);
+        window.busManager.connectNFToBus(amf.id, serviceBus.id);
+        await this.delay(300);
+        window.busManager.connectNFToBus(nssf.id, serviceBus.id);
+    }
+
+    const existingConnections = window.dataStore?.getAllConnections() || [];
+    const n22Exists = existingConnections.some(conn =>
+        conn.options?.interfaceType === 'N22' &&
+        ((conn.sourceId === amf.id && conn.targetId === nssf.id) ||
+         (conn.sourceId === nssf.id && conn.targetId === amf.id))
+    );
+
+    if (!n22Exists && window.dataStore) {
+        window.dataStore.addConnection({
+            id: `conn-n22-${Date.now()}`,
+            sourceId: amf.id,
+            targetId: nssf.id,
+            type: 'manual',
+            showVisual: true,
+            createdAt: new Date(),
+            options: {
+                label: 'N22',
+                color: '#1abc9c',
+                style: 'dashed',
+                interfaceType: 'N22',
+                lineWidth: 3
+            }
+        });
+    }
+
+    this.deployedInterfaces.set('N22', {
+        interface: n22Def,
+        nfs: { AMF: amf, NSSF: nssf },
+        deployedAt: new Date()
+    });
+    this.markInterfaceDeployed('N22');
+
+    if (window.logEngine) {
+        window.logEngine.addLog('system', 'SUCCESS', 'N22 Interface deployed successfully', {
+            components: 'AMF, NSSF',
+            interface: 'N22 (AMF ↔ NSSF)'
+        });
+    }
+
+    if (window.canvasRenderer) {
+        window.canvasRenderer.render();
+    }
+    return { amf, nssf };
+}
+
+/**
+ * Deploy N35 Interface (UDM to UDR)
+ */
+async deployN35Interface() {
+    console.log('🚀 Deploying N35 Interface...');
+    const n35Def = this.interfaceDefinitions['N35'];
+
+    const udm = await this.deployNF('UDM', { x: 300, y: 150 });
+    await this.delay(500);
+    const udr = await this.deployNF('UDR', { x: 650, y: 150 });
+    await this.delay(500);
+
+    let serviceBus = window.dataStore?.getAllBuses().find(b => b.name === 'Service Bus');
+    if (!serviceBus && window.busManager) {
+        serviceBus = window.busManager.createBusLine({
+            position: { x: 200, y: 300 },
+            length: 700,
+            orientation: 'horizontal',
+            name: 'Service Bus'
+        });
+    }
+
+    if (serviceBus && window.busManager) {
+        await this.delay(300);
+        window.busManager.connectNFToBus(udm.id, serviceBus.id);
+        await this.delay(300);
+        window.busManager.connectNFToBus(udr.id, serviceBus.id);
+    }
+
+    const existingConnections = window.dataStore?.getAllConnections() || [];
+    const n35Exists = existingConnections.some(conn =>
+        conn.options?.interfaceType === 'N35' &&
+        ((conn.sourceId === udm.id && conn.targetId === udr.id) ||
+         (conn.sourceId === udr.id && conn.targetId === udm.id))
+    );
+
+    if (!n35Exists && window.dataStore) {
+        window.dataStore.addConnection({
+            id: `conn-n35-${Date.now()}`,
+            sourceId: udm.id,
+            targetId: udr.id,
+            type: 'manual',
+            showVisual: true,
+            createdAt: new Date(),
+            options: {
+                label: 'N35',
+                color: '#8e44ad',
+                style: 'dashed',
+                interfaceType: 'N35',
+                lineWidth: 3
+            }
+        });
+    }
+
+    this.deployedInterfaces.set('N35', {
+        interface: n35Def,
+        nfs: { UDM: udm, UDR: udr },
+        deployedAt: new Date()
+    });
+    this.markInterfaceDeployed('N35');
+
+    if (window.logEngine) {
+        window.logEngine.addLog('system', 'SUCCESS', 'N35 Interface deployed successfully', {
+            components: 'UDM, UDR',
+            interface: 'N35 (UDM ↔ UDR)'
+        });
+    }
+
+    if (window.canvasRenderer) {
+        window.canvasRenderer.render();
+    }
+    return { udm, udr };
+}
+
+    /**
+     * Deploy N4 for core (SMF ↔ UPF only, no gNB/UE)
+     */
+    async deployN4CoreInterface() {
+        console.log('🚀 Deploying N4 Interface (core)...');
+        const n4Def = this.interfaceDefinitions['N4'];
+
+        const smf = await this.deployNF('SMF', { x: 680, y: 200 });
+        await this.delay(500);
+        const upf = await this.deployNF('UPF', { x: 880, y: 80 });
+        await this.delay(500);
+
+        if (window.connectionManager) {
+            const existingConnections = window.dataStore?.getAllConnections() || [];
+            const n4Exists = existingConnections.some(conn =>
+                conn.options?.interfaceType === 'N4' &&
+                conn.sourceId === smf.id &&
+                conn.targetId === upf.id
+            );
+
+            if (!n4Exists) {
+                window.dataStore.addConnection({
+                    id: `conn-n4-core-${Date.now()}`,
+                    sourceId: smf.id,
+                    targetId: upf.id,
+                    type: 'manual',
+                    showVisual: true,
+                    createdAt: new Date(),
+                    options: {
+                        label: 'N4 (PFCP)',
+                        color: '#e74c3c',
+                        style: 'solid',
+                        interfaceType: 'N4',
+                        lineWidth: 4
+                    }
+                });
+                console.log('✅ SMF → UPF N4 connection created');
+            }
+        }
+
+        let serviceBus = window.dataStore?.getAllBuses().find(b => b.name === 'Service Bus');
+        if (!serviceBus && window.busManager) {
+            serviceBus = window.busManager.createBusLine({
+                position: { x: 150, y: 280 },
+                length: 800,
+                orientation: 'horizontal',
+                name: 'Service Bus'
+            });
+        }
+        if (serviceBus && window.busManager) {
+            await this.delay(300);
+            window.busManager.connectNFToBus(smf.id, serviceBus.id);
+        }
+
+        this.deployedInterfaces.set('N4', {
+            interface: n4Def,
+            nfs: { SMF: smf, UPF: upf },
+            deployedAt: new Date(),
+            coreOnly: true
+        });
+        this.markInterfaceDeployed('N4');
+
+        if (window.logEngine) {
+            window.logEngine.addLog('system', 'SUCCESS', 'N4 Interface deployed (core)', {
+                components: 'SMF, UPF',
+                protocol: 'PFCP',
+                note: 'No gNB/UE — core docker deployment'
+            });
+        }
+
+        if (window.canvasRenderer) {
+            window.canvasRenderer.render();
+        }
+        return { smf, upf };
+    }
+
+    /**
+     * Deploy N6 for core (UPF ↔ ext-dn only, no gNB/UE)
+     */
+    async deployN6CoreInterface() {
+        console.log('🚀 Deploying N6 Interface (core)...');
+        const n6Def = this.interfaceDefinitions['N6'];
+
+        const upf = await this.deployNF('UPF', { x: 600, y: 150 });
+        await this.delay(500);
+        const dataNetwork = this.createExtDnDataNetwork({ x: 850, y: 150 });
+        await this.delay(300);
+
+        const existingConnections = window.dataStore?.getAllConnections() || [];
+        const n6Exists = existingConnections.some(conn =>
+            conn.options?.interfaceType === 'N6' &&
+            conn.sourceId === upf.id &&
+            conn.targetId === dataNetwork.id
+        );
+
+        if (!n6Exists && window.dataStore) {
+            window.dataStore.addConnection({
+                id: `conn-n6-core-${Date.now()}`,
+                sourceId: upf.id,
+                targetId: dataNetwork.id,
+                type: 'manual',
+                showVisual: true,
+                createdAt: new Date(),
+                options: {
+                    label: 'N6',
+                    color: '#16a085',
+                    style: 'solid',
+                    interfaceType: 'N6',
+                    lineWidth: 4
+                }
+            });
+            console.log('✅ UPF → ext-dn N6 connection created');
+        }
+
+        this.deployedInterfaces.set('N6', {
+            interface: n6Def,
+            nfs: { UPF: upf, DataNetwork: dataNetwork },
+            deployedAt: new Date(),
+            coreOnly: true
+        });
+        this.markInterfaceDeployed('N6');
+
+        if (window.logEngine) {
+            window.logEngine.addLog('system', 'SUCCESS', 'N6 Interface deployed (core)', {
+                components: 'UPF, ext-dn',
+                protocol: 'IP',
+                note: 'No gNB/UE — core docker deployment'
+            });
+        }
+
+        if (window.canvasRenderer) {
+            window.canvasRenderer.render();
+        }
+        return { upf, dataNetwork };
+    }
 
     /**
      * Deploy a Network Function

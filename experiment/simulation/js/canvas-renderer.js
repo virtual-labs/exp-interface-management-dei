@@ -123,8 +123,18 @@ class CanvasRenderer {
         allBuses.forEach(bus => this.drawBus(bus));
         allBusConnections.forEach(conn => this.drawBusConnection(conn));
 
-        // Draw regular connections
-        allConnections.forEach(conn => this.drawConnection(conn));
+        // Draw regular connections (dedupe overlapping gNB↔AMF labels)
+        const drawnConnectionKeys = new Set();
+        allConnections.forEach(conn => {
+            const key = this.getConnectionDrawKey(conn);
+            if (key && drawnConnectionKeys.has(key)) {
+                return;
+            }
+            if (key) {
+                drawnConnectionKeys.add(key);
+            }
+            this.drawConnection(conn);
+        });
 
         // Draw NFs on top (with special handling for Data Network)
 allNFs.forEach(nf => {
@@ -329,7 +339,7 @@ console.log('✅ Render complete');
     // }
 
 /**
- * Draw Data Network (Internet) node
+ * Draw Data Network (ext-dn) node
  */
 drawDataNetwork(dn) {
     const x = dn.position.x;
@@ -353,7 +363,8 @@ drawDataNetwork(dn) {
     this.ctx.fillStyle = '#ecf0f1';
     this.ctx.font = 'bold 12px Arial';
     this.ctx.textAlign = 'center';
-    this.ctx.fillText('🌐 Internet', x + 25, y + 45);
+    const label = dn.name || 'ext-dn';
+    this.ctx.fillText(`🌐 ${label}`, x + 25, y + 45);
 }
 
     /**
@@ -436,18 +447,48 @@ drawConnection(conn) {
     // Draw arrow
     this.drawArrow(sourceX, sourceY, targetX, targetY, conn.options?.color || '#3498db');
 
-    // Draw label
-    if (conn.options?.label) {
+    const displayLabel = this.getConnectionDisplayLabel(conn);
+    if (displayLabel) {
         this.drawConnectionLabel(
             sourceX,
             sourceY,
             targetX,
             targetY,
-            conn.options.label,
-            conn.options.color || '#3498db'
+            displayLabel,
+            conn.options?.color || '#3498db'
         );
     }
 }
+
+    /**
+     * Single connection label text (no duplicate N prefix from interfaceType)
+     */
+    getConnectionDisplayLabel(conn) {
+        const label = (conn.options?.label || '').trim();
+        const ifType = (conn.options?.interfaceType || '').trim();
+
+        if (label) {
+            if (ifType && label.startsWith(ifType)) {
+                return label;
+            }
+            if (ifType === 'N2' && (label === 'N2 (NGAP)' || label === 'NGAP')) {
+                return 'N2 (NGAP)';
+            }
+            return label;
+        }
+
+        if (ifType === 'N2') {
+            return 'N2 (NGAP)';
+        }
+        if (ifType === 'N1' || ifType === 'N1-extended') {
+            return 'N1';
+        }
+        if (/^N\d+/.test(ifType)) {
+            return ifType;
+        }
+        return ifType;
+    }
+
     /**
      * Handle canvas click events
      * @param {MouseEvent} e - Mouse event
@@ -923,7 +964,19 @@ drawConnection(conn) {
     }
 
     /**
-     * Draw connection label
+     * Dedupe key for parallel links between same NFs
+     */
+    getConnectionDrawKey(conn) {
+        if (!conn?.sourceId || !conn?.targetId) {
+            return null;
+        }
+        const ids = [conn.sourceId, conn.targetId].sort().join('|');
+        const iface = conn.options?.interfaceType || conn.options?.label || '';
+        return `${ids}|${iface}`;
+    }
+
+    /**
+     * Draw connection label (single box, full text)
      */
     drawConnectionLabel(x1, y1, x2, y2, label, color) {
         const midX = (x1 + x2) / 2;

@@ -3,12 +3,67 @@
  */
 
 class UIController {
+    /** Manual experiment order — deploy each only after prior interfaces are done */
+    static INTERFACE_DEPLOY_SEQUENCE = [
+        'N1', 'N2', 'N3', 'N4', 'N5', 'N6', 'N7', 'N8', 'N10', 'N11', 'N12', 'N13'
+    ];
+
     constructor() {
         this.connectionMode = 'idle';
         this.selectedSourceNF = null;
         this.selectedDestinationNF = null;
         this.selectedSourceBus = null;
+        this.isInterfaceDeploying = false;
         console.log('✅ UIController initialized');
+    }
+
+    /**
+     * First interface in sequence that must be deployed before interfaceId
+     */
+    getBlockingInterface(interfaceId) {
+        const seq = UIController.INTERFACE_DEPLOY_SEQUENCE;
+        const idx = seq.indexOf(interfaceId);
+        if (idx <= 0) return null;
+        for (let i = 0; i < idx; i++) {
+            if (!window.interfaceManager?.isInterfaceDeployed(seq[i])) {
+                return seq[i];
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Grey out sidebar items until prerequisites are deployed
+     */
+    updateInterfacePaletteState() {
+        const palette = document.querySelector('.nf-palette');
+        if (!palette) return;
+
+        palette.querySelectorAll('.network-interface-item').forEach(item => {
+            const interfaceId = item.dataset.interfaceId;
+            if (!interfaceId) return;
+
+            const deployed = window.interfaceManager?.isInterfaceDeployed(interfaceId);
+            const blockedBy = this.getBlockingInterface(interfaceId);
+            const busy = this.isInterfaceDeploying;
+
+            if (deployed) {
+                item.classList.add('deployed');
+                item.style.opacity = '1';
+                item.style.cursor = 'default';
+                item.title = `${interfaceId} deployed`;
+            } else if (blockedBy || busy) {
+                item.style.opacity = '0.45';
+                item.style.cursor = 'not-allowed';
+                item.title = busy
+                    ? 'Wait for current deployment to finish'
+                    : `Deploy ${blockedBy} first`;
+            } else {
+                item.style.opacity = '1';
+                item.style.cursor = 'pointer';
+                item.title = `Deploy ${interfaceId}`;
+            }
+        });
     }
 
     init() {
@@ -158,8 +213,11 @@ class UIController {
             </div>
         `;
 
-        // Click handler - Deploy interface
+        // Click handler - Deploy interface (sequential order enforced)
         item.addEventListener('click', () => {
+            if (this.isInterfaceDeploying) return;
+            const blockedBy = this.getBlockingInterface(ni.id);
+            if (blockedBy) return;
             console.log('🖱️ Network Interface clicked:', ni.id);
             this.deployNetworkInterface(ni.id);
         });
@@ -178,6 +236,7 @@ class UIController {
         palette.appendChild(item);
     });
 
+    this.updateInterfacePaletteState();
     console.log('✅ Network Interface palette initialized with', networkInterfaces.length, 'interfaces');
 }
 
@@ -394,6 +453,10 @@ async deployAllInterfaces(options = {}) {
         }
         console.log('✅ Canvas cleared');
 
+        if (window.dockerTerminal) {
+            window.dockerTerminal.ensureOaiWorkshopNetwork();
+        }
+
         // Step 4: Create Service Bus from 5g.json
         console.log('\n🚌 Creating Service Bus ');
         if (topology.buses && topology.buses.length > 0 && window.dataStore) {
@@ -450,26 +513,18 @@ async deployAllInterfaces(options = {}) {
             };
         }
 
-        // Step 7: Deploy interfaces one by one
-        const interfaces = [
-            { id: 'N1', method: 'deployN1Interface' },
-            { id: 'N2', method: 'deployN2Interface' },
-            { id: 'N13', method: 'deployN13Interface' },
-            { id: 'N12', method: 'deployN12Interface' },
-            { id: 'N8', method: 'deployN8Interface' },
-            { id: 'N11', method: 'deployN11Interface' },
-            { id: 'N10', method: 'deployN10Interface' },
-            { id: 'N7', method: 'deployN7Interface' },
-            { id: 'N5', method: 'deployN5Interface' },
-            { id: 'N4', method: 'deployN4Interface' },
-            { id: 'N3', method: 'deployN3Interface' },
-            { id: 'N6', method: 'deployN6Interface' }
-        ];
+        // Step 7: Deploy interfaces one by one (strict sequence)
+        const interfaces = UIController.INTERFACE_DEPLOY_SEQUENCE.map(id => ({
+            id,
+            method: `deploy${id}Interface`
+        }));
         
         let successCount = 0;
         let failCount = 0;
         const nfIdMap = new Map(); // Maps old NF IDs from logs JSON to new NF IDs
-        
+        this.isInterfaceDeploying = true;
+        this.updateInterfacePaletteState();
+
         for (const interfaceInfo of interfaces) {
             console.log(`\n📡 Deploying ${interfaceInfo.id} Interface...`);
             
@@ -523,6 +578,7 @@ async deployAllInterfaces(options = {}) {
                     
                     successCount++;
                     console.log(`✅ ${interfaceInfo.id} deployed successfully`);
+                    this.updateInterfacePaletteState();
                     
                     // Delay between deployments
                     await this.delay(800);
@@ -561,14 +617,14 @@ async deployAllInterfaces(options = {}) {
                 };
                 
                 window.dataStore.addNF(dataNetwork);
-                console.log('✅ Data Network (Internet) created');
+                console.log('✅ Data Network (ext-dn) created');
             } else {
                 // Update existing DataNetwork position and config from 5g.json
                 existingDataNetwork.position = dataNetworkData.position;
                 existingDataNetwork.config = dataNetworkData.config;
                 existingDataNetwork.name = dataNetworkData.name;
                 window.dataStore.updateNF(existingDataNetwork.id, existingDataNetwork);
-                console.log('✅ Data Network (Internet) updated from 5g.json');
+                console.log('✅ Data Network (ext-dn) updated from 5g.json');
             }
         }
         
@@ -586,6 +642,20 @@ async deployAllInterfaces(options = {}) {
                     const targetNF = window.dataStore.getNFById(newTargetId);
                     
                     if (sourceNF && targetNF) {
+                        const duplicate = window.dataStore.getAllConnections().some(existing => {
+                            const samePair =
+                                (existing.sourceId === newSourceId && existing.targetId === newTargetId) ||
+                                (existing.sourceId === newTargetId && existing.targetId === newSourceId);
+                            const sameIface =
+                                (existing.options?.interfaceType || '') === (connData.options?.interfaceType || '') ||
+                                (existing.options?.label || '') === (connData.options?.label || '');
+                            return samePair && sameIface;
+                        });
+
+                        if (duplicate) {
+                            continue;
+                        }
+
                         const connection = {
                             id: connData.id,
                             sourceId: newSourceId,
@@ -705,6 +775,8 @@ async deployAllInterfaces(options = {}) {
         alert(`❌ Deployment failed: ${error.message}\n\nCheck console for details.`);
         return { successCount: 0, failCount: 0, skipped: false, error: error.message };
     } finally {
+        this.isInterfaceDeploying = false;
+        this.updateInterfacePaletteState();
         // Re-enable button
         if (deployAllBtn) {
             deployAllBtn.disabled = false;
@@ -2199,8 +2271,9 @@ if (clickedInterface) {
         let commandHistory = [];
         let historyIndex = -1;
         let currentCommand = '';
+        let cursorPosition = 0;
         let currentInputLine = null;
-        let cursorVisible = true;
+        let inputBlocked = false; // Flag to block input during command execution
 
         closeBtn.addEventListener('click', () => {
             terminalModal.classList.remove('show');
@@ -2225,26 +2298,32 @@ if (clickedInterface) {
             return line;
         };
 
-        // Update input line display
         const updateInputLine = () => {
             if (currentInputLine) {
-                const cursorChar = cursorVisible ? '▋' : '';
-                currentInputLine.innerHTML = `<span class="terminal-prompt">C:\\${nf.name}></span><span class="terminal-command-text">${this.escapeHtml(currentCommand)}</span><span class="terminal-cursor">${cursorChar}</span>`;
+                const before = this.escapeHtml(currentCommand.slice(0, cursorPosition));
+                const after = this.escapeHtml(currentCommand.slice(cursorPosition));
+                if (inputBlocked) {
+                    // Hide cursor when input is blocked
+                    currentInputLine.innerHTML = `<span class="terminal-prompt">C:\\${nf.name}></span><span class="terminal-command-text">${before}${after}</span>`;
+                } else {
+                    // Show cursor when input is not blocked
+                    currentInputLine.innerHTML = `<span class="terminal-prompt">C:\\${nf.name}></span><span class="terminal-command-text">${before}<span class="terminal-cursor">▋</span>${after}</span>`;
+                }
             }
         };
 
-        // Cursor blink
-        const cursorInterval = setInterval(() => {
-            cursorVisible = !cursorVisible;
-            updateInputLine();
-        }, 500);
-
-        // Cleanup on terminal close
-        terminalModal.addEventListener('remove', () => {
-            clearInterval(cursorInterval);
-        });
+        const resetInputState = () => {
+            currentCommand = '';
+            cursorPosition = 0;
+        };
 
         content.addEventListener('keydown', async (e) => {
+            // Block all input if inputBlocked flag is set
+            if (inputBlocked) {
+                e.preventDefault();
+                return;
+            }
+
             // Handle Ctrl+C (cancel)
             if (e.ctrlKey && e.key === 'c') {
                 e.preventDefault();
@@ -2254,7 +2333,7 @@ if (clickedInterface) {
                     currentInputLine.classList.remove('terminal-input-active');
                 }
                 this.addTerminalLine(output, '^C', 'info');
-                currentCommand = '';
+                resetInputState();
                 currentInputLine = createInputLine();
                 updateInputLine();
                 return;
@@ -2274,11 +2353,22 @@ if (clickedInterface) {
                     commandHistory.push(command);
                     historyIndex = commandHistory.length;
 
-                    await this.processWindowsCommand(nf, command, output);
+                    // Pass input control functions to command processor
+                    const inputControl = {
+                        block: () => {
+                            inputBlocked = true;
+                            updateInputLine();
+                        },
+                        unblock: () => {
+                            inputBlocked = false;
+                            updateInputLine();
+                        }
+                    };
+                    await this.processWindowsCommand(nf, command, output, inputControl);
                 }
                 
-                // Create new input line
-                currentCommand = '';
+                // Create new input line and show cursor
+                resetInputState();
                 currentInputLine = createInputLine();
                 updateInputLine();
             } else if (e.key === 'ArrowUp') {
@@ -2286,6 +2376,7 @@ if (clickedInterface) {
                 if (historyIndex > 0) {
                     historyIndex--;
                     currentCommand = commandHistory[historyIndex];
+                    cursorPosition = currentCommand.length;
                     updateInputLine();
                 }
             } else if (e.key === 'ArrowDown') {
@@ -2293,16 +2384,46 @@ if (clickedInterface) {
                 if (historyIndex < commandHistory.length - 1) {
                     historyIndex++;
                     currentCommand = commandHistory[historyIndex];
+                    cursorPosition = currentCommand.length;
                     updateInputLine();
                 } else {
                     historyIndex = commandHistory.length;
-                    currentCommand = '';
+                    resetInputState();
                     updateInputLine();
                 }
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                cursorPosition = Math.max(0, cursorPosition - 1);
+                updateInputLine();
+            } else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                cursorPosition = Math.min(currentCommand.length, cursorPosition + 1);
+                updateInputLine();
+            } else if (e.key === 'Home') {
+                e.preventDefault();
+                cursorPosition = 0;
+                updateInputLine();
+            } else if (e.key === 'End') {
+                e.preventDefault();
+                cursorPosition = currentCommand.length;
+                updateInputLine();
             } else if (e.key === 'Backspace') {
                 e.preventDefault();
-                currentCommand = currentCommand.slice(0, -1);
-                updateInputLine();
+                if (cursorPosition > 0) {
+                    currentCommand =
+                        currentCommand.slice(0, cursorPosition - 1) +
+                        currentCommand.slice(cursorPosition);
+                    cursorPosition--;
+                    updateInputLine();
+                }
+            } else if (e.key === 'Delete') {
+                e.preventDefault();
+                if (cursorPosition < currentCommand.length) {
+                    currentCommand =
+                        currentCommand.slice(0, cursorPosition) +
+                        currentCommand.slice(cursorPosition + 1);
+                    updateInputLine();
+                }
             } else if (e.key === 'Tab') {
                 e.preventDefault();
                 const allCommands = [
@@ -2349,7 +2470,11 @@ if (clickedInterface) {
                 }
             } else if (e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey) {
                 e.preventDefault();
-                currentCommand += e.key;
+                currentCommand =
+                    currentCommand.slice(0, cursorPosition) +
+                    e.key +
+                    currentCommand.slice(cursorPosition);
+                cursorPosition++;
                 updateInputLine();
             }
         });
@@ -2379,7 +2504,7 @@ if (clickedInterface) {
         return div.innerHTML;
     }
 
-    async processWindowsCommand(nf, command, output) {
+    async processWindowsCommand(nf, command, output, inputControl = null) {
         const cmd = command.toLowerCase().trim();
         const args = command.split(' ');
 
@@ -2393,7 +2518,7 @@ if (clickedInterface) {
         } else if (cmd.startsWith('ping ')) {
             const target = args[1];
             if (target) {
-                await this.executeWindowsPing(nf, target, output);
+                await this.executeWindowsPing(nf, target, output, inputControl);
             } else {
                 this.addTerminalLine(output, 'Usage: ping <hostname or IP address>', 'error');
             }
@@ -2464,69 +2589,81 @@ if (clickedInterface) {
         });
     }
 
-    async executeWindowsPing(nf, target, output) {
-        if (!this.isValidIP(target)) {
-            this.addTerminalLine(output, `Ping request could not find host ${target}. Please check the name and try again.`, 'error');
-            return;
+    async executeWindowsPing(nf, target, output, inputControl = null) {
+        // Block terminal input during ping
+        if (inputControl) {
+            inputControl.block();
         }
 
-        const sourceNetwork = this.getNetworkFromIP(nf.config.ipAddress);
-        const targetNetwork = this.getNetworkFromIP(target);
-        
-        if (sourceNetwork !== targetNetwork) {
+        try {
+            if (!this.isValidIP(target)) {
+                this.addTerminalLine(output, `Ping request could not find host ${target}. Please check the name and try again.`, 'error');
+                return;
+            }
+
+            const sourceNetwork = this.getNetworkFromIP(nf.config.ipAddress);
+            const targetNetwork = this.getNetworkFromIP(target);
+            
+            if (sourceNetwork !== targetNetwork) {
+                this.addTerminalLine(output, `Pinging ${target} with 32 bytes of data:`, 'info');
+                this.addTerminalLine(output, '', 'blank');
+                this.addTerminalLine(output, `PING: transmit failed. General failure.`, 'error');
+                this.addTerminalLine(output, '', 'blank');
+                this.addTerminalLine(output, `Network Error: Cannot reach ${target}`, 'error');
+                this.addTerminalLine(output, `Source subnet: ${sourceNetwork}.0/24`, 'error');
+                this.addTerminalLine(output, `Target subnet: ${targetNetwork}.0/24`, 'error');
+                this.addTerminalLine(output, `Reason: Cross-subnet communication not allowed`, 'error');
+                this.addTerminalLine(output, '', 'blank');
+                this.addTerminalLine(output, `Ping statistics for ${target}:`, 'info');
+                this.addTerminalLine(output, `    Packets: Sent = 4, Received = 0, Lost = 4 (100% loss),`, 'info');
+                return;
+            }
+
             this.addTerminalLine(output, `Pinging ${target} with 32 bytes of data:`, 'info');
             this.addTerminalLine(output, '', 'blank');
-            this.addTerminalLine(output, `PING: transmit failed. General failure.`, 'error');
-            this.addTerminalLine(output, '', 'blank');
-            this.addTerminalLine(output, `Network Error: Cannot reach ${target}`, 'error');
-            this.addTerminalLine(output, `Source subnet: ${sourceNetwork}.0/24`, 'error');
-            this.addTerminalLine(output, `Target subnet: ${targetNetwork}.0/24`, 'error');
-            this.addTerminalLine(output, `Reason: Cross-subnet communication not allowed`, 'error');
-            this.addTerminalLine(output, '', 'blank');
-            this.addTerminalLine(output, `Ping statistics for ${target}:`, 'info');
-            this.addTerminalLine(output, `    Packets: Sent = 4, Received = 0, Lost = 4 (100% loss),`, 'info');
-            return;
-        }
 
-        this.addTerminalLine(output, `Pinging ${target} with 32 bytes of data:`, 'info');
-        this.addTerminalLine(output, '', 'blank');
+            const isReachable = this.isTargetReachable(nf, target);
+            const results = [];
 
-        const isReachable = this.isTargetReachable(nf, target);
-        const results = [];
-
-        for (let i = 1; i <= 4; i++) {
-            await this.delay(500);
-
-            if (isReachable) {
-                const responseTime = this.generateResponseTime();
-                const ttl = 255;
-                
-                results.push({
-                    sequence: i,
-                    time: responseTime,
-                    ttl: ttl,
-                    success: true
-                });
-
-                this.addTerminalLine(output, 
-                    `Reply from ${target}: bytes=32 time=${responseTime}ms TTL=${ttl}`, 
-                    'success'
-                );
-            } else {
+            for (let i = 1; i <= 4; i++) {
                 await this.delay(500);
-                
-                results.push({
-                    sequence: i,
-                    success: false,
-                    timeout: true
-                });
 
-                this.addTerminalLine(output, 'Request timed out.', 'error');
+                if (isReachable) {
+                    const responseTime = this.generateResponseTime();
+                    const ttl = 255;
+                    
+                    results.push({
+                        sequence: i,
+                        time: responseTime,
+                        ttl: ttl,
+                        success: true
+                    });
+
+                    this.addTerminalLine(output, 
+                        `Reply from ${target}: bytes=32 time=${responseTime}ms TTL=${ttl}`, 
+                        'success'
+                    );
+                } else {
+                    await this.delay(500);
+                    
+                    results.push({
+                        sequence: i,
+                        success: false,
+                        timeout: true
+                    });
+
+                    this.addTerminalLine(output, 'Request timed out.', 'error');
+                }
+            }
+
+            await this.delay(500);
+            this.showPingStatistics(target, results, output);
+        } finally {
+            // Unblock terminal input after ping completes
+            if (inputControl) {
+                inputControl.unblock();
             }
         }
-
-        await this.delay(500);
-        this.showPingStatistics(target, results, output);
     }
 
     async executeWindowsPingSubnet(nf, output) {
@@ -3402,12 +3539,34 @@ distanceToLineSegment(px, py, x1, y1, x2, y2) {
     async deployNetworkInterface(interfaceId) {
     console.log('🚀 Deploying interface:', interfaceId);
 
+    if (this.isInterfaceDeploying) {
+        alert('Please wait — an interface deployment is already in progress.');
+        return;
+    }
+
     // Check if already deployed
     if (window.interfaceManager && window.interfaceManager.isInterfaceDeployed(interfaceId)) {
         alert(`ℹ️ ${interfaceId} Interface Already Deployed!\n\nThis interface is already active in your network.`);
         return;
     }
 
+    const blockedBy = this.getBlockingInterface(interfaceId);
+    if (blockedBy) {
+        alert(
+            `Deploy interfaces in order.\n\n` +
+            `Please deploy ${blockedBy} before ${interfaceId}.`
+        );
+        return;
+    }
+
+    if (window.dockerTerminal) {
+        window.dockerTerminal.ensureOaiWorkshopNetwork();
+    }
+
+    this.isInterfaceDeploying = true;
+    this.updateInterfacePaletteState();
+
+    try {
     if (interfaceId === 'N1') {
         if (window.interfaceManager) {
             await window.interfaceManager.deployN1Interface();
@@ -3518,6 +3677,14 @@ distanceToLineSegment(px, py, x1, y1, x2, y2) {
     }
 }   else {
         alert(`ℹ️ ${interfaceId} Interface\n\nThis interface will be implemented in the next phase.\n\nCurrently N1 and N2 interfaces are available.`);
+    }
+
+    if (window.canvasRenderer) {
+        window.canvasRenderer.render();
+    }
+    } finally {
+        this.isInterfaceDeploying = false;
+        this.updateInterfacePaletteState();
     }
 }
 

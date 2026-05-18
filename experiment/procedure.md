@@ -110,7 +110,7 @@
 
 *Fig: N11 Interface Deployment*
 
-### 12. Deploy N12 Interface (AMF ↔ AUSF)
+### 11. Deploy N12 Interface (AMF ↔ AUSF)
 -   **Action**: Click on **"N12"** in the left sidebar.
 -   **Observation**:
     -   **Canvas**: An AUSF (Authentication Server Function) appears and connects to the Service Bus.
@@ -121,7 +121,7 @@
 
 *Fig: N12 Interface Deployment*
 
-### 13. Deploy N13 Interface (AMF ↔ NRF)
+### 12. Deploy N13 Interface (AMF ↔ NRF)
 -   **Action**: Click on **"N13"** in the left sidebar.
 -   **Observation**:
     -   **Canvas**: An NRF (Network Repository Function) appears and connects to the Service Bus.
@@ -135,19 +135,19 @@
 ## Deploy  Network Interface (Automatic)
 
 Click the **"🚀 Deploy All Interfaces"** button on the top toolbar. 
-This acts as a "Fast Forward" button that executes Steps 1 through 13 automatically in sequence.
+
 
 <img src="images/prd14.png" width="90%">
 
 *Fig:Core Network Deployment*
 
-Deploy All Interfaces button on the top toolbar initiating the automated sequential deployment of all N-interfaces (N1 through N13)
+Deploy All Interfaces button on the top toolbar initiating the automated sequential deployment of all N-interfaces.
 
 <img src="images/prd15.png" width="90%">
 
 *Fig: Core Network Deployed*
 
-All N-interfaces fully deployed with the complete 5G topology visible on the canvas, showing all network functions (AMF, SMF, UPF, UDM, AUSF, PCF, AF, NRF) connected via the Service Bus
+All N-interfaces fully deployed with the complete 5G topology visible on the canvas, showing all network functions (AMF, SMF,UDR, NSSF,  UPF, UDM, AUSF, PCF, AF, NRF) connected via the Service Bus
 
 ### Deploy 5G Network Functions (Docker-Terminal):
 
@@ -170,6 +170,8 @@ docker compose -f docker-compose.yml up -d
 This command initializes the foundational service bus and launches all core 5G network functions:
 - **AMF** (Access and Mobility Management Function)
 - **SMF** (Session Management Function)
+- **UDR** (Unified Data Repository)
+- **NSSF** (Network Slice Selection Function)
 - **UPF** (User Plane Function)
 - **NRF** (Network Repository Function)
 - **UDM** (Unified Data Management)

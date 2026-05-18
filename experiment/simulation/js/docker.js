@@ -32,7 +32,39 @@ class DockerTerminal {
         this.oaiWorkshopNetworkId = this.generateNetworkId();
         this.oaiWorkshopCreatedTime = null;
 
+        try {
+            if (localStorage.getItem('oaiWorkshopNetworkExists') === 'true') {
+                this.oaiWorkshopNetworkExists = true;
+                const savedId = localStorage.getItem('oaiWorkshopNetworkId');
+                if (savedId) {
+                    this.oaiWorkshopNetworkId = savedId;
+                }
+            }
+        } catch (e) {
+            console.warn('Could not restore oaiworkshop network state:', e);
+        }
+
         console.log('✅ DockerTerminal initialized');
+    }
+
+    /**
+     * Ensure oaiworkshop Docker network exists (canvas / manual deploy / compose)
+     */
+    ensureOaiWorkshopNetwork() {
+        if (!this.oaiWorkshopNetworkExists) {
+            this.oaiWorkshopNetworkExists = true;
+            this.oaiWorkshopCreatedTime = Date.now();
+            if (!this.oaiWorkshopNetworkId) {
+                this.oaiWorkshopNetworkId = this.generateNetworkId();
+            }
+            try {
+                localStorage.setItem('oaiWorkshopNetworkExists', 'true');
+                localStorage.setItem('oaiWorkshopNetworkId', this.oaiWorkshopNetworkId);
+            } catch (e) {
+                console.warn('Could not persist oaiworkshop network state:', e);
+            }
+            console.log('✅ oaiworkshop network marked as created');
+        }
     }
 
     /**
@@ -110,8 +142,8 @@ class DockerTerminal {
         let commandHistory = [];
         let historyIndex = -1;
         let currentCommand = '';
+        let cursorPosition = 0;
         let currentInputLine = null;
-        let cursorVisible = true;
         let isCommandRunning = false; // Lock to prevent input during command execution
 
         // Close button
@@ -140,25 +172,20 @@ class DockerTerminal {
             return line;
         };
 
-        // Update input line display
+        // Update input line display (cursor position via left/right arrows)
         const updateInputLine = () => {
             if (currentInputLine) {
-                const cursorChar = cursorVisible ? '▋' : '';
                 const promptClass = isCommandRunning ? 'docker-terminal-prompt-disabled' : 'docker-terminal-prompt';
-                currentInputLine.innerHTML = `<span class="${promptClass}">docker@main></span><span class="docker-terminal-command-text">${this.escapeHtml(currentCommand)}</span><span class="docker-terminal-cursor">${cursorChar}</span>`;
+                const before = this.escapeHtml(currentCommand.slice(0, cursorPosition));
+                const after = this.escapeHtml(currentCommand.slice(cursorPosition));
+                currentInputLine.innerHTML = `<span class="${promptClass}">docker@main></span><span class="docker-terminal-command-text">${before}<span class="docker-terminal-cursor">▋</span>${after}</span>`;
             }
         };
 
-        // Cursor blink
-        const cursorInterval = setInterval(() => {
-            cursorVisible = !cursorVisible;
-            updateInputLine();
-        }, 500);
-
-        // Cleanup on terminal close
-        terminalModal.addEventListener('remove', () => {
-            clearInterval(cursorInterval);
-        });
+        const resetInputState = () => {
+            currentCommand = '';
+            cursorPosition = 0;
+        };
 
         // Keyboard handling for inline input
         content.addEventListener('keydown', async (e) => {
@@ -176,7 +203,7 @@ class DockerTerminal {
                 this.addTerminalLine(output, 'Watch mode stopped.', 'info');
                 this.addTerminalLine(output, '', 'blank');
                 // Create new input line
-                currentCommand = '';
+                resetInputState();
                 currentInputLine = createInputLine();
                 updateInputLine();
                 return;
@@ -191,7 +218,7 @@ class DockerTerminal {
                     currentInputLine.classList.remove('docker-terminal-input-active');
                 }
                 this.addTerminalLine(output, '^C', 'info');
-                currentCommand = '';
+                resetInputState();
                 currentInputLine = createInputLine();
                 updateInputLine();
                 return;
@@ -223,7 +250,7 @@ class DockerTerminal {
                 }
                 
                 // Create new input line
-                currentCommand = '';
+                resetInputState();
                 currentInputLine = createInputLine();
                 updateInputLine();
             } else if (e.key === 'ArrowUp') {
@@ -231,6 +258,7 @@ class DockerTerminal {
                 if (historyIndex > 0) {
                     historyIndex--;
                     currentCommand = commandHistory[historyIndex];
+                    cursorPosition = currentCommand.length;
                     updateInputLine();
                 }
             } else if (e.key === 'ArrowDown') {
@@ -238,16 +266,46 @@ class DockerTerminal {
                 if (historyIndex < commandHistory.length - 1) {
                     historyIndex++;
                     currentCommand = commandHistory[historyIndex];
+                    cursorPosition = currentCommand.length;
                     updateInputLine();
                 } else {
                     historyIndex = commandHistory.length;
-                    currentCommand = '';
+                    resetInputState();
                     updateInputLine();
                 }
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                cursorPosition = Math.max(0, cursorPosition - 1);
+                updateInputLine();
+            } else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                cursorPosition = Math.min(currentCommand.length, cursorPosition + 1);
+                updateInputLine();
+            } else if (e.key === 'Home') {
+                e.preventDefault();
+                cursorPosition = 0;
+                updateInputLine();
+            } else if (e.key === 'End') {
+                e.preventDefault();
+                cursorPosition = currentCommand.length;
+                updateInputLine();
             } else if (e.key === 'Backspace') {
                 e.preventDefault();
-                currentCommand = currentCommand.slice(0, -1);
-                updateInputLine();
+                if (cursorPosition > 0) {
+                    currentCommand =
+                        currentCommand.slice(0, cursorPosition - 1) +
+                        currentCommand.slice(cursorPosition);
+                    cursorPosition--;
+                    updateInputLine();
+                }
+            } else if (e.key === 'Delete') {
+                e.preventDefault();
+                if (cursorPosition < currentCommand.length) {
+                    currentCommand =
+                        currentCommand.slice(0, cursorPosition) +
+                        currentCommand.slice(cursorPosition + 1);
+                    updateInputLine();
+                }
             } else if (e.key === 'Tab') {
                 e.preventDefault();
 
@@ -319,6 +377,7 @@ class DockerTerminal {
                     if (completed.length > input.length) {
                         // Extend by one word
                         currentCommand = completed;
+                        cursorPosition = currentCommand.length;
                         updateInputLine();
                     } else {
                         // Already at ambiguous point — show all matches
@@ -329,13 +388,18 @@ class DockerTerminal {
                         this.addTerminalLine(output, '', 'blank');
                         matches.forEach(m => this.addTerminalLine(output, m, 'info'));
                         this.addTerminalLine(output, '', 'blank');
+                        resetInputState();
                         currentInputLine = createInputLine();
                         updateInputLine();
                     }
                 }
             } else if (e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey) {
                 e.preventDefault();
-                currentCommand += e.key;
+                currentCommand =
+                    currentCommand.slice(0, cursorPosition) +
+                    e.key +
+                    currentCommand.slice(cursorPosition);
+                cursorPosition++;
                 updateInputLine();
             }
         });
@@ -922,7 +986,7 @@ class DockerTerminal {
 
         // Define expected core network NFs
         // Note: ext-dn intentionally excluded (user requested removal)
-        const expectedNFTypes = ['NRF', 'AMF', 'SMF', 'UPF', 'AUSF', 'UDM', 'UDR', 'PCF', 'NSSF', 'MySQL'];
+        const expectedNFTypes = ['NRF', 'AMF', 'SMF', 'UPF', 'AUSF', 'UDM', 'UDR', 'PCF', 'NSSF', 'MySQL', 'AF'];
         
         // Check which NFs already exist
         const existingNFTypes = new Set(existingNFs.map(nf => nf.type));
@@ -967,6 +1031,10 @@ class DockerTerminal {
         if (nfsToStart.length === 0 && !needsNetwork) {
             this.addTerminalLine(output, 'All core network services are already running.', 'info');
             this.addTerminalLine(output, '', 'blank');
+            await this.deployInterfacesForCommand('core', output);
+            if (window.canvasRenderer) {
+                window.canvasRenderer.render();
+            }
             return;
         }
 
@@ -976,9 +1044,8 @@ class DockerTerminal {
 
         // Create network only if it doesn't exist
         if (!this.oaiWorkshopNetworkExists) {
+            this.ensureOaiWorkshopNetwork();
             this.addTerminalLine(output, ' ✔ Network oaiworkshop Created' + ' '.repeat(20) + '0.2s', 'success');
-            this.oaiWorkshopNetworkExists = true;
-            this.oaiWorkshopCreatedTime = Date.now();
             await this.delay(200);
         } else {
             this.addTerminalLine(output, ' ✔ Network oaiworkshop Already exists', 'info');
@@ -1317,8 +1384,8 @@ class DockerTerminal {
         }
 
         const interfacePlanByCommand = {
-            // Core command must never create/access UE or gNB paths
-            core: ['N13', 'N12', 'N11', 'N10', 'N7', 'N5'],
+            // Core command: SBI interfaces + N4/N6 (no gNB/UE)
+            core: ['N13', 'N12', 'N11', 'N10', 'N7', 'N5', 'N22', 'N35', 'N4', 'N6'],
             // gNB command only starts gNB container; UE-dependent interfaces wait for UE command
             gnb: [],
             // After UE starts, deploy remaining radio/access related interfaces
@@ -1329,15 +1396,17 @@ class DockerTerminal {
             N1: 'deployN1Interface',
             N2: 'deployN2Interface',
             N3: 'deployN3Interface',
-            N4: 'deployN4Interface',
+            N4: commandType === 'core' ? 'deployN4CoreInterface' : 'deployN4Interface',
             N5: 'deployN5Interface',
-            N6: 'deployN6Interface',
+            N6: commandType === 'core' ? 'deployN6CoreInterface' : 'deployN6Interface',
             N7: 'deployN7Interface',
             N8: 'deployN8Interface',
             N10: 'deployN10Interface',
             N11: 'deployN11Interface',
             N12: 'deployN12Interface',
-            N13: 'deployN13Interface'
+            N13: 'deployN13Interface',
+            N22: 'deployN22Interface',
+            N35: 'deployN35Interface'
         };
 
         const interfacesToDeploy = interfacePlanByCommand[commandType] || [];
@@ -1382,6 +1451,19 @@ class DockerTerminal {
                 `ℹ No new interfaces deployed for ${commandType} command`,
                 'info'
             );
+        }
+
+        if ((commandType === 'ue' || commandType === 'gnb') && window.interfaceManager) {
+            const allNFs = window.dataStore?.getAllNFs() || [];
+            const gnb = allNFs.find(nf => nf.type === 'gNB');
+            const amf = allNFs.find(nf => nf.type === 'AMF');
+            if (gnb && amf && typeof window.interfaceManager.applyGnbAmfLineOffsets === 'function') {
+                window.interfaceManager.applyGnbAmfLineOffsets(gnb, amf);
+            }
+        }
+
+        if (window.canvasRenderer) {
+            window.canvasRenderer.render();
         }
     }
 
@@ -1444,11 +1526,16 @@ class DockerTerminal {
                     color: '#e91e63',
                     style: 'solid',
                     interfaceType: 'N2',
-                    lineWidth: 3
+                    lineWidth: 3,
+                    lineOffset: -8
                 }
             };
             window.dataStore.addConnection(n2Connection);
             this.addTerminalLine(output, '✅ N2 interface created (gNB ↔ AMF)', 'success');
+        }
+
+        if (window.interfaceManager && typeof window.interfaceManager.applyGnbAmfLineOffsets === 'function') {
+            window.interfaceManager.applyGnbAmfLineOffsets(gnb, amf);
         }
 
         if (window.interfaceManager && !window.interfaceManager.isInterfaceDeployed('N2')) {
@@ -1787,6 +1874,12 @@ class DockerTerminal {
         // Remove network
         this.addTerminalLine(output, ` ✔ Network oaiworkshop Removed${' '.repeat(20)}0.2s`, 'success');
         this.oaiWorkshopNetworkExists = false;
+        try {
+            localStorage.removeItem('oaiWorkshopNetworkExists');
+            localStorage.removeItem('oaiWorkshopNetworkId');
+        } catch (e) {
+            console.warn('Could not clear oaiworkshop network state:', e);
+        }
         this.oaiWorkshopCreatedTime = null;
 
         this.addTerminalLine(output, '', 'blank');
@@ -2216,7 +2309,8 @@ class DockerTerminal {
             { type: 'UDR', ipAddress: '192.168.1.16', port: 8080, httpProtocol: 'HTTP/2' },
             { type: 'PCF', ipAddress: '192.168.1.17', port: 8080, httpProtocol: 'HTTP/2' },
             { type: 'NSSF', ipAddress: '192.168.1.18', port: 8080, httpProtocol: 'HTTP/2' },
-             { type: 'MySQL', ipAddress: '192.168.1.19', port: 3306, httpProtocol: 'HTTP/2' }
+             { type: 'MySQL', ipAddress: '192.168.1.19', port: 3306, httpProtocol: 'HTTP/2' },
+            { type: 'AF', ipAddress: '192.168.1.20', port: 8080, httpProtocol: 'HTTP/2' }
         ];
     }
 
