@@ -1553,13 +1553,7 @@ button:disabled {
 
 .terminal-cursor {
     color: #ffffff;
-    animation: blink 1s step-end infinite;
-    margin-left: 1px;
-}
-
-@keyframes blink {
-    0%, 50% { opacity: 1; }
-    51%, 100% { opacity: 0; }
+    font-weight: bold;
 }
 
 /* Terminal scrollbar */
@@ -1876,13 +1870,7 @@ button:disabled {
 
 .docker-terminal-cursor {
     color: #58a6ff;
-    animation: blink 1s step-end infinite;
-    margin-left: 1px;
-}
-
-@keyframes blink {
-    0%, 50% { opacity: 1; }
-    51%, 100% { opacity: 0; }
+    font-weight: bold;
 }
 
 .docker-terminal-resize-handle {
