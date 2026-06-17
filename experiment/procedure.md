@@ -88,7 +88,16 @@
 
 *Fig: N8 Interface Deployment*
 
-### 9. Deploy N10 Interface (SMF ↔ UDM)
+### 9. Deploy N9 Interface (UPF ↔ UPF)
+-   **Action**: Click on **"N9"** in the left sidebar.
+-   **Observation**:
+    -   **Canvas**: Updates logical connections between distributed UPFs, showing user-plane traffic forwarding paths between the Intermediate UPF (I-UPF) and the PSA UPF.
+    -   **Right Panel**: Shows "N9 Interface Configuration" (UPF → UPF).
+    -   **Logs**: `N9 Interface deployed successfully`.
+
+<img src="images/prd9.png" width="90%">
+
+### 10. Deploy N10 Interface (SMF ↔ UDM)
 -   **Action**: Click on **"N10"** in the left sidebar.
 -   **Observation**:
     -   **Canvas**: Updates logical connections for SMF to access Subscription specific data.
@@ -99,7 +108,7 @@
 
 *Fig: N10 Interface Deployment*
 
-### 10. Deploy N11 Interface (AMF ↔ SMF)
+### 11. Deploy N11 Interface (AMF ↔ SMF)
 -   **Action**: Click on **"N11"** in the left sidebar.
 -   **Observation**:
     -   **Canvas**: Creates a dashed green line between AMF and SMF (SBI).
@@ -110,7 +119,7 @@
 
 *Fig: N11 Interface Deployment*
 
-### 11. Deploy N12 Interface (AMF ↔ AUSF)
+### 12. Deploy N12 Interface (AMF ↔ AUSF)
 -   **Action**: Click on **"N12"** in the left sidebar.
 -   **Observation**:
     -   **Canvas**: An AUSF (Authentication Server Function) appears and connects to the Service Bus.
@@ -121,7 +130,7 @@
 
 *Fig: N12 Interface Deployment*
 
-### 12. Deploy N13 Interface (AMF ↔ NRF)
+### 13. Deploy N13 Interface (AMF ↔ NRF)
 -   **Action**: Click on **"N13"** in the left sidebar.
 -   **Observation**:
     -   **Canvas**: An NRF (Network Repository Function) appears and connects to the Service Bus.
@@ -183,6 +192,8 @@ This command initializes the foundational service bus and launches all core 5G n
 **Verification:**
 Wait 10-15 seconds for all containers to initialize. You should see messages indicating successful creation and startup of each component.
 
+
+
 <img src="images/prd18.png" width="90%">
 
 *Fig: Terminal output showing core network deployment initialization*
@@ -190,6 +201,10 @@ Wait 10-15 seconds for all containers to initialize. You should see messages ind
 <img src="images/prd19.png" width="90%">
 
 *Fig: Successfully deployed core network with all service bus connections established*
+
+If you deploy the core using the terminal, it will also create two additional network interfaces:
+- **N22** between AMF and NSSF
+- **N35** between UDM and UDR
 
 ---
 
