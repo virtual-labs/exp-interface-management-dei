@@ -1151,6 +1151,20 @@ class DockerTerminal {
                         if (mysql) {
                             this.connectMySQLToUDR(mysql);
                         }
+                    } else if (updatedNF.type === 'UPF') {
+                        // Auto deploy N3 interface when UPF becomes stable
+                        const allNFs = window.dataStore?.getAllNFs() || [];
+                        const gnb = allNFs.find(nf => nf.type === 'gNB');
+                        const ue = allNFs.find(nf => nf.type === 'UE');
+                        
+                        if (gnb && ue && window.interfaceManager) {
+                            // Check if N3 is already deployed
+                            if (!window.interfaceManager.isInterfaceDeployed('N3')) {
+                                console.log('🚀 Auto-deploying N3 interface since UPF is now stable...');
+                                // Create N3 connection manually (without redeploying NFs)
+                                this.deployN3Connection(gnb, updatedNF, ue, output);
+                            }
+                        }
                     }
 
                     if (window.canvasRenderer) {
@@ -1384,8 +1398,8 @@ class DockerTerminal {
         }
 
         const interfacePlanByCommand = {
-            // Core command: SBI interfaces + N4/N6 (no gNB/UE)
-            core: ['N13', 'N12', 'N11', 'N10', 'N7', 'N5', 'N22', 'N35', 'N4', 'N6'],
+            // Core command: SBI interfaces + N4/N6 + N9 (no gNB/UE)
+            core: ['N13', 'N12', 'N11', 'N10', 'N7', 'N5', 'N22', 'N35', 'N4', 'N6', 'N9'],
             // gNB command only starts gNB container; UE-dependent interfaces wait for UE command
             gnb: [],
             // After UE starts, deploy remaining radio/access related interfaces
@@ -1401,6 +1415,7 @@ class DockerTerminal {
             N6: commandType === 'core' ? 'deployN6CoreInterface' : 'deployN6Interface',
             N7: 'deployN7Interface',
             N8: 'deployN8Interface',
+            N9: 'deployN9Interface',
             N10: 'deployN10Interface',
             N11: 'deployN11Interface',
             N12: 'deployN12Interface',
@@ -1483,15 +1498,15 @@ class DockerTerminal {
             serviceBus = window.busManager.createBusLine('horizontal', { x: 200, y: 350 }, 800, 'Service Bus');
         }
 
-        // Connect gNB to Service Bus if not already connected
-        if (serviceBus && window.busManager) {
-            const existingBusConnections = window.dataStore.getBusConnectionsForNF(gnb.id) || [];
-            const alreadyConnected = existingBusConnections.some(conn => conn.busId === serviceBus.id);
-            if (!alreadyConnected) {
-                window.busManager.connectNFToBus(gnb.id, serviceBus.id);
-                this.addTerminalLine(output, '✅ gNB connected to Service Bus', 'success');
-            }
-        }
+        // Connect gNB to Service Bus if not already connected (Disabled per user request)
+        // if (serviceBus && window.busManager) {
+        //     const existingBusConnections = window.dataStore.getBusConnectionsForNF(gnb.id) || [];
+        //     const alreadyConnected = existingBusConnections.some(conn => conn.busId === serviceBus.id);
+        //     if (!alreadyConnected) {
+        //         window.busManager.connectNFToBus(gnb.id, serviceBus.id);
+        //         this.addTerminalLine(output, '✅ gNB connected to Service Bus', 'success');
+        //     }
+        // }
 
         // Create N2 interface connection: gNB -> AMF
         const allNFs = window.dataStore.getAllNFs() || [];
@@ -1852,23 +1867,47 @@ class DockerTerminal {
             }
         }
 
-        // Also clear buses and bus connections
-        if (window.dataStore) {
-            const allBuses = window.dataStore.getAllBuses() || [];
-            const allBusConnections = window.dataStore.getAllBusConnections() || [];
+        // Also clear buses and bus connections (Disabled per user request)
+        // if (window.dataStore) {
+        //     const allBuses = window.dataStore.getAllBuses() || [];
+        //     const allBusConnections = window.dataStore.getAllBusConnections() || [];
 
-            if (allBuses.length > 0 || allBusConnections.length > 0) {
-                const busConnectionIds = allBusConnections.map(bc => bc.id);
-                const busIds = allBuses.map(bus => bus.id);
+        //     if (allBuses.length > 0 || allBusConnections.length > 0) {
+        //         const busConnectionIds = allBusConnections.map(bc => bc.id);
+        //         const busIds = allBuses.map(bus => bus.id);
 
-                busConnectionIds.forEach(busConnId => {
-                    window.dataStore.removeBusConnection(busConnId);
-                });
+        //         busConnectionIds.forEach(busConnId => {
+        //             window.dataStore.removeBusConnection(busConnId);
+        //         });
 
-                busIds.forEach(busId => {
-                    window.dataStore.removeBus(busId);
-                });
-            }
+        //         busIds.forEach(busId => {
+        //             window.dataStore.removeBus(busId);
+        //         });
+        //     }
+        // }
+        
+        // Clear interface manager's deployed interfaces so they can be redeployed
+        if (window.interfaceManager) {
+            window.interfaceManager.deployedInterfaces.clear();
+            console.log('✅ InterfaceManager deployedInterfaces cleared');
+        }
+        
+        // Clear checkmarks and deployed classes from sidebar interface items
+        const palette = document.querySelector('.nf-palette');
+        if (palette) {
+            const items = palette.querySelectorAll('.network-interface-item');
+            items.forEach(item => {
+                item.classList.remove('deployed');
+                const check = item.querySelector('.deployed-check');
+                if (check) {
+                    check.remove();
+                }
+            });
+        }
+        
+        // Update UI palette state
+        if (window.uiController && window.uiController.updateInterfacePaletteState) {
+            window.uiController.updateInterfacePaletteState();
         }
 
         // Remove network
@@ -2969,6 +3008,92 @@ class DockerTerminal {
             if (window.canvasRenderer) {
                 window.canvasRenderer.render();
             }
+        }
+    }
+    
+    /**
+     * Deploy N3 interface connections (gNB ↔ UPF, using existing NFs)
+     * @param {Object} gnb - Existing gNB NF object
+     * @param {Object} upf - Existing UPF NF object 
+     * @param {Object} ue - Existing UE NF object
+     * @param {HTMLElement} output - Terminal output element
+     */
+    deployN3Connection(gnb, upf, ue, output) {
+        if (!gnb || !upf || !ue || !window.dataStore) {
+            console.warn('⚠️ Cannot deploy N3 connection: Missing required NFs');
+            return;
+        }
+        
+        // Check if N3 connection already exists
+        const allConnections = window.dataStore.getAllConnections() || [];
+        const n3Exists = allConnections.some(conn => 
+            (conn.sourceId === gnb.id && conn.targetId === upf.id) ||
+            (conn.sourceId === upf.id && conn.targetId === gnb.id) && 
+            (conn.options?.interfaceType === 'N3' || conn.options?.label === 'N3 Tunnel')
+        );
+        
+        if (n3Exists) {
+            console.log('ℹ️ N3 connection already exists');
+            if (output) {
+                this.addTerminalLine(output, 'ℹ N3 connection already exists', 'info');
+            }
+            return;
+        }
+        
+        // Create gNB ↔ UPF (N3) connection
+        const n3Connection = {
+            id: `conn-n3-${Date.now()}`,
+            sourceId: gnb.id,
+            targetId: upf.id,
+            type: 'manual',
+            showVisual: true,
+            createdAt: new Date(),
+            options: {
+                label: 'N3 Tunnel',
+                color: '#f39c12',
+                style: 'solid',
+                interfaceType: 'N3',
+                lineWidth: 4,
+                isDashed: false
+            }
+        };
+        
+        window.dataStore.addConnection(n3Connection);
+        console.log('✅ N3 Tunnel connection created (gNB ↔ UPF)');
+        
+        // Mark N3 interface as deployed in interfaceManager
+        if (window.interfaceManager) {
+            const n3Def = window.interfaceManager.interfaceDefinitions?.['N3'];
+            if (n3Def) {
+                window.interfaceManager.deployedInterfaces.set('N3', {
+                    interface: n3Def,
+                    nfs: { UE: ue, gNB: gnb, UPF: upf },
+                    deployedAt: new Date()
+                });
+                
+                // Update left sidebar to mark N3 as deployed
+                window.interfaceManager.markInterfaceDeployed('N3');
+                
+                // Log deployment
+                if (window.logEngine) {
+                    window.logEngine.addLog('system', 'SUCCESS',
+                        'N3 Interface deployed successfully', {
+                        components: 'UE, gNB, UPF',
+                        protocol: 'GTP-U (GPRS Tunneling Protocol - User Plane)',
+                        type: 'User Plane',
+                        flow: 'UE → gNB (Radio) → UPF (N3 Tunnel)',
+                        dataPath: 'Complete user data path established'
+                    });
+                }
+            }
+        }
+        
+        if (output) {
+            this.addTerminalLine(output, '✅ N3 Interface deployed (gNB ↔ UPF)', 'success');
+        }
+        
+        if (window.canvasRenderer) {
+            window.canvasRenderer.render();
         }
     }
 }

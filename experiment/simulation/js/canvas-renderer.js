@@ -136,6 +136,14 @@ class CanvasRenderer {
             this.drawConnection(conn);
         });
 
+        // Draw N9 Interface if deployed (loopback on UPF)
+        if (window.interfaceManager && window.interfaceManager.isInterfaceDeployed('N9')) {
+            const upf = allNFs.find(nf => nf.type === 'UPF');
+            if (upf) {
+                this.drawN9Interface(upf);
+            }
+        }
+
         // Draw NFs on top (with special handling for Data Network)
 allNFs.forEach(nf => {
     if (nf.type === 'DataNetwork') {
@@ -147,6 +155,35 @@ allNFs.forEach(nf => {
 
 console.log('✅ Render complete');
 }
+
+    /**
+     * Draw N9 Interface (loopback on UPF)
+     */
+    drawN9Interface(upf) {
+        const x = upf.position.x;
+        const y = upf.position.y;
+        const width = 40;
+        const height = 40;
+
+        // Draw loopback (U-shape) around UPF (down side)
+        this.ctx.strokeStyle = '#95a5a6';
+        this.ctx.lineWidth = 3;
+        this.ctx.beginPath();
+        
+        // U-shaped loopback at bottom (down)
+        this.ctx.moveTo(x + 5, y + height + 5);
+        this.ctx.lineTo(x + 5, y + height + 15);
+        this.ctx.lineTo(x + width - 5, y + height + 15);
+        this.ctx.lineTo(x + width - 5, y + height + 5);
+        this.ctx.stroke();
+
+        // Draw N9 label below
+        this.ctx.fillStyle = '#95a5a6';
+        this.ctx.font = 'bold 10px Arial';
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+        this.ctx.fillText('N9', x + width / 2, y + height + 25);
+    }
 
     /**
      * Draw grid background

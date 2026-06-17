@@ -128,6 +128,19 @@ class InterfaceManager {
     requiredNFs: ['AMF', 'UDM'],
     flow: []
 },
+'N9': {
+    id: 'N9',
+    name: 'N9 Interface',
+    from: 'UPF',
+    to: 'UPF',
+    protocol: 'Internal',
+    type: 'Internal',
+    description: 'UPF internal interface (loopback)',
+    color: '#95a5a6',
+    icon: '🔄',
+    requiredNFs: ['UPF'],
+    flow: []
+},
 'N10': {
     id: 'N10',
     name: 'N10 Interface',
@@ -723,6 +736,55 @@ const ueToGnb = {
     console.log('✅ N3 Interface deployment complete');
     console.log('📊 Data Path: UE → gNB → UPF (N3)');
     return { ue, gnb, upf };
+}
+
+/**
+ * Deploy N9 Interface (UPF internal loopback)
+ */
+async deployN9Interface() {
+    console.log('🚀 Deploying N9 Interface...');
+
+    const n9Def = this.interfaceDefinitions['N9'];
+
+    // Step 1: Get or deploy UPF
+    let upf = null;
+    const allNFs = window.dataStore?.getAllNFs() || [];
+    upf = allNFs.find(nf => nf.type === 'UPF');
+    
+    if (!upf) {
+        upf = await this.deployNF('UPF', { x: 600, y: 150 });
+        await this.delay(500);
+    }
+
+    await this.delay(500);
+
+    // Step 2: Create N9 interface (visual representation - loopback)
+    console.log('🔗 Creating N9 interface visual (UPF loopback)...');
+
+    // Step 3: Mark N9 as deployed
+    this.deployedInterfaces.set('N9', {
+        interface: n9Def,
+        nfs: { UPF: upf },
+        deployedAt: new Date()
+    });
+
+    // Step 4: Update left sidebar
+    this.markInterfaceDeployed('N9');
+
+    // Step 5: Log deployment
+    if (window.logEngine) {
+        window.logEngine.addLog('system', 'SUCCESS',
+            'N9 Interface deployed successfully', {
+            components: 'UPF',
+            protocol: 'Internal (Loopback)',
+            type: 'Internal',
+            flow: 'UPF internal loopback'
+        });
+    }
+
+    console.log('✅ N9 Interface deployment complete');
+    console.log('📊 N9: UPF internal loopback');
+    return { upf };
 }
 
 /**
@@ -2288,6 +2350,23 @@ getN7Configuration() {
  */
 getN8Configuration() {
     const deployment = this.deployedInterfaces.get('N8');
+    
+    if (!deployment) {
+        return null;
+    }
+
+    return {
+        interface: deployment.interface,
+        nfs: deployment.nfs,
+        deployedAt: deployment.deployedAt
+    };
+}
+
+/**
+ * Get N9 Configuration for display
+ */
+getN9Configuration() {
+    const deployment = this.deployedInterfaces.get('N9');
     
     if (!deployment) {
         return null;

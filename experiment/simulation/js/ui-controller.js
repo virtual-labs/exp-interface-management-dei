@@ -5,7 +5,7 @@
 class UIController {
     /** Manual experiment order — deploy each only after prior interfaces are done */
     static INTERFACE_DEPLOY_SEQUENCE = [
-        'N1', 'N2', 'N3', 'N4', 'N5', 'N6', 'N7', 'N8', 'N10', 'N11', 'N12', 'N13'
+        'N1', 'N2', 'N3', 'N4', 'N5', 'N6', 'N7', 'N8', 'N9', 'N10', 'N11', 'N12', 'N13'
     ];
 
     constructor() {
@@ -33,7 +33,7 @@ class UIController {
     }
 
     /**
-     * Grey out sidebar items until prerequisites are deployed
+     * Mark deployed interfaces with checkmarks, don't block any interface
      */
     updateInterfacePaletteState() {
         const palette = document.querySelector('.nf-palette');
@@ -44,7 +44,6 @@ class UIController {
             if (!interfaceId) return;
 
             const deployed = window.interfaceManager?.isInterfaceDeployed(interfaceId);
-            const blockedBy = this.getBlockingInterface(interfaceId);
             const busy = this.isInterfaceDeploying;
 
             if (deployed) {
@@ -52,16 +51,12 @@ class UIController {
                 item.style.opacity = '1';
                 item.style.cursor = 'default';
                 item.title = `${interfaceId} deployed`;
-            } else if (blockedBy || busy) {
-                item.style.opacity = '0.45';
-                item.style.cursor = 'not-allowed';
-                item.title = busy
-                    ? 'Wait for current deployment to finish'
-                    : `Deploy ${blockedBy} first`;
             } else {
                 item.style.opacity = '1';
                 item.style.cursor = 'pointer';
-                item.title = `Deploy ${interfaceId}`;
+                item.title = busy
+                    ? 'Wait for current deployment to finish'
+                    : `Deploy ${interfaceId}`;
             }
         });
     }
@@ -164,6 +159,14 @@ class UIController {
     color: '#3498db',
     icon: '👤',
     tooltip: 'Subscriber Data Management'
+},
+{
+    id: 'N9',
+    name: 'N9 Interface',
+    description: 'UPF Internal (Loopback)',
+    color: '#95a5a6',
+    icon: '🔄',
+    tooltip: 'UPF internal loopback interface'
 },
 {
     id: 'N10',
@@ -947,6 +950,14 @@ showAddNetworkInterfaceModal() {
             deployed: window.interfaceManager?.isInterfaceDeployed('N8') || false
         },
         {
+            id: 'N9',
+            name: 'N9 Interface',
+            description: 'UPF Internal (Loopback)',
+            color: '#95a5a6',
+            icon: '🔄',
+            deployed: window.interfaceManager?.isInterfaceDeployed('N9') || false
+        },
+        {
             id: 'N10',
             name: 'N10 Interface',
             description: 'SMF ↔ UDM (HTTP/2)',
@@ -1193,6 +1204,10 @@ if (clickedInterface) {
     } else if (clickedInterface.interface === 'N8') {
         console.log('💙 N8 Interface label clicked!');
         this.showN8InterfaceConfiguration();
+        return;
+    } else if (clickedInterface.interface === 'N9') {
+        console.log('🔄 N9 Interface label clicked!');
+        this.showN9InterfaceConfiguration();
         return;
     } else if (clickedInterface.interface === 'N10') {  
         console.log('💛 N10 Interface label clicked!');
@@ -1588,6 +1603,9 @@ if (clickedInterface) {
         cancelBtn.addEventListener('click', () => {
             this.hideNFConfigPanel();
         });
+        
+        // Block special characters in IP and port inputs
+        this.blockSpecialCharactersInInputs();
     }
 
     showNFConfigPanel(nf) {
@@ -1670,14 +1688,18 @@ if (clickedInterface) {
         });
 
         this.setupPingTroubleshootingHandlers(nf.id);
+        
+        // Block special characters in IP and port inputs
+        this.blockSpecialCharactersInInputs();
     }
 
     startNewNetworkFunction(nfType) {
         const ipAddress = document.getElementById('config-ip')?.value;
-        const port = parseInt(document.getElementById('config-port')?.value);
+        const portValue = document.getElementById('config-port')?.value;
+        const port = parseInt(portValue, 10);
         const httpProtocol = document.getElementById('config-http-protocol')?.value;
 
-        if (!ipAddress || !port) {
+        if (!ipAddress || !portValue) {
             alert('Please fill all required fields');
             return;
         }
@@ -1686,7 +1708,12 @@ if (clickedInterface) {
         const name = `${nfType}-${count}`;
 
         if (!this.isValidIP(ipAddress)) {
-            alert('❌ Invalid IP address format!\n\nPlease enter a valid IP address (e.g., 192.168.1.20)');
+            alert('❌ Invalid IP address!\n\nPlease enter a valid IP address from 1.0.0.0 to 255.255.255.255.\nOnly dots are allowed as separators, and 0.0.0.0 is not permitted.');
+            return;
+        }
+
+        if (!this.isValidPort(portValue)) {
+            alert('❌ Invalid port!\n\nPlease enter a port number with 4 to 6 digits only (no special characters).');
             return;
         }
 
@@ -1808,16 +1835,22 @@ if (clickedInterface) {
 
     saveNFConfig(nfId) {
         const ipAddress = document.getElementById('config-ip')?.value;
-        const port = parseInt(document.getElementById('config-port')?.value);
+        const portValue = document.getElementById('config-port')?.value;
+        const port = parseInt(portValue, 10);
         const httpProtocol = document.getElementById('config-http-protocol')?.value;
 
-        if (!ipAddress || !port) {
+        if (!ipAddress || !portValue) {
             alert('Please fill all required fields');
             return;
         }
 
         if (!this.isValidIP(ipAddress)) {
-            alert('❌ Invalid IP address format!\n\nPlease enter a valid IP address (e.g., 192.168.1.20)');
+            alert('❌ Invalid IP address!\n\nPlease enter a valid IP address from 1.0.0.0 to 255.255.255.255.\nOnly dots are allowed as separators, and 0.0.0.0 is not permitted.');
+            return;
+        }
+
+        if (!this.isValidPort(portValue)) {
+            alert('❌ Invalid port!\n\nPlease enter a port number with 4 to 6 digits only (no special characters).');
             return;
         }
 
@@ -2994,8 +3027,89 @@ if (clickedInterface) {
     }
 
     isValidIP(ip) {
-        const ipRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-        return ipRegex.test(ip);
+        if (!ip) return false;
+        const ipRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[1-9])\.)(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){2}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+        if (!ipRegex.test(ip)) return false;
+        const parts = ip.split('.').map(Number);
+        if (parts[0] === 0) return false;
+        return true;
+    }
+
+    isValidPort(port) {
+        if (typeof port === 'string') {
+            if (!/^\d+$/.test(port)) return false;
+            port = parseInt(port, 10);
+        }
+        if (isNaN(port)) return false;
+        const portStr = port.toString();
+        return portStr.length >= 4 && portStr.length <= 6;
+    }
+    
+    blockSpecialCharactersInInputs() {
+        const ipInput = document.getElementById('config-ip');
+        const portInput = document.getElementById('config-port');
+        
+        // Define disallowed keys/characters
+        const disallowedKeys = ['/', '*', '-', '+', ',', '!', '@', '#', '$', '%', '^', '&', '(', ')', '=', '_', '`', '~', '[', ']', '{', '}', '|', '\\', ';', ':', "'", '"', '<', '>', '?'];
+        const disallowedCharsRegex = /[/*\-+,!@#$%^&()=_`~\[\]{}|\\;:'"<>?]/g;
+        const lettersRegex = /[a-zA-Z]/g;
+        
+        // Helper function to handle input and keydown, avoiding duplicate listeners
+        const setupInput = (input, isIP) => {
+            if (!input) return;
+            
+            // Remove existing listeners by cloning the node (this clears all event listeners)
+            const newInput = input.cloneNode(true);
+            input.parentNode.replaceChild(newInput, input);
+            
+            // Add new keydown listener
+            newInput.addEventListener('keydown', (e) => {
+                // Allow backspace, delete, arrow keys, home, end, tab, enter
+                const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'Tab', 'Enter'];
+                if (allowedKeys.includes(e.key) || e.ctrlKey || e.metaKey) {
+                    return;
+                }
+                
+                // Block disallowed keys and letters
+                if (disallowedKeys.includes(e.key) || /[a-zA-Z]/.test(e.key)) {
+                    e.preventDefault();
+                    return;
+                }
+                
+                // For IP, only allow digits and .
+                if (isIP) {
+                    if (!/[0-9.]/.test(e.key)) {
+                        e.preventDefault();
+                        return;
+                    }
+                } else {
+                    // For port, only allow digits
+                    if (!/[0-9]/.test(e.key)) {
+                        e.preventDefault();
+                        return;
+                    }
+                }
+            });
+            
+            // Add input listener to clean up pasted content
+            newInput.addEventListener('input', (e) => {
+                let cleaned = e.target.value.replace(disallowedCharsRegex, '').replace(lettersRegex, '');
+                if (isIP) {
+                    // Remove anything that's not digit or .
+                    cleaned = cleaned.replace(/[^0-9.]/g, '');
+                } else {
+                    // Remove anything that's not digit
+                    cleaned = cleaned.replace(/[^0-9]/g, '');
+                }
+                if (e.target.value !== cleaned) {
+                    e.target.value = cleaned;
+                }
+            });
+        };
+        
+        // Setup both inputs
+        setupInput(ipInput, true);
+        setupInput(portInput, false);
     }
 
     isNFTypeAlreadyExists(type) {
@@ -3362,6 +3476,29 @@ if (window.interfaceManager && window.interfaceManager.isInterfaceDeployed('N13'
     }
 }
 
+// Check N9 Interface (UPF loopback)
+if (window.interfaceManager && window.interfaceManager.isInterfaceDeployed('N9')) {
+    const n9Config = window.interfaceManager.getN9Configuration();
+    if (n9Config && n9Config.nfs) {
+        const { UPF } = n9Config.nfs;
+        if (UPF) {
+            // N9 label is at: x = UPF.x + width (40) + 18, y = UPF.y + height (40)/2
+            const labelX = UPF.position.x + 40 + 18;
+            const labelY = UPF.position.y + 20;
+            const labelWidth = 20;
+            const labelHeight = 12;
+            
+            if (x >= labelX - labelWidth/2 && 
+                x <= labelX + labelWidth/2 &&
+                y >= labelY - labelHeight/2 && 
+                y <= labelY + labelHeight/2) {
+                console.log('✅ Click detected on N9 label');
+                return { interface: 'N9' };
+            }
+        }
+    }
+}
+
 return null;
 }
 
@@ -3635,6 +3772,15 @@ distanceToLineSegment(px, py, x1, y1, x2, y2) {
         await window.interfaceManager.deployN8Interface();
         await this.updateNFsFromTopology(interfaceId);
         this.showN8InterfaceConfiguration();
+    } else {
+        console.error('❌ InterfaceManager not available');
+        alert('Interface Manager not initialized. Please refresh the page.');
+    }
+} else if (interfaceId === 'N9') {
+    if (window.interfaceManager) {
+        await window.interfaceManager.deployN9Interface();
+        await this.updateNFsFromTopology(interfaceId);
+        this.showN9InterfaceConfiguration();
     } else {
         console.error('❌ InterfaceManager not available');
         alert('Interface Manager not initialized. Please refresh the page.');
@@ -4235,6 +4381,64 @@ showN8InterfaceConfiguration() {
         ${this.generateCleanNFConfigHTML(gNB, 'gNB')}
         ${this.generateCleanNFConfigHTML(AMF, 'AMF')}
         ${this.generateCleanNFConfigHTML(UDM, 'UDM')}
+
+        <button class="btn btn-secondary btn-block" id="btn-close-config" style="margin-top: 20px;">Close Configuration</button>
+    `;
+
+    const closeBtn = document.getElementById('btn-close-config');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            this.hideNFConfigPanel();
+        });
+    }
+}
+
+/**
+ * Show N9 Interface Configuration Panel
+ */
+showN9InterfaceConfiguration() {
+    const configForm = document.getElementById('config-form');
+    if (!configForm) return;
+
+    if (!window.interfaceManager) {
+        console.error('❌ InterfaceManager not available');
+        return;
+    }
+
+    const n9Config = window.interfaceManager.getN9Configuration();
+    if (!n9Config) {
+        alert('N9 Interface not deployed yet. Please deploy N9 first.');
+        return;
+    }
+
+    const interfaceData = n9Config.interface;
+    const { UPF } = n9Config.nfs;
+
+    configForm.innerHTML = `
+        <h4>🔄 ${interfaceData.name} Configuration</h4>
+        
+        <div style="background: rgba(149, 165, 166, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #95a5a6;">
+            <h5 style="color: #95a5a6; margin-bottom: 10px;">Interface Details</h5>
+            <div style="font-size: 12px; line-height: 1.8;">
+                <strong>Name:</strong> ${interfaceData.name}<br>
+                <strong>From:</strong> ${interfaceData.from}<br>
+                <strong>To:</strong> ${interfaceData.to}<br>
+                <strong>Protocol:</strong> ${interfaceData.protocol}<br>
+                <strong>Type:</strong> ${interfaceData.type}<br>
+                <strong>Status:</strong> <span style="color: #2ecc71;">●</span> Active
+            </div>
+        </div>
+
+        <div style="background: rgba(46, 204, 113, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #2ecc71;">
+            <h5 style="color: #2ecc71; margin-bottom: 10px;">Interface Purpose</h5>
+            <div style="font-size: 11px; line-height: 2;">
+                <div>✓ UPF internal loopback interface</div>
+                <div>✓ Used for internal data processing</div>
+                <div>✓ Enables UPF to route traffic internally</div>
+            </div>
+        </div>
+
+        ${this.generateCleanNFConfigHTML(UPF, 'UPF')}
 
         <button class="btn btn-secondary btn-block" id="btn-close-config" style="margin-top: 20px;">Close Configuration</button>
     `;
