@@ -5,7 +5,7 @@ Consider a 5G network as a big company where various departments must communicat
 Let's first examine the key participants in a 5G network before delving into the interfaces:
 
 - **User equipment (UE)**: This is your tablet, smartphone, or any other gadget that is linked to the 5G network.
-- **gNB (Next Generation NodeB)/RAN(Radio Access Network)**: This is the 5G base station, the tower or antenna that your phone connects to wirelessly. It's the radio access point.
+- **The gNB (Next Generation NodeB)/RAN (Radio Access Network)**: This is the 5G base station, the tower or antenna that your phone connects to wirelessly. It's the radio access point.
 - **AMF (Access and Mobility Management Function)**: Think of this as the reception desk. It handles your device's registration, authentication (making sure you're allowed to use the network), and tracks where your device is.
 - **SMF (Session Management Function)**: This is like the logistics manager. It sets up and manages your data sessions, deciding how your internet traffic should be routed.
 - **UPF (User Plane Function)**: This is the actual data highway. All your internet traffic (videos, messages, web browsing) flows through here.
@@ -18,6 +18,8 @@ Now let's see how these components talk to each other.
 <img src="images/fig1.svg" alt="5G Network Components Overview" width="60%">
 
 *Fig: 5G Network Components Overview*
+
+This diagram illustrates the primary components of a 5G network architecture and the standardized interfaces that connect them.
 
 ### 1.1 5G Interfaces Overview
 
@@ -47,11 +49,13 @@ This interface is used to exchange Non-Access Stratum (NAS) messages, which carr
 
 *Fig: N1 Interface - NAS Message Flow*
 
+This figure depicts the logical N1 connection used for transmitting NAS control messages securely between the User Equipment and the AMF.
+
 ### 2.1 Interface Flow:
 
 - **Step 1**: UE creates NAS messages (Registration Request)
 - **Step 2**: Sends to gNB via RRC (Radio Resource Control)
-- **Step 3**: gNB encapsulates NAS in NGAP and forwards to AMF via N2
+- **Step 3**: The gNB encapsulates NAS in NGAP and forwards to AMF via N2
 - **Step 4**: AMF processes NAS message and responds back
 
 ### 2.2 Initial Connection Setup
@@ -148,6 +152,8 @@ The protocol used here is NGAP (Next Generation Application Protocol). It's spec
 <img src="images/fig3.svg" alt="N2 Interface - gNB to AMF Control Signaling" width="50%">
 
 *Fig: N2 Interface - gNB to AMF Control Signaling*
+
+This illustration shows the N2 interface, which manages control-plane signaling and NGAP message exchange between the base station and the core network.
 
 **a) N2 Interface Purpose:**
 
@@ -250,6 +256,8 @@ The IP addressing here is straightforward: the gNB has an IP address that can re
 
 *Fig: N3 Interface - GTP-U Tunneling Between gNB and UPF*
 
+This diagram highlights the N3 interface where actual user data is transported through GTP-U tunnels between the radio access network and the user plane function.
+
 ### N3 Interface Purpose:
 
 - **User Plane**: Carries actual user data through GTP-U tunnels
@@ -272,8 +280,8 @@ Data over N3 travels using GTP-U (General packet radio service Tunneling Protoco
 
 <ol type="a">
   <li>UE sends uplink data to gNB.</li>
-  <li>gNB wraps the data into GTP-U packets.</li>
-  <li>gNB uses the TEID (Tunnel Endpoint Identifier) to forward the packet to the correct UPF over N3.</li>
+  <li>The gNB wraps the data into GTP-U packets.</li>
+  <li>The gNB uses the TEID (Tunnel Endpoint Identifier) to forward the packet to the correct UPF over N3.</li>
   <li>UPF removes the GTP-U header and forwards the packet to the Data Network (Internet, IMS, etc.) via N6 interface.</li>
   <li>For downlink, the reverse process happens: UPF → gNB → UE.</li>
 </ol>
@@ -282,9 +290,13 @@ Data over N3 travels using GTP-U (General packet radio service Tunneling Protoco
 
 *Fig: N3 Uplink and Downlink Data Flow*
 
+This figure demonstrates the bi-directional flow of user data, showing how uplink packets reach the internet and downlink packets return to the device.
+
 <img src="images/fig6.svg" alt="N3 Packet Encapsulation Structure" width="40%">
 
 *Fig: N3 Packet Encapsulation Structure*
+
+This image details the encapsulation process, revealing how standard IP packets are wrapped with GTP-U, UDP, and outer IP headers for transport.
 
 **Important Point**: The N3 interface carries ONLY user data, NOT control signaling.
 
@@ -306,6 +318,8 @@ This ensures that there is no call drop or no session interruption.
 <img src="images/fig7.svg" alt="N3 Handover Process Between gNBs" width="40%">
 
 *Fig: N3 Handover Process Between gNBs*
+
+This diagram explains the handover procedure, illustrating how the user plane path is dynamically switched between base stations without interrupting the session.
 
 ### 4.1 5G Uplink Data Flow (UE → Internet)
 
@@ -358,6 +372,8 @@ The protocol used is PFCP (Packet Forwarding Control Protocol). It's specificall
 <img src="images/fig8.svg" alt="N4 Interface - SMF Controlling UPF via PFCP" width="50%">
 
 *Fig: N4 Interface - SMF Controlling UPF via PFCP*
+
+This figure portrays the N4 interface, through which the Session Management Function provisions routing rules and policies to the User Plane Function.
 
 ### N4 Interface Purpose:
 
@@ -426,6 +442,8 @@ N4 follows the Control and User Plane Separation (CUPS) architecture.
 
 *Fig: N4 Control and User Plane Separation (CUPS) Architecture*
 
+This illustration showcases the CUPS architecture, clearly separating the SMF's policy-making role from the UPF's data-forwarding responsibilities.
+
 ## 6. What is N5 Interface?
 
 The N5 interface connects the AF (Application Function) to the PCF (Policy Control Function). This interface is used when applications (like video services, gaming apps, enterprise apps, edge applications) need to request specific network policies.
@@ -439,6 +457,8 @@ The protocol used here is HTTP/2-based RESTful APIs. The AF and PCF exchange JSO
 <img src="images/fig10.svg" alt="N5 Interface - Application Function to Policy Control Function" width="50%">
 
 *Fig: N5 Interface - Application Function to Policy Control Function*
+
+This diagram represents the N5 interface, which allows external applications to request specific Quality of Service policies from the 5G core.
 
 ### N5 Interface Purpose:
 
@@ -498,6 +518,8 @@ The N5 interface is the reference point defined between the PCF and an AF. In th
 
 *Fig: N5 Working Principle - Policy Authorization Flow*
 
+This figure outlines the policy authorization workflow, from an application's initial request to the final enforcement of QoS rules across the network.
+
 ## 7. What is N6 Interface?
 
 The N6 interface is the connection between the UPF and the Data Network (internet). This is the exit point from the 5G network. After the data travels through N3 from the gNB to the UPF, it then goes out through N6 to reach the internet.
@@ -511,6 +533,8 @@ When UE request a webpage, it's IP packet travels through N3 (wrapped in GTP), g
 <img src="images/fig12.svg" alt="N6 Interface - UPF to Data Network Gateway" width="50%">
 
 *Fig: N6 Interface - UPF to Data Network Gateway*
+
+This image depicts the N6 interface serving as the gateway where user traffic exits the 5G system and enters external data networks.
 
 #### N6 Interface Purpose:
 
@@ -586,7 +610,7 @@ The N6 interface relies on standard IP routing and network-level protocols rathe
 
 1. UE generates data (e.g., browsing, video, IoT traffic).
 2. Data reaches the gNB using N3.
-3. gNB forwards traffic to UPF via N3.
+3. The gNB forwards traffic to UPF via N3.
 4. UPF applies:
    - Packet routing and forwarding
    - QoS rules (QoS Flow → PDR rules)
@@ -601,6 +625,8 @@ External network → UPF → gNB → UE.
 <img src="images/fig13.svg" alt="N6 Working Principle - User Data Routing" width="40%">
 
 *Fig: N6 Working Principle - User Data Routing*
+
+This diagram illustrates the complete routing path of user data as it traverses the UPF, undergoes policy enforcement, and reaches its final destination.
 
 ## 8. 5G Signalling Summary
 
