@@ -1,3 +1,5 @@
+**Video Walkthrough:** We have created a video demonstrating this experiment where we perform the procedure and explain the steps. [Click here to watch on YouTube]( https://youtu.be/ANEiKD3O1Bw)
+
 ## Deploy  Network Interface
 
 ### 1. Deploy N1 Interface (UE ↔ AMF)
