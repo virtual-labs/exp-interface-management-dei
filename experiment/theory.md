@@ -1,3 +1,6 @@
+> **Audio Explanation:** For a comprehensive understanding of these theoretical concepts, you can listen on YouTube. 
+> [**Click here to listen the audio**](https://youtu.be/mn1nxeASkSs)
+
 ## 1. Introduction to 5G Networks
 
 Consider a 5G network as a big company where various departments must communicate with one another in order to complete tasks. In 5G, various parts known as "network functions" that perform particular tasks must communicate with one another via standardized connections. These connections, which go by the names N1, N2, N3, and so forth, are referred to as interfaces.
