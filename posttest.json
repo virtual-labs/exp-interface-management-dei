@@ -1,0 +1,263 @@
+{
+  "version": 2.0,
+  "filters": {
+    "difficulty": ["beginner", "intermediate"]
+  },
+  "questions": [
+    {
+      "question": "Q1. In the deployment procedure, the N1 interface establishes a connection between which two entities?",
+      "answers": {
+        "a": "UE and AMF",
+        "b": "gNB and UPF",
+        "c": "SMF and UDM",
+        "d": "AF and PCF"
+      },
+      "correctAnswer": "a",
+      "difficulty": "beginner",
+      "explanations": {
+        "a": "Correct.",
+        "b": "Incorrect.",
+        "c": "Incorrect.",
+        "d": "Incorrect."
+      }
+    },
+    {
+      "question": "Q2. The N2 interface represents the control plane connection between:",
+      "answers": {
+        "a": "UE and gNB",
+        "b": "gNB and AMF",
+        "c": "gNB and UPF",
+        "d": "AMF and SMF"
+      },
+      "correctAnswer": "b",
+      "difficulty": "beginner",
+      "explanations": {
+        "a": "Incorrect.",
+        "b": "Correct.",
+        "c": "Incorrect.",
+        "d": "Incorrect."
+      }
+    },
+    {
+      "question": "Q3. What is the primary function of the N3 interface shown in the simulation?",
+      "answers": {
+        "a": "To carry control plane signaling",
+        "b": "To carry user plane data between gNB and UPF",
+        "c": "To manage subscription data",
+        "d": "To perform policy control"
+      },
+      "correctAnswer": "b",
+      "difficulty": "intermediate",
+      "explanations": {
+        "a": "Incorrect.",
+        "b": "Correct.",
+        "c": "Incorrect.",
+        "d": "Incorrect."
+      }
+    },
+    {
+      "question": "Q4. Which interface connects the Session Management Function (SMF) to the User Plane Function (UPF)?",
+      "answers": {
+        "a": "N1",
+        "b": "N4",
+        "c": "N6",
+        "d": "N11"
+      },
+      "correctAnswer": "b",
+      "difficulty": "beginner",
+      "explanations": {
+        "a": "Incorrect.",
+        "b": "Correct.",
+        "c": "Incorrect.",
+        "d": "Incorrect."
+      }
+    },
+    {
+      "question": "Q5. The N6 interface connects the User Plane Function (UPF) to which component?",
+      "answers": {
+        "a": "The Service Bus",
+        "b": "The Data Network (DN) / Internet",
+        "c": "The gNB",
+        "d": "The Policy Control Function"
+      },
+      "correctAnswer": "b",
+      "difficulty": "beginner",
+      "explanations": {
+        "a": "Incorrect.",
+        "b": "Correct.",
+        "c": "Incorrect.",
+        "d": "Incorrect."
+      }
+    },
+    {
+      "question": "Q6. Which interface allows the Application Function (AF) to communicate with the Policy Control Function (PCF)?",
+      "answers": {
+        "a": "N5",
+        "b": "N7",
+        "c": "N10",
+        "d": "N15"
+      },
+      "correctAnswer": "a",
+      "difficulty": "intermediate",
+      "explanations": {
+        "a": "Correct.",
+        "b": "Incorrect.",
+        "c": "Incorrect.",
+        "d": "Incorrect."
+      }
+    },
+    {
+      "question": "Q7. What role does the NRF (Network Repository Function) play when deployed in the simulation?",
+      "answers": {
+        "a": "It authenticates the user.",
+        "b": "It routes user data packets to the internet.",
+        "c": "It allows Network Functions to register and discover each other.",
+        "d": "It manages radio resources."
+      },
+      "correctAnswer": "c",
+      "difficulty": "intermediate",
+      "explanations": {
+        "a": "Incorrect.",
+        "b": "Incorrect.",
+        "c": "Correct.",
+        "d": "Incorrect."
+      }
+    },
+    {
+      "question": "Q8. Which interface connects the AMF to the UDM for subscription data retrieval?",
+      "answers": {
+        "a": "N8",
+        "b": "N10",
+        "c": "N12",
+        "d": "N13"
+      },
+      "correctAnswer": "a",
+      "difficulty": "intermediate",
+      "explanations": {
+        "a": "Correct.",
+        "b": "Incorrect.",
+        "c": "Incorrect.",
+        "d": "Incorrect."
+      }
+    },
+    {
+      "question": "Q9. Which feature allows for the immediate setup of the entire 5G Core topology without manual step-by-step selection?",
+      "answers": {
+        "a": "Validate Button",
+        "b": "Clear Button",
+        "c": "Add Bus Line",
+        "d": "Deploy All Interfaces"
+      },
+      "correctAnswer": "d",
+      "difficulty": "beginner",
+      "explanations": {
+        "a": "Incorrect.",
+        "b": "Incorrect.",
+        "c": "Incorrect.",
+        "d": "Correct."
+      }
+    },
+    {
+      "question": "Q10. According to the procedure, which interface is deployed immediately after the N10 interface?",
+      "answers": {
+        "a": "N11",
+        "b": "N12",
+        "c": "N8",
+        "d": "N13"
+      },
+      "correctAnswer": "a",
+      "difficulty": "intermediate",
+      "explanations": {
+        "a": "Correct.",
+        "b": "Incorrect.",
+        "c": "Incorrect.",
+        "d": "Incorrect."
+      }
+    },
+    {
+      "question": "Q11. What is the purpose of the 'Validate' button in the toolbar?",
+      "answers": {
+        "a": "To test the internet speed.",
+        "b": "To verify that the topology is complete and correctly interconnected.",
+        "c": "To pay for the service subscription.",
+        "d": "To stop the simulation."
+      },
+      "correctAnswer": "b",
+      "difficulty": "beginner",
+      "explanations": {
+        "a": "Incorrect.",
+        "b": "Correct.",
+        "c": "Incorrect.",
+        "d": "Incorrect."
+      }
+    },
+    {
+      "question": "Q12. Which interface connects the AMF to the AUSF for authentication purposes?",
+      "answers": {
+        "a": "N8",
+        "b": "N10",
+        "c": "N11",
+        "d": "N12"
+      },
+      "correctAnswer": "d",
+      "difficulty": "intermediate",
+      "explanations": {
+        "a": "Incorrect.",
+        "b": "Incorrect.",
+        "c": "Incorrect.",
+        "d": "Correct."
+      }
+    },
+    {
+      "question": "Q13. How is the N11 interface (AMF-SMF) visually distinguished in the topology?",
+      "answers": {
+        "a": "A solid red line",
+        "b": "A dashed green line",
+        "c": "A thick blue line",
+        "d": "It is invisible"
+      },
+      "correctAnswer": "b",
+      "difficulty": "beginner",
+      "explanations": {
+        "a": "Incorrect.",
+        "b": "Correct.",
+        "c": "Incorrect.",
+        "d": "Incorrect."
+      }
+    },
+    {
+      "question": "Q14. Why do functions like AMF, SMF, and UDM all connect to the 'Service Bus'?",
+      "answers": {
+        "a": "To share the same power source.",
+        "b": "To enable Service-Based Architecture (SBA) communication.",
+        "c": "To directly route user video streams.",
+        "d": "Because they are in the same physical rack."
+      },
+      "correctAnswer": "b",
+      "difficulty": "intermediate",
+      "explanations": {
+        "a": "Incorrect.",
+        "b": "Correct.",
+        "c": "Incorrect.",
+        "d": "Incorrect."
+      }
+    },
+    {
+      "question": "Q15. Which interface connects the Session Management Function (SMF) to the Policy Control Function (PCF)?",
+      "answers": {
+        "a": "N7",
+        "b": "N5",
+        "c": "N10",
+        "d": "N15"
+      },
+      "correctAnswer": "a",
+      "difficulty": "beginner",
+      "explanations": {
+        "a": "Correct.",
+        "b": "Incorrect.",
+        "c": "Incorrect.",
+        "d": "Incorrect."
+      }
+    }
+  ]
+}
