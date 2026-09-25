@@ -1,3 +1,3 @@
-## Aim
+### Aim 
 
-* Understand NG Setup and RAN Configuration Update procedure on the N2 interface. 
+* Study Service Request and UE Context Release procedures for CM-IDLE/CM-CONNECTED transitions. 

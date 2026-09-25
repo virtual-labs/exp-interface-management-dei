@@ -129,6 +129,18 @@ class PingManager {
      * @returns {boolean} True if reachable
      */
     isTargetReachable(sourceNf, targetIP) {
+        // SPECIAL CASE: tun0 network reachability (UE ↔ UPF user-plane)
+        if (sourceNf.type === 'UE' && sourceNf.config?.pduSession?.assignedIP) {
+            const uetun0IP = sourceNf.config.pduSession.assignedIP;
+            // Find UPF associated with this PDU session
+            const upf = window.dataStore?.getNFById(sourceNf.config.pduSession.upfId);
+            const upfGw = upf?.config?.tun0Interface?.gatewayIP;
+            if ((targetIP === uetun0IP) || (upfGw && targetIP === upfGw)) {
+                // Consider this path reachable with very high probability
+                return Math.random() < 0.98;
+            }
+        }
+
         // RULE 1: Check if both IPs are in the same subnet
         const sourceNetwork = this.getNetworkFromIP(sourceNf.config.ipAddress);
         const targetNetwork = this.getNetworkFromIP(targetIP);

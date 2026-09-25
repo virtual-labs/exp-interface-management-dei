@@ -43,7 +43,7 @@ class ConnectionManager {
             'AUSF': ['NRF', 'AMF', 'UDM'],
 
             // UDM connections
-            'UDM': ['NRF', 'AMF', 'SMF', 'AUSF', 'PCF', 'MySQL'],
+            'UDM': ['NRF', 'AMF', 'SMF', 'AUSF', 'PCF', 'UDR'],
 
             // PCF connections
             'PCF': ['NRF', 'AMF', 'SMF', 'UDM'],
@@ -52,12 +52,13 @@ class ConnectionManager {
             'NSSF': ['NRF', 'AMF'],
 
             // UDR connections
-            'UDR': ['NRF', 'SMF'],
+            'UDR': ['NRF', 'SMF', 'UDM', 'MySQL'],
 
             // NEW CONNECTIONS
             'gNB': ['AMF', 'UPF', 'UE'],
             'UE': ['gNB', 'AMF'],
-            'MySQL': ['UDM']
+            'MySQL': ['UDR'],
+            'ext-dn': ['UPF']
         };
     }
 
@@ -143,7 +144,7 @@ class ConnectionManager {
             status: 'connected',
             createdAt: Date.now(),
             isManual: isManual,  // NEW: Track if connection is manual or auto
-            showVisual: isManual  // NEW: Only show visual line for manual connections
+            showVisual: true  // Show visual line for all connections (manual and auto)
         };
 
         console.log('✅ Connection created:', connection);
@@ -154,6 +155,86 @@ class ConnectionManager {
         // Trigger log engine
         if (window.logEngine) {
             window.logEngine.onConnectionCreated(connection);
+        }
+
+        // NEW: Create tun0 interface when UPF connects to ext-dn
+        if ((sourceNF.type === 'UPF' && targetNF.type === 'ext-dn') || 
+            (sourceNF.type === 'ext-dn' && targetNF.type === 'UPF')) {
+            
+            const upf = sourceNF.type === 'UPF' ? sourceNF : targetNF;
+            
+            console.log('🌐 UPF-ext-dn connection detected, creating tun0 interface...');
+            
+            // Create or update tun0 interface configuration
+            if (!upf.config.tun0Interface) {
+                upf.config.tun0Interface = {
+                    name: 'tun0',
+                    ipAddress: '10.0.0.1',
+                    netmask: '255.255.255.0',
+                    network: '10.0.0.0/24',
+                    gatewayIP: '10.0.0.1',
+                    assignedIPs: [], // Track IPs assigned to UEs
+                    nextAvailableIP: 2, // Next IP to assign (10.0.0.2)
+                    createdAt: Date.now()
+                };
+            } else {
+                // Update existing interface to ensure it has all required properties
+                if (!upf.config.tun0Interface.assignedIPs) {
+                    upf.config.tun0Interface.assignedIPs = [];
+                }
+                if (!upf.config.tun0Interface.nextAvailableIP) {
+                    upf.config.tun0Interface.nextAvailableIP = 2;
+                }
+                if (!upf.config.tun0Interface.name) {
+                    upf.config.tun0Interface.name = 'tun0';
+                }
+                if (!upf.config.tun0Interface.ipAddress) {
+                    upf.config.tun0Interface.ipAddress = '10.0.0.1';
+                }
+                if (!upf.config.tun0Interface.netmask) {
+                    upf.config.tun0Interface.netmask = '255.255.255.0';
+                }
+            }
+            
+            window.dataStore.updateNF(upf.id, upf);
+            
+            console.log('✅ tun0 interface ready on UPF:', upf.config.tun0Interface);
+            
+            // Log interface creation
+            if (window.logEngine) {
+                window.logEngine.addLog(upf.id, 'SUCCESS',
+                    'Network interface tun0 created', {
+                    interface: 'tun0',
+                    ipAddress: '10.0.0.1',
+                    netmask: '255.255.255.0',
+                    network: '10.0.0.0/24',
+                });
+            }
+        }
+
+        // NEW: Trigger NAS signaling when UE and AMF are connected
+        if ((sourceNF.type === 'UE' && targetNF.type === 'AMF') || 
+            (sourceNF.type === 'AMF' && targetNF.type === 'UE')) {
+            
+            const ue = sourceNF.type === 'UE' ? sourceNF : targetNF;
+            const amf = sourceNF.type === 'AMF' ? sourceNF : targetNF;
+            
+            console.log('📱 UE-AMF connection detected, triggering NAS signaling...');
+            
+            // Trigger NAS signaling after a short delay
+            setTimeout(() => {
+                if (window.logEngine && typeof window.logEngine.simulateNASRegistration === 'function') {
+                    const params = {
+                        imsi: ue.config.subscriberImsi || '001010000000101',
+                        dnn: ue.config.subscriberDnn || '5G-Lab',
+                        nssai_sst: ue.config.subscriberSst || 1
+                    };
+                    
+                    window.logEngine.simulateNASRegistration(ue, amf, params);
+                    
+                    console.log('✅ NAS signaling triggered for UE-AMF connection');
+                }
+            }, 1000); // 1 second delay after connection
         }
 
         // Re-render canvas
@@ -245,8 +326,13 @@ class ConnectionManager {
             'gNB-UE': 'Radio',
             'UE-gNB': 'Radio',
             'UE-AMF': 'N1',  // UE to AMF (reverse direction)
-            'UDM-MySQL': 'SQL/REST API',
-            'MySQL-UDM': 'SQL/REST API'
+
+            'UDM-UDR': 'Nudr_DataRepository',
+            'UDR-UDM': 'Nudr_DataRepository',
+            'UDR-MySQL': 'SQL/REST API',
+            'MySQL-UDR': 'SQL/REST API',
+            'UPF-ext-dn': 'N6',
+            'ext-dn-UPF': 'N6'
         };
 
         // Try forward direction

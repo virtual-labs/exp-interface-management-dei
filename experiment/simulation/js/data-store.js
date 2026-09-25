@@ -20,6 +20,7 @@ class DataStore {
         this.buses = [];         // NEW: Store bus lines
         this.busConnections = []; // NEW: Store NF-to-bus connections
         this.listeners = [];     // Event listeners for changes
+        this.subscribers = [];   // Initialize subscribers array to prevent undefined issues
 
         console.log('✅ DataStore initialized');
     }
@@ -320,5 +321,28 @@ class DataStore {
             this.busConnections.splice(index, 1);
             console.log('📦 DataStore: Bus connection removed');
         }
+    }
+
+    // ==========================================
+    // SUBSCRIBER (UDR/MySQL) STORE - In-memory mock
+    // ==========================================
+    setSubscribers(list) {
+        this.subscribers = Array.isArray(list) ? list : [];
+        this.notifyListeners('subscribers-updated', this.subscribers);
+    }
+
+    getSubscribers() {
+        return this.subscribers || [];
+    }
+
+    upsertSubscriber(imsi, data) {
+        if (!this.subscribers) this.subscribers = [];
+        const idx = this.subscribers.findIndex(s => s.imsi === imsi);
+        if (idx >= 0) {
+            this.subscribers[idx] = { ...this.subscribers[idx], ...data, imsi };
+        } else {
+            this.subscribers.push({ imsi, ...data });
+        }
+        this.notifyListeners('subscribers-updated', this.subscribers);
     }
 }

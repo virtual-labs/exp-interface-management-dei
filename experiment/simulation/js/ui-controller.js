@@ -1,79 +1,61 @@
 /**
- * Main class definition and initialization
+ * ============================================
+ * UI CONTROLLER
+ * ============================================
+ * Manages all user interface interactions and updates
+ * 
+ * Responsibilities:
+ * - Handle button clicks
+ * - Manage modals
+ * - Update configuration panel
+ * - Display logs in UI
+ * - Handle connection mode (source/destination selection)
+ * - File save/load operations
  */
 
 class UIController {
-    /** Manual experiment order — deploy each only after prior interfaces are done */
-    static INTERFACE_DEPLOY_SEQUENCE = [
-        'N1', 'N2', 'N3', 'N4', 'N5', 'N6', 'N7', 'N8', 'N9', 'N10', 'N11', 'N12', 'N13'
-    ];
-
     constructor() {
-        this.connectionMode = 'idle';
+        this.connectionMode = 'idle'; // 'idle', 'selecting-source', 'selecting-destination'
         this.selectedSourceNF = null;
         this.selectedDestinationNF = null;
-        this.selectedSourceBus = null;
-        this.isInterfaceDeploying = false;
+        this.iperf3Servers = new Map(); // Track active iperf3 servers: nfId -> { server, output, intervalId }
+        
+        // PDU Session Mode state
+        this.pduSessionMode = false;
+        this.pduCurrentStep = 0;
+        this.pduSessionData = null;
+
         console.log('✅ UIController initialized');
     }
 
     /**
-     * First interface in sequence that must be deployed before interfaceId
+     * Initialize all UI components and event listeners
      */
-    getBlockingInterface(interfaceId) {
-        const seq = UIController.INTERFACE_DEPLOY_SEQUENCE;
-        const idx = seq.indexOf(interfaceId);
-        if (idx <= 0) return null;
-        for (let i = 0; i < idx; i++) {
-            if (!window.interfaceManager?.isInterfaceDeployed(seq[i])) {
-                return seq[i];
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Mark deployed interfaces with checkmarks, don't block any interface
-     */
-    updateInterfacePaletteState() {
-        const palette = document.querySelector('.nf-palette');
-        if (!palette) return;
-
-        palette.querySelectorAll('.network-interface-item').forEach(item => {
-            const interfaceId = item.dataset.interfaceId;
-            if (!interfaceId) return;
-
-            const deployed = window.interfaceManager?.isInterfaceDeployed(interfaceId);
-            const busy = this.isInterfaceDeploying;
-
-            if (deployed) {
-                item.classList.add('deployed');
-                item.style.opacity = '1';
-                item.style.cursor = 'default';
-                item.title = `${interfaceId} deployed`;
-            } else {
-                item.style.opacity = '1';
-                item.style.cursor = 'pointer';
-                item.title = busy
-                    ? 'Wait for current deployment to finish'
-                    : `Deploy ${interfaceId}`;
-            }
-        });
-    }
-
     init() {
         console.log('🎮 Initializing UI...');
+
+        // Setup all button handlers
         this.setupAddNFButton();
-        this.setupDeployAllButton();
         this.setupClearButton();
         this.setupValidateButton();
-        this.setupHelpButton();
         this.setupTerminalButton();
+        this.setupHelpButton();
         this.setupConnectionButtons();
         this.setupNFPalette();
+        this.setupNFPanelToggle();
         this.setupConfigPanelToggle();
+        this.setupDeployCoreButton();
+    
+        
+        // Initialize PDU Session Mode
+        this.setupPDUSessionMode();
+
+        // Initialize log panel
         this.initializeLogPanel();
+
+        // Setup keyboard shortcuts
         this.setupKeyboardShortcuts();
+
         console.log('✅ UI initialized');
     }
 
@@ -81,222 +63,52 @@ class UIController {
     // NF PALETTE SETUP
     // ==========================================
 
+    /**
+     * Setup NF palette in left sidebar
+     */
     setupNFPalette() {
-    const palette = document.querySelector('.nf-palette');
-    if (!palette) {
-        console.error('❌ Palette not found');
-        return;
-    }
-
-    // Update sidebar heading
-    const sidebarHeading = document.querySelector('.sidebar-left h3');
-    if (sidebarHeading) {
-        sidebarHeading.textContent = '📡 Network Interfaces';
-    }
-
-    // Network Interface definitions with proper 5G standard names
-    const networkInterfaces = [
-        {
-            id: 'N1',
-            name: 'N1 Interface',
-            description: 'UE ↔ AMF (NAS)',
-            color: '#3498db',
-            icon: '📱',
-            tooltip: 'Non-Access Stratum signaling between UE and AMF'
-        },
-        {
-            id: 'N2',
-            name: 'N2 Interface',
-            description: 'gNB ↔ AMF (NGAP)',
-            color: '#2ecc71',
-            icon: '📡',
-            tooltip: 'NG Application Protocol between RAN and AMF'
-        },
-        {
-            id: 'N3',
-            name: 'N3 Interface',
-            description: 'gNB ↔ UPF (GTP-U)',
-            color: '#f39c12',
-            icon: '🔄',
-            tooltip: 'User plane data between RAN and UPF'
-        },
-        {
-            id: 'N4',
-            name: 'N4 Interface',
-            description: 'SMF ↔ UPF (PFCP)',
-            color: '#e74c3c',
-            icon: '⚙️',
-            tooltip: 'Packet Forwarding Control Protocol'
-        },
-        {
-            id: 'N5',
-            name: 'N5 Interface',
-            description: 'AF ↔ PCF (HTTP/2)',
-            color: '#9b59b6',
-            icon: '🌐',
-            tooltip: 'Application Function to Policy Control'
-        },
-        {
-            id: 'N6',
-            name: 'N6 Interface',
-            description: 'UPF ↔ DN (IP)',
-            color: '#16a085',
-            icon: '🌍',
-            tooltip: 'Connection to Data Network (Internet)'
-        },
-        {
-            id: 'N7',
-            name: 'N7 Interface',
-            description: 'SMF ↔ PCF (HTTP/2)',
-            color: '#e67e22',
-            icon: '📋',
-            tooltip: 'Session Management Policy Control'
-        },
-{
-    id: 'N8',
-    name: 'N8 Interface',
-    description: 'AMF ↔ UDM (HTTP/2)',
-    color: '#3498db',
-    icon: '👤',
-    tooltip: 'Subscriber Data Management'
-},
-{
-    id: 'N9',
-    name: 'N9 Interface',
-    description: 'UPF Internal (Loopback)',
-    color: '#95a5a6',
-    icon: '🔄',
-    tooltip: 'UPF internal loopback interface'
-},
-{
-    id: 'N10',
-    name: 'N10 Interface',
-    description: 'SMF ↔ UDM (HTTP/2)',
-    color: '#f1c40f',
-    icon: '📊',
-    tooltip: 'Session Management Subscription Data'
-},
-{   id: 'N11',
-    name: 'N11 Interface',
-    description: 'AMF ↔ SMF (HTTP/2)',
-    color: '#2ecc71',
-    icon: '🔗',
-    tooltip: 'Session Management Control'
-},
-{  
-    id: 'N12',
-    name: 'N12 Interface',
-    description: 'AMF ↔ AUSF (HTTP/2)',
-    color: '#2ecc71',
-    icon: '🔐',
-    tooltip: 'UE Authentication Service'
-},
-{  
-    id: 'N13',
-    name: 'N13 Interface',
-    description: 'AMF ↔ NRF (HTTP/2)',
-    color: '#2ecc71',
-    icon: '🔍',
-    tooltip: 'NF Discovery and Registration'
-}
-    ];
-
-    palette.innerHTML = ''; // Clear existing content
-
-    networkInterfaces.forEach(ni => {
-        const item = document.createElement('div');
-        item.className = 'nf-palette-item network-interface-item';
-        item.dataset.interfaceId = ni.id;
-        item.title = ni.tooltip;
-
-        item.innerHTML = `
-            <div class="ni-details">
-                <div class="ni-name">${ni.id}</div>
-                <div class="ni-desc">${ni.description}</div>
-            </div>
-        `;
-
-        // Click handler - Deploy interface (sequential order enforced)
-        item.addEventListener('click', () => {
-            if (this.isInterfaceDeploying) return;
-            const blockedBy = this.getBlockingInterface(ni.id);
-            if (blockedBy) return;
-            console.log('🖱️ Network Interface clicked:', ni.id);
-            this.deployNetworkInterface(ni.id);
-        });
-
-        // Hover effect
-        item.addEventListener('mouseenter', () => {
-            item.style.transform = 'translateX(5px)';
-            item.style.background = 'rgba(52, 152, 219, 0.15)';
-        });
-
-        item.addEventListener('mouseleave', () => {
-            item.style.transform = 'translateX(0)';
-            item.style.background = 'rgba(52, 73, 94, 0.3)';
-        });
-
-        palette.appendChild(item);
-    });
-
-    this.updateInterfacePaletteState();
-    console.log('✅ Network Interface palette initialized with', networkInterfaces.length, 'interfaces');
-}
-
-    updateNFPaletteStatus() {
         const palette = document.querySelector('.nf-palette');
         if (!palette) return;
 
-        const allNFs = window.dataStore?.getAllNFs() || [];
-        const existingTypes = new Set(allNFs.map(nf => nf.type));
+        const nfTypes = ['NRF', 'AMF', 'SMF', 'UPF', 'AUSF', 'UDM', 'PCF', 'NSSF', 'UDR', 'gNB', 'UE'];
 
-        palette.querySelectorAll('.nf-palette-item').forEach(item => {
-            const type = item.dataset.type;
-            if (existingTypes.has(type)) {
-                item.classList.add('disabled');
-                item.style.opacity = '0.5';
-                item.style.cursor = 'not-allowed';
-                item.title = `${type} already exists (only one instance allowed)`;
-            } else {
-                item.classList.remove('disabled');
-                item.style.opacity = '1';
-                item.style.cursor = 'pointer';
-                item.title = `Click to add ${type}`;
-            }
+        nfTypes.forEach(type => {
+            const nfDef = window.nfDefinitions?.[type] || {
+                name: type,
+                color: '#95a5a6'
+            };
+
+            const item = document.createElement('div');
+            item.className = 'nf-palette-item';
+            item.dataset.type = type;
+
+            item.innerHTML = `
+                <div class="nf-icon-small" style="background: ${nfDef.color}">
+                    ${type[0]}
+                </div>
+                <div class="nf-label">
+                    <div class="nf-name">${type}</div>
+                    <div class="nf-desc">${nfDef.name || type}</div>
+                </div>
+            `;
+
+            // Click to add NF
+            item.addEventListener('click', () => {
+                console.log('🖱️ Palette item clicked:', type);
+                this.createNFFromPalette(type);
+            });
+
+            palette.appendChild(item);
         });
     }
 
-    updateModalNFButtonStates() {
-        const nfGrid = document.getElementById('nf-grid');
-        if (!nfGrid) return;
-
-        const allNFs = window.dataStore?.getAllNFs() || [];
-        const existingTypes = new Set(allNFs.map(nf => nf.type));
-
-        nfGrid.querySelectorAll('.nf-select-btn').forEach(btn => {
-            const type = btn.dataset.type;
-            if (existingTypes.has(type)) {
-                btn.disabled = true;
-                btn.style.opacity = '0.5';
-                btn.style.cursor = 'not-allowed';
-                btn.title = `${type} already exists (only one instance allowed)`;
-            } else {
-                btn.disabled = false;
-                btn.style.opacity = '1';
-                btn.style.cursor = 'pointer';
-                btn.title = `Click to add ${type}`;
-            }
-        });
-    }
-
+    /**
+     * Create NF from palette click - NEW WORKFLOW: Show config first
+     * @param {string} type - NF type
+     */
     createNFFromPalette(type) {
         console.log('🖱️ Palette item clicked:', type);
-        
-        if (this.isNFTypeAlreadyExists(type)) {
-            alert(`❌ ${type} Already Exists!\n\nOnly ONE instance of each Network Function type is allowed.\n\n${type} is already running in your topology.`);
-            return;
-        }
-        
+        // NEW: Show configuration panel first, don't create NF yet
         this.showNFConfigurationForNewNF(type);
     }
 
@@ -304,489 +116,28 @@ class UIController {
     // ADD NF BUTTON & MODAL
     // ==========================================
 
+    /**
+     * Setup Add NF button and modal
+     */
     setupAddNFButton() {
-        const addNIBtn = document.getElementById('btn-add-ni') || document.getElementById('btn-add-nf');
-        
-        if (!addNIBtn) {
-            console.error('❌ Add Network Interface button not found');
+        const addNFBtn = document.getElementById('btn-add-nf');
+        if (!addNFBtn) {
+            console.error('❌ Add NF button not found');
             return;
         }
 
-        if (addNIBtn.textContent.includes('Add NF')) {
-            addNIBtn.textContent = '➕ Add Network Interface';
-            addNIBtn.id = 'btn-add-ni';
-        }
-
-        addNIBtn.addEventListener('click', () => {
-            console.log('🖱️ Add Network Interface button clicked');
-            this.showAddNetworkInterfaceModal();
+        addNFBtn.addEventListener('click', () => {
+            console.log('🖱️ Add NF button clicked');
+            this.showAddNFModal();
         });
 
-        this.setupAddNetworkInterfaceModal();
+        // Setup modal
+        this.setupAddNFModal();
     }
 
-/**
- * Setup Deploy All Interfaces Button
- */
-setupDeployAllButton() {
-    const deployAllBtn = document.getElementById('btn-deploy-all');
-    
-    if (!deployAllBtn) {
-        console.error('❌ Deploy All button not found');
-        return;
-    }
-
-    deployAllBtn.addEventListener('click', async () => {
-        console.log('🚀 Deploy All Interfaces clicked');
-        await this.deployAllInterfaces();
-    });
-
-    console.log('✅ Deploy All button initialized');
-}
-
-/**
- * Deploy all network interfaces sequentially with topology from 5g.json and logs from 5g-logs.json
- */
-async deployAllInterfaces(options = {}) {
-    const {
-        skipConfirmation = false,
-        suppressCompletionAlert = false
-    } = options;
-
-    if (!window.interfaceManager) {
-        alert('❌ Interface Manager not available. Please refresh the page.');
-        return { successCount: 0, failCount: 0, skipped: true };
-    }
-
-    if (!skipConfirmation) {
-        // Confirm before deploying
-        const confirmed = confirm(
-            '🚀 Deploy All Network Interfaces\n\n' +
-            'This will:\n' +
-            '• Clear canvas\n' +
-            '• Create Service Bus' +
-            '• Deploy all 12 interfaces one by one\n' +
-            'Any existing topology will be cleared.\n\n' +
-            'Continue?'
-        );
-
-        if (!confirmed) {
-            return { successCount: 0, failCount: 0, skipped: true };
-        }
-    }
-
-    // Disable button during deployment
-    const deployAllBtn = document.getElementById('btn-deploy-all');
-    if (deployAllBtn) {
-        deployAllBtn.disabled = true;
-        deployAllBtn.textContent = '⏳ Deploying...';
-    }
-
-    try {
-        console.log('═══════════════════════════════════════');
-        console.log('🚀 DEPLOYING ALL INTERFACES FROM 5g.json');
-        console.log('═══════════════════════════════════════');
-
-        // Step 1: Load 5g.json topology
-        let topologyResponse;
-        const topologyPaths = ['../5g.json', './5g.json', '/5g.json', '5g.json'];
-        let topologyLoaded = false;
-        let topology = null;
-        
-        for (const path of topologyPaths) {
-            try {
-                topologyResponse = await fetch(path);
-                if (topologyResponse.ok) {
-                    topology = await topologyResponse.json();
-                    topologyLoaded = true;
-                    console.log(`✅ Topology loaded from ${path}`);
-                    break;
-                }
-            } catch (e) {
-                console.warn(`Failed to load topology from ${path}:`, e);
-            }
-        }
-        
-        if (!topologyLoaded || !topology) {
-            throw new Error(`Failed to load 5g.json from any of these paths: ${topologyPaths.join(', ')}`);
-        }
-
-        // Step 2: Load logs from 5g-logs.json
-        let logsResponse;
-        const logPaths = ['../5g-logs.json', './5g-logs.json', '/5g-logs.json', '5g-logs.json'];
-        let logsLoaded = false;
-        let logsData = { logs: [] };
-        
-        for (const path of logPaths) {
-            try {
-                logsResponse = await fetch(path);
-                if (logsResponse.ok) {
-                    logsData = await logsResponse.json();
-                    logsLoaded = true;
-                    console.log(`✅ Logs loaded from ${path}`);
-                    break;
-                }
-            } catch (e) {
-                console.warn(`Failed to load logs from ${path}:`, e);
-            }
-        }
-        
-        if (!logsLoaded) {
-            console.warn('⚠️ Could not load 5g-logs.json, continuing without logs');
-        }
-
-        // Step 3: Clear canvas and all data
-        console.log('\n🧹 Clearing canvas...');
-        if (window.dataStore) {
-            window.dataStore.clearAll();
-        }
-        if (window.logEngine) {
-            window.logEngine.clearAllLogs();
-        }
-        
-        // Clear log UI
-        const logContent = document.getElementById('log-content');
-        if (logContent) {
-            logContent.innerHTML = '';
-        }
-        
-        // Render empty canvas
-        if (window.canvasRenderer) {
-            window.canvasRenderer.render();
-        }
-        console.log('✅ Canvas cleared');
-
-        if (window.dockerTerminal) {
-            window.dockerTerminal.ensureOaiWorkshopNetwork();
-        }
-
-        // Step 4: Create Service Bus from 5g.json
-        console.log('\n🚌 Creating Service Bus ');
-        if (topology.buses && topology.buses.length > 0 && window.dataStore) {
-            const busData = topology.buses[0];
-            
-            const bus = {
-                id: busData.id,
-                name: busData.name,
-                orientation: busData.orientation,
-                position: busData.position,
-                length: busData.length,
-                thickness: busData.thickness || 8,
-                color: busData.color || '#3498db',
-                type: busData.type || 'service-bus',
-                connections: busData.connections || []
-            };
-            
-            window.dataStore.addBus(bus);
-            console.log(`✅ Service Bus created at (${bus.position.x}, ${bus.position.y})`);
-            
-            // Render canvas
-            if (window.canvasRenderer) {
-                window.canvasRenderer.render();
-            }
-        }
-
-        // Step 5: Create NF mapping from 5g.json (type -> full config from JSON)
-        const nfConfigMap = new Map();
-        topology.nfs.forEach(nfData => {
-            if (nfData.type !== 'DataNetwork') {
-                // Store full config by type
-                nfConfigMap.set(nfData.type, nfData);
-            }
-        });
-
-        // Step 6: Suppress automatic logs from interface manager during bulk deployment
-        // We'll only use logs from 5g-logs.json
-        const originalAddLog = window.logEngine?.addLog.bind(window.logEngine);
-        const addedLogMessages = new Set(); // Track added log messages to prevent duplicates
-        
-        if (window.logEngine) {
-            // Temporarily override addLog to suppress duplicates
-            window.logEngine.addLog = function(nfId, level, message, details = {}) {
-                // Create a unique key for this log
-                const logKey = `${nfId}|${level}|${message}`;
-                
-                // Skip if this log was already added from JSON
-                if (addedLogMessages.has(logKey)) {
-                    return null;
-                }
-                
-                // Call original addLog
-                return originalAddLog(nfId, level, message, details);
-            };
-        }
-
-        // Step 7: Deploy interfaces one by one (strict sequence)
-        const interfaces = UIController.INTERFACE_DEPLOY_SEQUENCE.map(id => ({
-            id,
-            method: `deploy${id}Interface`
-        }));
-        
-        let successCount = 0;
-        let failCount = 0;
-        const nfIdMap = new Map(); // Maps old NF IDs from logs JSON to new NF IDs
-        this.isInterfaceDeploying = true;
-        this.updateInterfacePaletteState();
-
-        for (const interfaceInfo of interfaces) {
-            console.log(`\n📡 Deploying ${interfaceInfo.id} Interface...`);
-            
-            try {
-                // Deploy interface using interface manager
-                const deployMethod = window.interfaceManager[interfaceInfo.method];
-                if (deployMethod) {
-                    await deployMethod.call(window.interfaceManager);
-                    
-                    // Update NF positions, IPs, and names to match 5g.json
-                    const interfaceConfig = window.interfaceManager.deployedInterfaces.get(interfaceInfo.id);
-                    if (interfaceConfig && interfaceConfig.nfs) {
-                        Object.entries(interfaceConfig.nfs).forEach(([type, nf]) => {
-                            if (nf && nfConfigMap.has(type)) {
-                                const jsonNF = nfConfigMap.get(type);
-                                
-                                // Update position, IP, port, and name from 5g.json
-                                nf.position = jsonNF.position;
-                                nf.config.ipAddress = jsonNF.config.ipAddress;
-                                nf.config.port = jsonNF.config.port;
-                                nf.name = jsonNF.name;
-                                nf.status = jsonNF.status || 'stable';
-                                
-                                // Update in dataStore
-                                if (window.dataStore) {
-                                    window.dataStore.updateNF(nf.id, {
-                                        position: nf.position,
-                                        config: nf.config,
-                                        name: nf.name,
-                                        status: nf.status
-                                    });
-                                }
-                                
-                                // Map old NF ID from logs JSON to new NF ID
-                                // Find the old NF ID from topology JSON that matches this type
-                                const oldNF = topology.nfs.find(n => n.type === type);
-                                if (oldNF && oldNF.id) {
-                                    nfIdMap.set(oldNF.id, nf.id);
-                                }
-                            }
-                        });
-                    }
-                    
-                    // Render canvas after each interface
-                    if (window.canvasRenderer) {
-                        window.canvasRenderer.render();
-                    }
-                    
-                    // Load and display logs for this interface (from JSON only)
-                    await this.loadLogsForInterface(interfaceInfo.id, logsData.logs, nfIdMap, addedLogMessages);
-                    
-                    successCount++;
-                    console.log(`✅ ${interfaceInfo.id} deployed successfully`);
-                    this.updateInterfacePaletteState();
-                    
-                    // Delay between deployments
-                    await this.delay(800);
-                } else {
-                    throw new Error(`Deploy method ${interfaceInfo.method} not found`);
-                }
-            } catch (error) {
-                console.error(`❌ Failed to deploy ${interfaceInfo.id}:`, error);
-                failCount++;
-            }
-        }
-        
-        // Restore original addLog function
-        if (window.logEngine && originalAddLog) {
-            window.logEngine.addLog = originalAddLog;
-        }
-        
-        // Step 7: Create DataNetwork if needed (only if it doesn't already exist)
-        const dataNetworkData = topology.nfs.find(nf => nf.type === 'DataNetwork');
-        if (dataNetworkData && window.dataStore) {
-            // Check if DataNetwork already exists (might be created during N3/N6 deployment)
-            const existingDataNetwork = window.dataStore.getAllNFs().find(nf => nf.type === 'DataNetwork');
-            
-            if (!existingDataNetwork) {
-                const dataNetwork = {
-                    id: dataNetworkData.id,
-                    type: dataNetworkData.type,
-                    name: dataNetworkData.name,
-                    position: dataNetworkData.position,
-                    color: dataNetworkData.color,
-                    icon: dataNetworkData.icon || null,
-                    iconImage: null,
-                    status: dataNetworkData.status || 'active',
-                    statusTimestamp: dataNetworkData.statusTimestamp || Date.now(),
-                    config: dataNetworkData.config
-                };
-                
-                window.dataStore.addNF(dataNetwork);
-                console.log('✅ Data Network (ext-dn) created');
-            } else {
-                // Update existing DataNetwork position and config from 5g.json
-                existingDataNetwork.position = dataNetworkData.position;
-                existingDataNetwork.config = dataNetworkData.config;
-                existingDataNetwork.name = dataNetworkData.name;
-                window.dataStore.updateNF(existingDataNetwork.id, existingDataNetwork);
-                console.log('✅ Data Network (ext-dn) updated from 5g.json');
-            }
-        }
-        
-        // Step 8: Create all connections from 5g.json (map old IDs to new IDs)
-        console.log('\n🔗 Creating connections from 5g.json...');
-        if (topology.connections && window.dataStore) {
-            for (const connData of topology.connections) {
-                if (connData.showVisual) {
-                    // Map old NF IDs to new NF IDs
-                    const newSourceId = nfIdMap.get(connData.sourceId) || connData.sourceId;
-                    const newTargetId = nfIdMap.get(connData.targetId) || connData.targetId;
-                    
-                    // Verify both NFs exist
-                    const sourceNF = window.dataStore.getNFById(newSourceId);
-                    const targetNF = window.dataStore.getNFById(newTargetId);
-                    
-                    if (sourceNF && targetNF) {
-                        const duplicate = window.dataStore.getAllConnections().some(existing => {
-                            const samePair =
-                                (existing.sourceId === newSourceId && existing.targetId === newTargetId) ||
-                                (existing.sourceId === newTargetId && existing.targetId === newSourceId);
-                            const sameIface =
-                                (existing.options?.interfaceType || '') === (connData.options?.interfaceType || '') ||
-                                (existing.options?.label || '') === (connData.options?.label || '');
-                            return samePair && sameIface;
-                        });
-
-                        if (duplicate) {
-                            continue;
-                        }
-
-                        const connection = {
-                            id: connData.id,
-                            sourceId: newSourceId,
-                            targetId: newTargetId,
-                            type: connData.type,
-                            showVisual: connData.showVisual,
-                            createdAt: connData.createdAt ? new Date(connData.createdAt) : new Date(),
-                            options: connData.options || {}
-                        };
-                        
-                        window.dataStore.addConnection(connection);
-                    }
-                }
-            }
-        }
-        
-        // Step 9: Create bus connections from 5g.json (map old IDs to new IDs)
-        console.log('\n🔌 Creating bus connections from 5g.json...');
-        if (topology.busConnections && window.dataStore) {
-            for (const busConnData of topology.busConnections) {
-                // Map old NF ID to new NF ID
-                const newNFId = nfIdMap.get(busConnData.nfId) || busConnData.nfId;
-                const nf = window.dataStore.getNFById(newNFId);
-                const bus = window.dataStore.getBusById(busConnData.busId);
-                
-                if (nf && bus) {
-                    const busConnection = {
-                        id: busConnData.id,
-                        nfId: newNFId,
-                        busId: busConnData.busId,
-                        type: busConnData.type || 'bus-connection',
-                        interfaceName: busConnData.interfaceName,
-                        protocol: busConnData.protocol || 'HTTP/2',
-                        status: busConnData.status || 'connected',
-                        createdAt: busConnData.createdAt || Date.now()
-                    };
-                    
-                    window.dataStore.addBusConnection(busConnection);
-                    
-                    if (!bus.connections.includes(newNFId)) {
-                        bus.connections.push(newNFId);
-                    }
-                }
-            }
-        }
-        
-        // Step 10: Remove duplicate/unconnected DataNetwork instances
-        console.log('\n🧹 Cleaning up duplicate DataNetwork instances...');
-        if (window.dataStore) {
-            const allDataNetworks = window.dataStore.getAllNFs().filter(nf => nf.type === 'DataNetwork');
-            
-            if (allDataNetworks.length > 1) {
-                console.log(`⚠️ Found ${allDataNetworks.length} DataNetwork instances, removing unconnected ones...`);
-                
-                // Find DataNetwork that is connected to UPF via N6
-                let connectedDataNetwork = null;
-                const allConnections = window.dataStore.getAllConnections();
-                
-                for (const dataNet of allDataNetworks) {
-                    // Check if this DataNetwork has a connection to UPF
-                    const hasConnection = allConnections.some(conn => {
-                        const sourceNF = window.dataStore.getNFById(conn.sourceId);
-                        const targetNF = window.dataStore.getNFById(conn.targetId);
-                        
-                        // Check if connection is between UPF and this DataNetwork
-                        return (sourceNF?.type === 'UPF' && targetNF?.id === dataNet.id) ||
-                               (targetNF?.type === 'UPF' && sourceNF?.id === dataNet.id);
-                    });
-                    
-                    if (hasConnection) {
-                        connectedDataNetwork = dataNet;
-                        break;
-                    }
-                }
-                
-                // Remove all DataNetworks except the connected one
-                for (const dataNet of allDataNetworks) {
-                    if (connectedDataNetwork && dataNet.id !== connectedDataNetwork.id) {
-                        console.log(`🗑️ Removing unconnected DataNetwork: ${dataNet.name} (${dataNet.id})`);
-                        window.dataStore.removeNF(dataNet.id);
-                    } else if (!connectedDataNetwork && dataNet !== allDataNetworks[0]) {
-                        // If no connected one found, keep the first one and remove others
-                        console.log(`🗑️ Removing duplicate DataNetwork: ${dataNet.name} (${dataNet.id})`);
-                        window.dataStore.removeNF(dataNet.id);
-                    }
-                }
-                
-                console.log('✅ Duplicate DataNetwork instances removed');
-            }
-        }
-        
-        console.log('\n═══════════════════════════════════════');
-        console.log('📊 DEPLOYMENT SUMMARY');
-        console.log('═══════════════════════════════════════');
-        console.log(`✅ Successfully deployed: ${successCount} interfaces`);
-        console.log(`❌ Failed: ${failCount} interfaces`);
-        console.log('═══════════════════════════════════════\n');
-
-        // Final render
-        if (window.canvasRenderer) {
-            window.canvasRenderer.render();
-        }
-
-        // Show success message
-        if (!suppressCompletionAlert) {
-            alert(
-                '✅ Deployment Complete!\n\n' +
-                `Successfully deployed: ${successCount} interfaces\n` +
-                `Failed: ${failCount} interfaces\n\n`
-            );
-        }
-
-        return { successCount, failCount, skipped: false };
-
-    } catch (error) {
-        console.error('❌ Deployment failed:', error);
-        alert(`❌ Deployment failed: ${error.message}\n\nCheck console for details.`);
-        return { successCount: 0, failCount: 0, skipped: false, error: error.message };
-    } finally {
-        this.isInterfaceDeploying = false;
-        this.updateInterfacePaletteState();
-        // Re-enable button
-        if (deployAllBtn) {
-            deployAllBtn.disabled = false;
-            deployAllBtn.textContent = '🚀 Deploy All Interfaces';
-        }
-    }
-}
+    /**
+     * Setup Add NF modal
+     */
     setupAddNFModal() {
         const modal = document.getElementById('add-nf-modal');
         const modalCancel = document.getElementById('modal-cancel');
@@ -794,7 +145,8 @@ async deployAllInterfaces(options = {}) {
 
         if (!modal || !nfGrid) return;
 
-        const nfTypes = ['NRF', 'AUSF', 'UDM', 'PCF', 'NSSF', 'UDR', 'AMF', 'SMF', 'UPF'];
+        // Create NF selection buttons
+        const nfTypes = ['NRF', 'AMF', 'SMF', 'UPF', 'AUSF', 'UDM', 'PCF', 'NSSF', 'UDR', 'gNB', 'ext-dn', 'UE'];
 
         nfGrid.innerHTML = '';
 
@@ -815,28 +167,28 @@ async deployAllInterfaces(options = {}) {
                 <div class="nf-label">${type}</div>
             `;
 
+            // Click handler - NEW WORKFLOW: Show config first
             btn.addEventListener('click', () => {
                 console.log('🖱️ Modal: Selected NF type:', type);
 
-                if (this.isNFTypeAlreadyExists(type)) {
-                    alert(`❌ ${type} Already Exists!\n\nOnly ONE instance of each Network Function type is allowed.\n\n${type} is already running in your topology.`);
-                    modal.style.display = 'none';
-                    return;
-                }
-
+                // NEW: Show configuration panel first, don't create NF yet
                 this.showNFConfigurationForNewNF(type);
+
+                // Close modal
                 modal.style.display = 'none';
             });
 
             nfGrid.appendChild(btn);
         });
 
+        // Cancel button
         if (modalCancel) {
             modalCancel.addEventListener('click', () => {
                 modal.style.display = 'none';
             });
         }
 
+        // Close on background click
         modal.addEventListener('click', (e) => {
             if (e.target === modal) {
                 modal.style.display = 'none';
@@ -844,205 +196,23 @@ async deployAllInterfaces(options = {}) {
         });
     }
 
+    /**
+     * Show Add NF modal
+     */
     showAddNFModal() {
-        this.updateModalNFButtonStates();
-        
         const modal = document.getElementById('add-nf-modal');
         if (modal) {
             modal.style.display = 'flex';
         }
     }
 
-    setupAddNetworkInterfaceModal() {
-    console.log('🔧 Setting up Network Interface modal...');
-    
-    const modal = document.getElementById('add-nf-modal');
-    if (!modal) {
-        console.error('❌ Modal not found');
-        return;
-    }
-    
-    // Modal will show list of available network interfaces
-    console.log('✅ Network Interface modal ready');
-}
+    // ==========================================
+    // CONNECTION BUTTONS (Source/Destination)
+    // ==========================================
 
-showAddNetworkInterfaceModal() {
-    const modal = document.getElementById('add-nf-modal');
-    if (!modal) {
-        console.error('❌ Modal not found');
-        return;
-    }
-    
-    // Get modal elements
-    const modalTitle = modal.querySelector('h2');
-    const nfGrid = document.getElementById('nf-grid');
-    const modalCancel = document.getElementById('modal-cancel');
-    
-    // Update modal title
-    if (modalTitle) {
-        modalTitle.textContent = '📡 Select Network Interface to Deploy';
-    }
-    
-    // Network Interface definitions (ALL 13 INTERFACES)
-    const networkInterfaces = [
-        {
-            id: 'N1',
-            name: 'N1 Interface',
-            description: 'UE ↔ AMF (NAS)',
-            color: '#3498db',
-            icon: '📱',
-            deployed: window.interfaceManager?.isInterfaceDeployed('N1') || false
-        },
-        {
-            id: 'N2',
-            name: 'N2 Interface',
-            description: 'gNB ↔ AMF (NGAP)',
-            color: '#2ecc71',
-            icon: '📡',
-            deployed: window.interfaceManager?.isInterfaceDeployed('N2') || false
-        },
-        {
-            id: 'N3',
-            name: 'N3 Interface',
-            description: 'gNB ↔ UPF (GTP-U)',
-            color: '#f39c12',
-            icon: '🔄',
-            deployed: window.interfaceManager?.isInterfaceDeployed('N3') || false
-        },
-        {
-            id: 'N4',
-            name: 'N4 Interface',
-            description: 'SMF ↔ UPF (PFCP)',
-            color: '#e74c3c',
-            icon: '⚙️',
-            deployed: window.interfaceManager?.isInterfaceDeployed('N4') || false
-        },
-        {
-            id: 'N5',
-            name: 'N5 Interface',
-            description: 'AF ↔ PCF (HTTP/2)',
-            color: '#9b59b6',
-            icon: '🌐',
-            deployed: window.interfaceManager?.isInterfaceDeployed('N5') || false
-        },
-        {
-            id: 'N6',
-            name: 'N6 Interface',
-            description: 'UPF ↔ DN (IP)',
-            color: '#16a085',
-            icon: '🌍',
-            deployed: window.interfaceManager?.isInterfaceDeployed('N6') || false
-        },
-        {
-            id: 'N7',
-            name: 'N7 Interface',
-            description: 'SMF ↔ PCF (HTTP/2)',
-            color: '#e67e22',
-            icon: '📋',
-            deployed: window.interfaceManager?.isInterfaceDeployed('N7') || false
-        },
-        {
-            id: 'N8',
-            name: 'N8 Interface',
-            description: 'AMF ↔ UDM (HTTP/2)',
-            color: '#3498db',
-            icon: '👤',
-            deployed: window.interfaceManager?.isInterfaceDeployed('N8') || false
-        },
-        {
-            id: 'N9',
-            name: 'N9 Interface',
-            description: 'UPF Internal (Loopback)',
-            color: '#95a5a6',
-            icon: '🔄',
-            deployed: window.interfaceManager?.isInterfaceDeployed('N9') || false
-        },
-        {
-            id: 'N10',
-            name: 'N10 Interface',
-            description: 'SMF ↔ UDM (HTTP/2)',
-            color: '#f1c40f',
-            icon: '📊',
-            deployed: window.interfaceManager?.isInterfaceDeployed('N10') || false
-        },
-        {
-            id: 'N11',
-            name: 'N11 Interface',
-            description: 'AMF ↔ SMF (HTTP/2)',
-            color: '#2ecc71',
-            icon: '🔗',
-            deployed: window.interfaceManager?.isInterfaceDeployed('N11') || false
-        },
-        {
-            id: 'N12',
-            name: 'N12 Interface',
-            description: 'AMF ↔ AUSF (HTTP/2)',
-            color: '#2ecc71',
-            icon: '🔐',
-            deployed: window.interfaceManager?.isInterfaceDeployed('N12') || false
-        },
-        {
-            id: 'N13',
-            name: 'N13 Interface',
-            description: 'AMF ↔ NRF (HTTP/2)',
-            color: '#2ecc71',
-            icon: '🔍',
-            deployed: window.interfaceManager?.isInterfaceDeployed('N13') || false
-        }
-    ];
-    
-    // Clear grid
-    if (nfGrid) {
-        nfGrid.innerHTML = '';
-        
-        // Create interface cards
-        networkInterfaces.forEach(ni => {
-            const card = document.createElement('button');
-            card.className = 'nf-select-btn network-interface-card';
-            if (ni.deployed) {
-                card.classList.add('deployed');
-                card.disabled = true;
-            }
-            
-            card.innerHTML = `
-                <div class="nf-icon" style="background: ${ni.color};">
-                    ${ni.icon}
-                </div>
-                <div class="nf-label">${ni.id}</div>
-                <div class="ni-modal-desc">${ni.description}</div>
-                ${ni.deployed ? '<div class="deployed-badge">✓ Deployed</div>' : ''}
-            `;
-            
-            // Click handler
-            card.addEventListener('click', () => {
-                console.log('🚀 Deploying interface:', ni.id);
-                this.deployNetworkInterface(ni.id);
-                modal.style.display = 'none';
-            });
-            
-            nfGrid.appendChild(card);
-        });
-    }
-    
-    // Cancel button
-    if (modalCancel) {
-        modalCancel.onclick = () => {
-            modal.style.display = 'none';
-        };
-    }
-    
-    // Close on background click
-    modal.onclick = (e) => {
-        if (e.target === modal) {
-            modal.style.display = 'none';
-        }
-    };
-    
-    // Show modal
-    modal.style.display = 'flex';
-    console.log('✅ Network Interface modal opened with 13 interfaces');
-}
-
+    /**
+     * Setup connection control buttons
+     */
     setupConnectionButtons() {
         const btnSource = document.getElementById('btn-select-source');
         const btnDestination = document.getElementById('btn-select-destination');
@@ -1053,14 +223,17 @@ showAddNetworkInterfaceModal() {
             return;
         }
 
+        // Select Source button
         btnSource.addEventListener('click', () => {
             console.log('🖱️ Select Source clicked');
             this.enterSourceSelectionMode();
         });
 
+        // Select Destination button
         btnDestination.addEventListener('click', () => {
             console.log('🖱️ Select Destination clicked');
             if (this.selectedSourceNF) {
+                // Simplified: Just enter destination mode - user can click NF or Bus
                 this.enterDestinationSelectionMode();
                 console.log('💡 You can now click on an NF or Bus Line to connect!');
             } else {
@@ -1068,14 +241,19 @@ showAddNetworkInterfaceModal() {
             }
         });
 
+        // Cancel button
         btnCancel.addEventListener('click', () => {
             console.log('🖱️ Connection cancelled');
             this.cancelConnectionMode();
         });
 
+        // Listen to canvas clicks for connection mode
         this.setupConnectionModeListener();
     }
 
+    /**
+     * Enter bus selection mode
+     */
     enterBusSelectionMode() {
         this.connectionMode = 'selecting-bus';
 
@@ -1086,10 +264,14 @@ showAddNetworkInterfaceModal() {
         this.showCanvasMessage(`Select a SERVICE BUS to connect ${this.selectedSourceNF.name}`);
     }
 
+    /**
+     * Select bus and create connection
+         */
     selectBus(bus) {
         console.log('✅ Bus selected as destination:', bus.name);
 
         if (this.selectedSourceNF) {
+            // NF to Bus connection
             console.log('🔗 Creating NF-to-Bus connection:', this.selectedSourceNF.name, '→', bus.name);
             if (window.busManager) {
                 const connection = window.busManager.connectNFToBus(this.selectedSourceNF.id, bus.id);
@@ -1098,6 +280,7 @@ showAddNetworkInterfaceModal() {
                 }
             }
         } else if (this.selectedSourceBus) {
+            // Bus to Bus connection
             console.log('🔗 Creating Bus-to-Bus connection:', this.selectedSourceBus.name, '→', bus.name);
             if (window.busManager) {
                 const connection = window.busManager.connectBusToBus(this.selectedSourceBus.id, bus.id);
@@ -1113,26 +296,27 @@ showAddNetworkInterfaceModal() {
         this.cancelConnectionMode();
     }
 
-setupConnectionModeListener() {
-    if (window.dataStore) {
-        window.dataStore.subscribe((event, data) => {
-            if (event === 'nf-added') {
-                this.updateLogNFFilter();
-            }
-        });
-    }
+    /**
+     * Setup listener for connection mode canvas clicks
+     */
+    setupConnectionModeListener() {
+        if (window.dataStore) {
+            window.dataStore.subscribe((event, data) => {
+                if (event === 'nf-added' || event === 'data-imported' || event === 'data-cleared' || event === 'nf-removed') {
+                    this.updateLogNFFilter();
+                }
+            });
+        }
 
-    const canvas = document.getElementById('main-canvas');
-    if (canvas) {
-        canvas.addEventListener('click', (e) => {
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
+        const canvas = document.getElementById('main-canvas');
+        if (canvas) {
+            canvas.addEventListener('click', (e) => {
+                if (this.connectionMode === 'idle') return;
 
-            // =============================================
-            // PRIORITY 1: Check if in connection mode
-            // =============================================
-            if (this.connectionMode !== 'idle') {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
                 const clickedNF = window.canvasRenderer?.getNFAtPosition(x, y);
                 const clickedBus = this.getBusAtPosition(x, y);
 
@@ -1141,6 +325,7 @@ setupConnectionModeListener() {
                 console.log('🖱️ Clicked Bus:', clickedBus?.name || 'none');
 
                 if (this.connectionMode === 'selecting-source') {
+                    // In source mode, allow clicking either NF or Bus
                     if (clickedNF) {
                         console.log('🔗 Selecting NF as source...');
                         this.selectSourceNF(clickedNF);
@@ -1151,121 +336,34 @@ setupConnectionModeListener() {
                         console.log('❌ Please click on an NF or Bus Line');
                     }
                 } else if (this.connectionMode === 'selecting-destination') {
+                    // In destination mode, allow clicking either NF or Bus
                     if (clickedNF) {
                         console.log('🔗 Connecting to NF...');
                         this.selectDestinationNF(clickedNF);
                     } else if (clickedBus) {
-                        console.log('🚌 Connecting to Bus...');
+                        console.log(' Connecting to Bus...');
                         this.selectBus(clickedBus);
                     } else {
                         console.log('❌ Please click on an NF or Bus Line');
                     }
                 } else if (this.connectionMode === 'selecting-bus' && clickedBus) {
-                    console.log('🚌 Bus click detected, calling selectBus...');
+                    // Keep this for backward compatibility
+                    console.log(' Bus click detected, calling selectBus...');
                     this.selectBus(clickedBus);
                 }
-                
-                return; // Exit early if in connection mode
-            }
-
-            // =============================================
-// PRIORITY 2: Check if clicked on N1 or N2 label
-// =============================================
-const clickedInterface = this.isClickOnInterfaceLabel(x, y);
-if (clickedInterface) {
-    if (clickedInterface.interface === 'N1') {
-        console.log('🔵 N1 Interface label clicked!');
-        this.showN1InterfaceConfiguration();
-        return;
-    } else if (clickedInterface.interface === 'N2') {
-        console.log('🟣 N2 Interface label clicked!');
-        this.showN2InterfaceConfiguration();
-        return;
-    } else if (clickedInterface.interface === 'N3') {
-        console.log('🟠 N3 Interface label clicked!');
-        this.showN3InterfaceConfiguration();
-        return;
-    } else if (clickedInterface.interface === 'N4') {
-        console.log('🔴 N4 Interface label clicked!');
-        this.showN4InterfaceConfiguration();
-        return;
-    } else if (clickedInterface.interface === 'N5') {
-        console.log('💚 N5 Interface label clicked!');
-        this.showN5InterfaceConfiguration();
-        return;
-    } else if (clickedInterface.interface === 'N6') {
-        console.log('🌐 N6 Interface label clicked!');
-        this.showN6InterfaceConfiguration();
-        return;
-    } else if (clickedInterface.interface === 'N7') {
-        console.log('🧡 N7 Interface label clicked!');
-        this.showN7InterfaceConfiguration();
-        return;
-    } else if (clickedInterface.interface === 'N8') {
-        console.log('💙 N8 Interface label clicked!');
-        this.showN8InterfaceConfiguration();
-        return;
-    } else if (clickedInterface.interface === 'N9') {
-        console.log('🔄 N9 Interface label clicked!');
-        this.showN9InterfaceConfiguration();
-        return;
-    } else if (clickedInterface.interface === 'N10') {  
-        console.log('💛 N10 Interface label clicked!');
-        this.showN10InterfaceConfiguration();
-        return;
-    } else if (clickedInterface.interface === 'N11') {  
-    console.log('🟢 N11 Interface label clicked!');
-    this.showN11InterfaceConfiguration();
-    return;
-    } else if (clickedInterface.interface === 'N12') {  
-    console.log('🔐 N12 Interface label clicked!');
-    this.showN12InterfaceConfiguration();
-    return;
-    } else if (clickedInterface.interface === 'N13') {  
-    console.log('🔍 N13 Interface label clicked!');
-    this.showN13InterfaceConfiguration();
-    return;
+            });
+        }
     }
-
-}
-
-
-            // =============================================
-            // PRIORITY 3: Check if clicked on NF
-            // (Only if not clicked on N1 label)
-            // =============================================
-            const clickedNF = window.canvasRenderer?.getNFAtPosition(x, y);
-            if (clickedNF) {
-                console.log('✅ Clicked on NF:', clickedNF.name);
-                this.selectedNF = clickedNF.id;
-                
-                if (window.canvasRenderer) {
-                    window.canvasRenderer.render();
-                }
-
-                // Open NF config panel (NOT N1 config)
-                this.showNFConfigPanel(clickedNF);
-            } else {
-                // Clicked on empty space
-                this.selectedNF = null;
-                
-                if (window.canvasRenderer) {
-                    window.canvasRenderer.render();
-                }
-
-                // Close config panel
-                this.hideNFConfigPanel();
-            }
-        });
-    }
-}
-
+    /**
+     * Enter source selection mode
+     */
     enterSourceSelectionMode() {
         this.connectionMode = 'selecting-source';
         this.selectedSourceNF = null;
-        this.selectedSourceBus = null;
+        this.selectedSourceBus = null; // NEW: Clear bus source
         this.selectedDestinationNF = null;
 
+        // Update UI
         const btnSource = document.getElementById('btn-select-source');
         const btnDestination = document.getElementById('btn-select-destination');
         const btnCancel = document.getElementById('btn-cancel-connection');
@@ -1274,11 +372,18 @@ if (clickedInterface) {
         btnSource.style.background = '#3498db';
         btnDestination.disabled = true;
         btnCancel.style.display = 'block';
+
+        // Show canvas message
+        // this.showCanvasMessage('Click an NF or BUS LINE to set as SOURCE');
     }
 
+    /**
+     * Enter destination selection mode
+     */
     enterDestinationSelectionMode() {
         this.connectionMode = 'selecting-destination';
 
+        // Update UI
         const btnSource = document.getElementById('btn-select-source');
         const btnDestination = document.getElementById('btn-select-destination');
 
@@ -1286,36 +391,58 @@ if (clickedInterface) {
         btnSource.style.background = '';
         btnDestination.classList.add('active');
         btnDestination.style.background = '#4caf50';
+
+        // // Show canvas message
+        // const sourceName = this.selectedSourceNF?.name || this.selectedSourceBus?.name || 'source';
+        // this.showCanvasMessage(`Click on an NF or BUS LINE to connect from ${sourceName}`);
     }
 
+    /**
+     * Select source NF
+     * @param {Object} nf - Selected NF
+     */
     selectSourceNF(nf) {
         console.log('✅ Source selected:', nf.name);
         this.selectedSourceNF = nf;
 
+        // Enable destination button
         const btnDestination = document.getElementById('btn-select-destination');
         btnDestination.disabled = false;
 
+        // Auto-switch to destination mode
         this.enterDestinationSelectionMode();
     }
 
+    /**
+     * Select source Bus
+     * @param {Object} bus - Selected Bus
+     */
     selectSourceBus(bus) {
         console.log('✅ Bus source selected:', bus.name);
         this.selectedSourceBus = bus;
-        this.selectedSourceNF = null;
+        this.selectedSourceNF = null; // Clear NF selection
 
+        // Enable destination button
         const btnDestination = document.getElementById('btn-select-destination');
         btnDestination.disabled = false;
 
+        // Auto-switch to destination mode
         this.enterDestinationSelectionMode();
     }
 
+    /**
+     * Select destination NF and create connection
+     * @param {Object} nf - Selected NF
+     */
     selectDestinationNF(nf) {
         console.log('✅ NF selected as destination:', nf.name);
         this.selectedDestinationNF = nf;
 
         if (this.selectedSourceNF) {
+            // NF to NF connection (standard)
             console.log('🔗 Creating NF-to-NF connection:', this.selectedSourceNF.name, '→', nf.name);
             if (window.connectionManager) {
+                // Create manual connection (with visual line)
                 const connection = window.connectionManager.createManualConnection(
                     this.selectedSourceNF.id,
                     this.selectedDestinationNF.id
@@ -1326,6 +453,7 @@ if (clickedInterface) {
                 }
             }
         } else if (this.selectedSourceBus) {
+            // Bus to NF connection
             console.log('🔗 Creating Bus-to-NF connection:', this.selectedSourceBus.name, '→', nf.name);
             if (window.busManager) {
                 const connection = window.busManager.connectBusToNF(this.selectedSourceBus.id, nf.id);
@@ -1338,15 +466,20 @@ if (clickedInterface) {
             alert('Error: No source selected');
         }
 
+        // Reset connection mode
         this.cancelConnectionMode();
     }
 
+    /**
+     * Cancel connection mode
+     */
     cancelConnectionMode() {
         this.connectionMode = 'idle';
         this.selectedSourceNF = null;
-        this.selectedSourceBus = null;
+        this.selectedSourceBus = null; // NEW: Clear bus source
         this.selectedDestinationNF = null;
 
+        // Update UI
         const btnSource = document.getElementById('btn-select-source');
         const btnDestination = document.getElementById('btn-select-destination');
         const btnCancel = document.getElementById('btn-cancel-connection');
@@ -1358,9 +491,14 @@ if (clickedInterface) {
         btnDestination.disabled = true;
         btnCancel.style.display = 'none';
 
+        // Hide canvas message
         this.hideCanvasMessage();
     }
 
+    /**
+     * Show canvas message
+     * @param {string} message - Message to display
+     */
     showCanvasMessage(message) {
         const msgElement = document.getElementById('canvas-message');
         if (msgElement) {
@@ -1369,6 +507,9 @@ if (clickedInterface) {
         }
     }
 
+    /**
+     * Hide canvas message
+     */
     hideCanvasMessage() {
         const msgElement = document.getElementById('canvas-message');
         if (msgElement) {
@@ -1376,6 +517,15 @@ if (clickedInterface) {
         }
     }
 
+    // ==========================================
+    // SAVE / LOAD / CLEAR BUTTONS
+    // ==========================================
+
+
+
+    /**
+     * Setup Clear button
+     */
     setupClearButton() {
         const clearBtn = document.getElementById('btn-clear');
         if (!clearBtn) return;
@@ -1386,35 +536,44 @@ if (clickedInterface) {
         });
     }
 
+    /**
+     * Clear entire topology
+     */
     clearTopology() {
         if (!confirm('Are you sure you want to clear the entire topology? This cannot be undone.')) {
             return;
         }
 
+        // Clear data
         if (window.dataStore) {
             window.dataStore.clearAll();
         }
 
+        // Clear logs
         if (window.logEngine) {
             window.logEngine.clearAllLogs();
         }
 
+        // Clear log UI
         const logContent = document.getElementById('log-content');
         if (logContent) {
             logContent.innerHTML = '';
         }
 
+        // Re-render canvas
         if (window.canvasRenderer) {
             window.canvasRenderer.render();
         }
 
         console.log('✅ Topology cleared');
-        alert('Topology cleared successfully! Dashboard will now refresh.');
-
+        alert('Topology cleared successfully!');
         // Full refresh ensures complete re-initialization of all managers and UI state
         window.location.reload();
     }
 
+    /**
+     * Setup Validate button
+     */
     setupValidateButton() {
         const validateBtn = document.getElementById('btn-validate');
         if (!validateBtn) return;
@@ -1425,6 +584,9 @@ if (clickedInterface) {
         });
     }
 
+    /**
+     * Validate topology
+     */
     validateTopology() {
         const allNFs = window.dataStore?.getAllNFs() || [];
         const allConnections = window.dataStore?.getAllConnections() || [];
@@ -1438,6 +600,7 @@ if (clickedInterface) {
         report += '5G TOPOLOGY VALIDATION REPORT\n';
         report += '═══════════════════════════════════\n\n';
 
+        // Check for NRF
         const hasNRF = allNFs.some(nf => nf.type === 'NRF');
         if (!hasNRF) {
             report += '❌ CRITICAL: NRF is missing!\n';
@@ -1446,6 +609,7 @@ if (clickedInterface) {
             report += '✅ NRF exists\n\n';
         }
 
+        // Check each NF
         report += 'NETWORK FUNCTIONS:\n';
         report += '─────────────────────────────────\n';
         allNFs.forEach(nf => {
@@ -1465,31 +629,40 @@ if (clickedInterface) {
         console.log(report);
     }
 
+    /**
+     * Setup Help button
+     */
     setupHelpButton() {
         const helpBtn = document.getElementById('btn-help');
         if (!helpBtn) return;
 
-        const helpPanel = document.getElementById('help-panel');
-        const helpPanelClose = document.getElementById('help-panel-close');
-
         helpBtn.addEventListener('click', () => {
-            if (helpPanel) helpPanel.style.display = 'flex';
+            console.log('❓ Help clicked');
+            this.showHelpModal();
         });
+    }
 
-        if (helpPanelClose) {
-            helpPanelClose.addEventListener('click', () => {
-                helpPanel.style.display = 'none';
-            });
+    /**
+     * Show Help modal
+     */
+    showHelpModal() {
+        const modal = document.getElementById('help-modal');
+        if (modal) {
+            modal.style.display = 'flex';
         }
 
-        // Close on backdrop click
-        if (helpPanel) {
-            helpPanel.addEventListener('click', (e) => {
-                if (e.target === helpPanel) helpPanel.style.display = 'none';
-            });
+        // Setup close button
+        const closeBtn = document.getElementById('help-close');
+        if (closeBtn) {
+            closeBtn.onclick = () => {
+                modal.style.display = 'none';
+            };
         }
     }
 
+    /**
+     * Setup Terminal button
+     */
     setupTerminalButton() {
         const terminalBtn = document.getElementById('btn-terminal');
         if (!terminalBtn) {
@@ -1498,77 +671,203 @@ if (clickedInterface) {
         }
 
         terminalBtn.addEventListener('click', () => {
-            console.log('💻 Terminal clicked');
+            console.log('🐳 Main Terminal button clicked');
             if (window.dockerTerminal) {
                 window.dockerTerminal.openTerminal();
             } else {
-                console.error('❌ DockerTerminal not available');
+                console.error('❌ DockerTerminal not initialized');
                 alert('Terminal is not available. Please refresh the page.');
             }
         });
     }
 
-    showHelpModal() {
-        const modal = document.getElementById('help-modal');
-        if (modal) {
-            modal.style.display = 'flex';
-        }
+    // ==========================================
+    // NF PANEL TOGGLE
+    // ==========================================
 
-        const closeBtn = document.getElementById('help-close');
-        if (closeBtn) {
-            closeBtn.onclick = () => {
-                modal.style.display = 'none';
-            };
+    /**
+     * Setup NF panel toggle
+     */
+    setupNFPanelToggle() {
+        const toggleBtn = document.getElementById('btn-toggle-nf');
+        
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', () => this.toggleNFPanel());
+            console.log('✅ NF panel toggle initialized');
+        } else {
+            console.warn('⚠️ NF panel toggle button not found');
         }
-
-        modal.onclick = (e) => {
-            if (e.target === modal) {
-                modal.style.display = 'none';
-            }
-        };
     }
 
+    /**
+     * Toggle NF panel visibility
+     */
+    toggleNFPanel() {
+        const nfPanel = document.getElementById('nf-sidebar');
+        
+        if (!nfPanel) return;
+
+        nfPanel.classList.toggle('collapsed');
+        console.log('📋 NF panel toggled:', nfPanel.classList.contains('collapsed') ? 'Collapsed' : 'Expanded');
+        
+        // Trigger canvas resize
+        if (window.canvasRenderer) {
+            setTimeout(() => window.canvasRenderer.resizeCanvas(), 300);
+        }
+    }
+
+    // ==========================================
+    // CONFIGURATION PANEL
+    // ==========================================
+
+    /**
+     * Show NF configuration panel for NEW NF (before creation)
+     * @param {string} nfType - NF type to configure
+     */
     showNFConfigurationForNewNF(nfType) {
         const configForm = document.getElementById('config-form');
         if (!configForm) return;
 
+        // Check if this NF type already exists (except UE which allows 2)
+        const allNFs = window.dataStore?.getAllNFs() || [];
+        const existingNFsOfType = allNFs.filter(nf => nf.type === nfType);
+        
+        if (nfType !== 'UE' && existingNFsOfType.length > 0) {
+            // Block duplicate NF types (except UE)
+            const existingNames = existingNFsOfType.map(nf => nf.name).join(', ');
+            alert(`❌ Duplicate NF Type Not Allowed!\n\n${nfType} already exists in the topology: ${existingNames}\n\nYou can only deploy one instance of each Network Function type.\n\nTo add another ${nfType}, please delete the existing one first.`);
+            console.warn(`⚠️ Blocked duplicate NF type: ${nfType} (existing: ${existingNames})`);
+            return;
+        }
+
+        // Get NF definition for defaults
         const nfDef = window.nfManager?.getNFDefinition(nfType) || { name: nfType, color: '#95a5a6' };
 
+        // Generate unique default values automatically
         const count = (window.nfManager?.nfCounters[nfType] || 0) + 1;
         const defaultName = `${nfType}-${count}`;
         
+        // Get next available unique IP and port
         const defaultIP = this.getNextAvailableIP();
         const defaultPort = this.getNextAvailablePort();
         const globalProtocol = window.globalHTTPProtocol || 'HTTP/2';
 
-        configForm.innerHTML = `
-            <h4>Configure New ${nfType}</h4>
+        // UE Configuration: Show subscriber information form
+        if (nfType === 'UE') {
+            // Get default subscriber configuration from UDR store
+            const subscribers = window.dataStore?.getSubscribers() || [];
+            let defaultIMSI = '001010000000101';
+            let defaultKey = 'fec86ba6eb707ed08905757b1bb44b8f';
+            let defaultOpc = 'C42449363BBAD02B66D16BC975D77CC1';
+            let defaultDnn = '5G-Lab';
+            let defaultSst = 1;
             
-            <div class="form-group">
-                <input type="text" id="config-ip" value="${defaultIP}" required>
-            </div>
+            // Initialize default subscribers if not present
+            if (subscribers.length === 0) {
+                if (window.dataStore?.setSubscribers) {
+                    window.dataStore.setSubscribers([
+                        { imsi: '001010000000101', key: 'fec86ba6eb707ed08905757b1bb44b8f', opc: 'C42449363BBAD02B66D16BC975D77CC1', dnn: '5G-Lab', nssai_sst: 1 },
+                        { imsi: '001010000000102', key: 'fec86ba6eb707ed08905757b1bb44b8f', opc: 'C42449363BBAD02B66D16BC975D77CC1', dnn: '5G-Lab', nssai_sst: 1 }
+                    ]);
+                }
+            }
             
-            <div class="form-group">
-                <input type="number" id="config-port" value="${defaultPort}" required>
-            </div>
+            // Find first available subscriber that's not assigned to any UE
+            const updatedSubscribers = window.dataStore?.getSubscribers() || [];
+            const allUEs = window.dataStore?.getAllNFs().filter(n => n.type === 'UE') || [];
+            const usedIMSI = new Set(allUEs.map(ue => ue.config.subscriberImsi).filter(Boolean));
+            const availableSubscriber = updatedSubscribers.find(sub => !usedIMSI.has(sub.imsi));
             
-            <div class="form-group">
-                <label>🌐 HTTP Protocol (Global Setting)</label>
-                <select id="config-http-protocol">
-                    <option value="HTTP/1" ${globalProtocol === 'HTTP/1' ? 'selected' : ''}>HTTP/1.1</option>
-                    <option value="HTTP/2" ${globalProtocol === 'HTTP/2' ? 'selected' : ''}>HTTP/2</option>
-                </select>
-                <small style="color: #95a5a6; font-size: 11px; display: block; margin-top: 4px;">
-                    ⚠️ Changing this will update ALL Network Functions in topology
-                </small>
-            </div>
+            if (availableSubscriber) {
+                defaultIMSI = availableSubscriber.imsi;
+                defaultKey = availableSubscriber.key;
+                defaultOpc = availableSubscriber.opc;
+                defaultDnn = availableSubscriber.dnn;
+                defaultSst = availableSubscriber.nssai_sst;
+            }
             
-            <button class="btn btn-success btn-block" id="btn-start-nf" data-nf-type="${nfType}">
-                🚀 Start Network Function
-            </button>
-            <button class="btn btn-secondary btn-block" id="btn-cancel-nf">Cancel</button>
-        `;
+            configForm.innerHTML = `
+                <h4>📱 Configure New UE</h4>
+                
+                <div class="form-group">
+                    <label>IMSI (International Mobile Subscriber Identity) *</label>
+                    <input type="text" id="config-imsi" value="${defaultIMSI}" placeholder="001010000000101" required>
+                    <small style="color: #95a5a6; font-size: 11px; display: block; margin-top: 4px;">
+                        15-digit unique subscriber identifier
+                    </small>
+                </div>
+                
+                <div class="form-group">
+                    <label>Key (K) *</label>
+                    <input type="text" id="config-key" value="${defaultKey}" placeholder="fec86ba6eb707ed08905757b1bb44b8f" required>
+                    <small style="color: #95a5a6; font-size: 11px; display: block; margin-top: 4px;">
+                        128-bit authentication key (32 hex characters)
+                    </small>
+                </div>
+                
+                <div class="form-group">
+                    <label>OPc (Operator Code) *</label>
+                    <input type="text" id="config-opc" value="${defaultOpc}" placeholder="C42449363BBAD02B66D16BC975D77CC1" required>
+                    <small style="color: #95a5a6; font-size: 11px; display: block; margin-top: 4px;">
+                        128-bit operator variant key (32 hex characters)
+                    </small>
+                </div>
+                
+                <div class="form-group">
+                    <label>DNN (Data Network Name) *</label>
+                    <input type="text" id="config-dnn" value="${defaultDnn}" placeholder="5G-Lab" required>
+                    <small style="color: #95a5a6; font-size: 11px; display: block; margin-top: 4px;">
+                        Network slice identifier (e.g., internet, 5G-Lab)
+                    </small>
+                </div>
+                
+                <div class="form-group">
+                    <label>NSSAI SST (Slice/Service Type) *</label>
+                    <input type="number" id="config-sst" value="${defaultSst}" min="1" max="255" required>
+                    <small style="color: #95a5a6; font-size: 11px; display: block; margin-top: 4px;">
+                        1=eMBB, 2=URLLC, 3=MIoT (typically 1)
+                    </small>
+                </div>
+                
+                <button class="btn btn-success btn-block" id="btn-start-nf" data-nf-type="${nfType}">
+                    🚀 Start UE
+                </button>
+                <button class="btn btn-secondary btn-block" id="btn-cancel-nf">Cancel</button>
+            `;
+        } else {
+            // Standard configuration for other NF types
+            configForm.innerHTML = `
+                <h4>Configure New ${nfType}</h4>
+                
+                <div class="form-group">
+                    <label>IP Address *</label>
+                    <input type="text" id="config-ip" value="${defaultIP}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Port *</label>
+                    <input type="number" id="config-port" value="${defaultPort}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>🌐 HTTP Protocol (Global Setting)</label>
+                    <select id="config-http-protocol">
+                        <option value="HTTP/1" ${globalProtocol === 'HTTP/1' ? 'selected' : ''}>HTTP/1.1</option>
+                        <option value="HTTP/2" ${globalProtocol === 'HTTP/2' ? 'selected' : ''}>HTTP/2</option>
+                    </select>
+                    <small style="color: #95a5a6; font-size: 11px; display: block; margin-top: 4px;">
+                        ⚠️ Changing this will update ALL Network Functions in topology
+                    </small>
+                </div>
+                
+                <button class="btn btn-success btn-block" id="btn-start-nf" data-nf-type="${nfType}">
+                    🚀 Start Network Function
+                </button>
+                <button class="btn btn-secondary btn-block" id="btn-cancel-nf">Cancel</button>
+            `;
+        }
 
+        // Protocol change event listener
         const protocolSelect = document.getElementById('config-http-protocol');
         if (protocolSelect) {
             protocolSelect.addEventListener('change', (e) => {
@@ -1594,69 +893,180 @@ if (clickedInterface) {
             });
         }
 
+        // Restrict IP field to digits and dots only
+        const configIp = document.getElementById('config-ip');
+        if (configIp) {
+            configIp.addEventListener('input', (e) => {
+                e.target.value = e.target.value.replace(/[^0-9.]/g, '');
+            });
+        }
+
+        // Start button handler
         const startBtn = document.getElementById('btn-start-nf');
         startBtn.addEventListener('click', () => {
             this.startNewNetworkFunction(nfType);
         });
 
+        // Cancel button handler
         const cancelBtn = document.getElementById('btn-cancel-nf');
         cancelBtn.addEventListener('click', () => {
             this.hideNFConfigPanel();
         });
-        
-        // Block special characters in IP and port inputs
-        this.blockSpecialCharactersInInputs();
     }
 
+    /**
+     * Show NF configuration panel
+     * @param {Object} nf - Network Function to configure
+     */
     showNFConfigPanel(nf) {
         const configForm = document.getElementById('config-form');
         if (!configForm) return;
 
-        configForm.innerHTML = `
-            <h4>${nf.name} Configuration</h4>
+        // UE Configuration: Show subscriber information instead of network details
+        if (nf.type === 'UE') {
+            const imsi = nf.config.subscriberImsi || '001010000000101';
+            const key = nf.config.subscriberKey || 'fec86ba6eb707ed08905757b1bb44b8f';
+            const opc = nf.config.subscriberOpc || 'C42449363BBAD02B66D16BC975D77CC1';
+            const dnn = nf.config.subscriberDnn || '5G-Lab';
+            const sst = nf.config.subscriberSst || 1;
             
+            configForm.innerHTML = `
+                <h4>📱 ${nf.name} - Subscriber Configuration</h4>
+                
+                <div class="form-group">
+                    <label>UE Type</label>
+                    <input type="text" value="${nf.type}" disabled>
+                </div>
+                
+                <div class="form-group">
+                    <label>IMSI (International Mobile Subscriber Identity)</label>
+                    <input type="text" id="config-imsi" value="${imsi}" placeholder="001010000000101">
+                    <small style="color: #95a5a6; font-size: 11px; display: block; margin-top: 4px;">
+                        15-digit unique subscriber identifier
+                    </small>
+                </div>
+                
+                <div class="form-group">
+                    <label>Key (K)</label>
+                    <input type="text" id="config-key" value="${key}" placeholder="fec86ba6eb707ed08905757b1bb44b8f">
+                    <small style="color: #95a5a6; font-size: 11px; display: block; margin-top: 4px;">
+                        128-bit authentication key (32 hex characters)
+                    </small>
+                </div>
+                
+                <div class="form-group">
+                    <label>OPc (Operator Code)</label>
+                    <input type="text" id="config-opc" value="${opc}" placeholder="C42449363BBAD02B66D16BC975D77CC1">
+                    <small style="color: #95a5a6; font-size: 11px; display: block; margin-top: 4px;">
+                        128-bit operator variant key (32 hex characters)
+                    </small>
+                </div>
+                
+                <div class="form-group">
+                    <label>DNN (Data Network Name)</label>
+                    <input type="text" id="config-dnn" value="${dnn}" placeholder="5G-Lab">
+                    <small style="color: #95a5a6; font-size: 11px; display: block; margin-top: 4px;">
+                        Network slice identifier (e.g., internet, 5G-Lab)
+                    </small>
+                </div>
+                
+                <div class="form-group">
+                    <label>NSSAI SST (Slice/Service Type)</label>
+                    <input type="number" id="config-sst" value="${sst}" min="1" max="255">
+                    <small style="color: #95a5a6; font-size: 11px; display: block; margin-top: 4px;">
+                        1=eMBB, 2=URLLC, 3=MIoT (typically 1)
+                    </small>
+                </div>
+                
+                <button class="btn btn-primary btn-block" id="btn-save-config">Save Subscriber Info</button>
+                
+
+                
+                <div class="form-group" style="margin-top: 15px;">
+                    <h4>📋 Validation & Testing</h4>
+                    <button class="btn btn-info btn-block" id="btn-validate-ue">
+                        ✓ Validate UE Against UDR
+                    </button>
+                    <button class="btn btn-success btn-block" id="btn-collect-logs" style="margin-top: 10px;">
+                        📊 Collect Network Logs
+                    </button>
+                </div>
+                
+                <button class="btn btn-danger btn-block" id="btn-delete-nf" style="margin-top: 15px;">Delete UE</button>
+                
+                
+                <button class="btn btn-terminal btn-block" id="btn-open-terminal">
+                    💻 Open Command Prompt
+                </button>
+                
+            `;
+        } else {
+            // Standard configuration for other NF types
+            configForm.innerHTML = `
+                <h4>${nf.name} Configuration</h4>
+                
+                <div class="form-group">
+                    <label>NF Type</label>
+                    <input type="text" value="${nf.type}" disabled>
+                </div>
+                
+                <div class="form-group">
+                    <label>IP Address</label>
+                    <input type="text" id="config-ip" value="${nf.config.ipAddress}">
+                </div>
+                
+                <div class="form-group">
+                    <label>Port</label>
+                    <input type="number" id="config-port" value="${nf.config.port}">
+                </div>
+                
+                
+                <div class="form-group">
+                    <label>🌐 HTTP Protocol (Global Setting)</label>
+                    <select id="config-http-protocol">
+                        <option value="HTTP/1" ${nf.config.httpProtocol === 'HTTP/1' ? 'selected' : ''}>HTTP/1.1</option>
+                        <option value="HTTP/2" ${nf.config.httpProtocol === 'HTTP/2' ? 'selected' : ''}>HTTP/2</option>
+                    </select>
+                    <small style="color: #95a5a6; font-size: 11px; display: block; margin-top: 4px;">
+                        ⚠️ Changing this will update ALL Network Functions in topology
+                    </small>
+                </div>
+                
+                
+                <button class="btn btn-primary btn-block" id="btn-save-config">Save Changes</button>
+                <button class="btn btn-danger btn-block" id="btn-delete-nf">Delete NF</button>
+
+            ${nf.type === 'UDR' ? `
             <div class="form-group">
-                <label>NF Type</label>
-                <input type="text" value="${nf.type}" disabled>
+                <h4>UDR Subscriber Management</h4>
+                <button class="btn btn-info btn-block" id="btn-show-subs">Show Subscriber Info</button>
             </div>
+            ` : ''}
             
+            ${nf.type === 'gNB' ? `
             <div class="form-group">
-                <label>IP Address</label>
-                <input type="text" id="config-ip" value="${nf.config.ipAddress}">
+                <h4>Student Triggers</h4>
+                <button class="btn btn-info btn-block" id="btn-trigger-ngap">Trigger NGAP Flow</button>
+                <button class="btn btn-info btn-block" id="btn-trigger-gtpu">Trigger GTP-U Packet</button>
             </div>
+            ` : ''}
             
-            <div class="form-group">
-                <label>Port</label>
-                <input type="number" id="config-port" value="${nf.config.port}">
-            </div>
             
-            <div class="form-group">
-                <label>🌐 HTTP Protocol (Global Setting)</label>
-                <select id="config-http-protocol">
-                    <option value="HTTP/1" ${nf.config.httpProtocol === 'HTTP/1' ? 'selected' : ''}>HTTP/1.1</option>
-                    <option value="HTTP/2" ${nf.config.httpProtocol === 'HTTP/2' ? 'selected' : ''}>HTTP/2</option>
-                </select>
-                <small style="color: #95a5a6; font-size: 11px; display: block; margin-top: 4px;">
-                    ⚠️ Changing this will update ALL Network Functions in topology
-                </small>
-            </div>
-            
-            <button class="btn btn-primary btn-block" id="btn-save-config">Save Changes</button>
-            <button class="btn btn-danger btn-block" id="btn-delete-nf">Delete NF</button>
-            
-           
             <button class="btn btn-terminal btn-block" id="btn-open-terminal">
                 💻 Open Command Prompt
             </button>
-           
+            
         `;
+        }
 
+        // Protocol change event listener (only for non-UE types)
         const protocolSelect = document.getElementById('config-http-protocol');
         if (protocolSelect) {
             protocolSelect.addEventListener('change', (e) => {
                 const newProtocol = e.target.value;
+
+                // Show confirmation dialog
                 const currentProtocol = window.globalHTTPProtocol || 'HTTP/2';
-                
                 if (newProtocol !== currentProtocol) {
                     const allNFs = window.dataStore?.getAllNFs() || [];
                     const confirmMsg = `⚠️ GLOBAL PROTOCOL CHANGE\n\n` +
@@ -1665,85 +1075,356 @@ if (clickedInterface) {
                         `Do you want to continue?`;
 
                     if (confirm(confirmMsg)) {
+                        // Update global protocol
                         if (window.nfManager) {
                             const updateCount = window.nfManager.updateGlobalProtocol(newProtocol);
                             alert(`✅ Success!\n\nUpdated ${updateCount} Network Functions to ${newProtocol}`);
+
+                            // Refresh config panel to show updated value
                             this.showNFConfigPanel(nf);
                         }
                     } else {
+                        // Revert selection
                         protocolSelect.value = currentProtocol;
                     }
                 }
             });
         }
 
+        // Restrict IP field to digits and dots only (only for non-UE types)
+        if (nf.type !== 'UE') {
+            const configIp = document.getElementById('config-ip');
+            if (configIp) {
+                configIp.addEventListener('input', (e) => {
+                    e.target.value = e.target.value.replace(/[^0-9.]/g, '');
+                });
+            }
+        }
+
+        // Save button handler
         const saveBtn = document.getElementById('btn-save-config');
         saveBtn.addEventListener('click', () => {
             this.saveNFConfig(nf.id);
         });
 
+        // Delete button handler
         const deleteBtn = document.getElementById('btn-delete-nf');
         deleteBtn.addEventListener('click', () => {
             this.deleteNF(nf.id);
         });
 
+        // UE: Validation and Log Collection
+        if (nf.type === 'UE') {
+            const btnValidate = document.getElementById('btn-validate-ue');
+            if (btnValidate) {
+                btnValidate.addEventListener('click', () => {
+                    this.validateUEAgainstUDR(nf.id);
+                });
+            }
+
+            const btnCollectLogs = document.getElementById('btn-collect-logs');
+            if (btnCollectLogs) {
+                btnCollectLogs.addEventListener('click', () => {
+                    this.collectNetworkLogs(nf.id);
+                });
+            }
+
+            // PDU Session control buttons
+            const btnEstablish = document.getElementById('btn-establish-pdu');
+            if (btnEstablish) {
+                btnEstablish.addEventListener('click', async () => {
+                    btnEstablish.disabled = true;
+                    btnEstablish.textContent = '⏳ Establishing...';
+                    
+                    try {
+                        if (window.sessionManager) {
+                            const success = await window.sessionManager.establishPDUSession(nf.id);
+                            if (success) {
+                                // Refresh the config panel to show updated status
+                                const updatedNF = window.dataStore?.getNFById(nf.id);
+                                if (updatedNF) {
+                                    this.showNFConfigPanel(updatedNF);
+                                }
+                            }
+                        }
+                    } catch (error) {
+                        console.error('PDU session establishment error:', error);
+                        btnEstablish.disabled = false;
+                        btnEstablish.textContent = '📶 Establish PDU Session';
+                    }
+                });
+            }
+
+            const btnRelease = document.getElementById('btn-release-pdu');
+            if (btnRelease) {
+                btnRelease.addEventListener('click', async () => {
+                    btnRelease.disabled = true;
+                    btnRelease.textContent = '⏳ Releasing...';
+                    
+                    try {
+                        if (window.sessionManager) {
+                            const success = await window.sessionManager.releasePDUSession(nf.id);
+                            if (success) {
+                                // Refresh the config panel to show updated status
+                                const updatedNF = window.dataStore?.getNFById(nf.id);
+                                if (updatedNF) {
+                                    this.showNFConfigPanel(updatedNF);
+                                }
+                            }
+                        }
+                    } catch (error) {
+                        console.error('PDU session release error:', error);
+                        btnRelease.disabled = false;
+                        btnRelease.textContent = '🔌 Release PDU Session';
+                    }
+                });
+            }
+        }
+
+        // UDR: Show Subscriber Info
+        if (nf.type === 'UDR') {
+            const btnSubs = document.getElementById('btn-show-subs');
+            if (btnSubs) {
+                btnSubs.onclick = () => {
+                    const store = window.dataStore;
+                    const current = store.getSubscribers();
+                    // Pre-populate two records if empty
+                    if (current.length === 0) {
+                        store.setSubscribers([
+                            { imsi: '001010000000101', key: 'fec86ba6eb707ed08905757b1bb44b8f', opc: 'C42449363BBAD02B66D16BC975D77CC1', dnn: '5G-Lab', nssai_sst: 1 },
+                            { imsi: '001010000000102', key: 'fec86ba6eb707ed08905757b1bb44b8f', opc: 'C42449363BBAD02B66D16BC975D77CC1', dnn: '5G-Lab', nssai_sst: 1 }
+                        ]);
+                    }
+                    const list = store.getSubscribers();
+                    const lines = list.map((s, i) => `${i+1}) IMSI=${s.imsi} DNN=${s.dnn} SST=${s.nssai_sst}`).join('\n');
+                    const choiceStr = prompt(`Subscribers:\n\n${lines}\n\nEnter 1 or 2 to edit, or IMSI to add:`, '1');
+                    if (!choiceStr) return;
+                    let sub = null;
+                    if (choiceStr === '1' || choiceStr === '2') {
+                        sub = list[parseInt(choiceStr,10)-1];
+                    } else {
+                        sub = { imsi: choiceStr, key: '', opc: '', dnn: '5G-Lab', nssai_sst: 1 };
+                    }
+                    const imsi = prompt('IMSI:', sub.imsi) || sub.imsi;
+                    const key = prompt('Key (hex16/32):', sub.key) || sub.key;
+                    const opc = prompt('OPC (hex32):', sub.opc) || sub.opc;
+                    const dnn = prompt('DNN:', sub.dnn) || sub.dnn;
+                    const sst = parseInt(prompt('NSSAI SST:', String(sub.nssai_sst)) || String(sub.nssai_sst), 10) || sub.nssai_sst;
+                    store.upsertSubscriber(imsi, { key, opc, dnn, nssai_sst: sst });
+                    alert('✅ Subscriber saved. UDR/MySQL store updated.');
+                };
+            }
+        }
+
+        // Student trigger button handlers (only available for gNB)
+        if (nf.type === 'gNB') {
+            const btnNgap = document.getElementById('btn-trigger-ngap');
+            const btnGtpu = document.getElementById('btn-trigger-gtpu');
+
+            if (btnNgap) {
+                btnNgap.onclick = () => {
+                    const amf = window.dataStore.getAllNFs().find(x => x.type === 'AMF');
+                    if (!amf) return alert('Please add and connect an AMF to see NGAP flows.');
+                    // Use logEngine (exists globally)
+                    if (window.logEngine && typeof window.logEngine.simulateNGAP === 'function') {
+                        window.logEngine.simulateNGAP(nf, amf);
+                    } else {
+                        alert('NGAP simulator not available.');
+                    }
+                };
+            }
+
+            if (btnGtpu) {
+                btnGtpu.onclick = () => {
+                    const upf = window.dataStore.getAllNFs().find(x => x.type === 'UPF');
+                    if (!upf) return alert('Please add and connect a UPF to see GTP-U flows.');
+                    if (window.logEngine && typeof window.logEngine.simulateGTPU === 'function') {
+                        window.logEngine.simulateGTPU(nf, upf);
+                    } else {
+                        alert('GTP-U simulator not available.');
+                    }
+                };
+            }
+        }
+
+        // UE registration happens automatically when UE becomes stable
+        // No manual button needed
+
+        // Ping troubleshooting handlers
         this.setupPingTroubleshootingHandlers(nf.id);
-        
-        // Block special characters in IP and port inputs
-        this.blockSpecialCharactersInInputs();
     }
 
+    /**
+     * Start new Network Function with IP conflict prevention
+     * @param {string} nfType - NF type
+     */
     startNewNetworkFunction(nfType) {
+        // UE: Handle subscriber information
+        if (nfType === 'UE') {
+            const imsi = document.getElementById('config-imsi')?.value;
+            const key = document.getElementById('config-key')?.value;
+            const opc = document.getElementById('config-opc')?.value;
+            const dnn = document.getElementById('config-dnn')?.value;
+            const sst = parseInt(document.getElementById('config-sst')?.value);
+
+            if (!imsi || !key || !opc || !dnn || !sst) {
+                alert('Please fill all subscriber fields');
+                return;
+            }
+
+            // Validate IMSI (15 digits)
+            if (!/^\d{15}$/.test(imsi)) {
+                alert('❌ Invalid IMSI!\n\nIMSI must be exactly 15 digits.');
+                return;
+            }
+
+            // Validate Key (32 hex characters)
+            if (!/^[0-9a-fA-F]{32}$/.test(key)) {
+                alert('❌ Invalid Key!\n\nKey must be exactly 32 hexadecimal characters.');
+                return;
+            }
+
+            // Validate OPc (32 hex characters)
+            if (!/^[0-9a-fA-F]{32}$/.test(opc)) {
+                alert('❌ Invalid OPc!\n\nOPc must be exactly 32 hexadecimal characters.');
+                return;
+            }
+
+            // Check for duplicate IMSI - ensure no other UE has the same IMSI
+            const allUEs = window.dataStore?.getAllNFs().filter(n => n.type === 'UE') || [];
+            const duplicateUE = allUEs.find(ue => ue.config.subscriberImsi === imsi);
+            if (duplicateUE) {
+                alert(`❌ Duplicate IMSI Detected!\n\nIMSI ${imsi} is already assigned to ${duplicateUE.name}.\n\nEach UE must have a unique IMSI number.`);
+                return;
+            }
+
+            // Validate IMSI exists in UDR subscriber database
+            const subscribers = window.dataStore?.getSubscribers() || [];
+            const subscriber = subscribers.find(s => s.imsi === imsi);
+            if (!subscriber) {
+                alert(`❌ IMSI Not Found in UDR!\n\nIMSI ${imsi} is not registered in the UDR/MySQL subscriber database.\n\nPlease register this subscriber in UDR first before creating the UE.`);
+                return;
+            }
+
+            // Validate that UE configuration matches subscriber profile
+            if (subscriber.dnn && subscriber.dnn !== dnn) {
+                alert(`❌ DNN Mismatch!\n\nUE DNN (${dnn}) does not match subscriber profile DNN (${subscriber.dnn}).\n\nPlease update UE configuration to match the subscriber profile.`);
+                return;
+            }
+
+            if (subscriber.nssai_sst && subscriber.nssai_sst !== sst) {
+                alert(`❌ NSSAI SST Mismatch!\n\nUE SST (${sst}) does not match subscriber profile SST (${subscriber.nssai_sst}).\n\nPlease update UE configuration to match the subscriber profile.`);
+                return;
+            }
+
+            console.log('🚀 Starting new UE with subscriber info:', { imsi, dnn, sst });
+
+            // Calculate position with proper spacing
+            const position = this.calculateNFPositionWithSpacing(nfType);
+
+            // Create UE with automatic unique IP/port
+            if (window.nfManager) {
+                const nf = window.nfManager.createNetworkFunction(nfType, position);
+
+                if (nf) {
+                    // Set subscriber configuration
+                    nf.config.subscriberImsi = imsi;
+                    nf.config.subscriberKey = key;
+                    nf.config.subscriberOpc = opc;
+                    nf.config.subscriberDnn = dnn;
+                    nf.config.subscriberSst = sst;
+
+                    // Update in data store
+                    window.dataStore.updateNF(nf.id, nf);
+
+                    console.log('✅ UE started successfully:', nf.name);
+
+                    // Log UE creation with subscriber info
+                    if (window.logEngine) {
+                        window.logEngine.addLog(nf.id, 'SUCCESS',
+                            `${nf.name} created with subscriber profile`, {
+                            IMSI: imsi,
+                            DNN: dnn,
+                            NSSAI_SST: sst,
+                            IP: nf.config.ipAddress,
+                            Subnet: window.nfManager?.getNetworkFromIP(nf.config.ipAddress) + '.0/24'
+                        });
+                    }
+
+                    // Re-render canvas
+                    if (window.canvasRenderer) {
+                        window.canvasRenderer.render();
+                    }
+
+                    // Show config panel for the new UE
+                    this.showNFConfigPanel(nf);
+                }
+            }
+            return;
+        }
+
+        // Standard NF configuration
         const ipAddress = document.getElementById('config-ip')?.value;
-        const portValue = document.getElementById('config-port')?.value;
-        const port = parseInt(portValue, 10);
+        const portInput = document.getElementById('config-port')?.value;
         const httpProtocol = document.getElementById('config-http-protocol')?.value;
 
-        if (!ipAddress || !portValue) {
+        if (!ipAddress || !portInput) {
             alert('Please fill all required fields');
             return;
         }
-        
-        const count = (window.nfManager?.nfCounters[nfType] || 0) + 1;
-        const name = `${nfType}-${count}`;
 
+        const errors = [];
+
+        // Validate IP address
         if (!this.isValidIP(ipAddress)) {
-            alert('❌ Invalid IP address!\n\nPlease enter a valid IP address from 1.0.0.0 to 255.255.255.255.\nOnly dots are allowed as separators, and 0.0.0.0 is not permitted.');
+            errors.push('Invalid IP address! IP must be between 1.0.0.0 and 255.255.255.255, only digits and dots allowed, 0.0.0.0 is not allowed.');
+        }
+
+        // Validate port
+        if (!this.isValidPort(portInput)) {
+            errors.push('Invalid port! Port must be numeric only, 4-6 digits long.');
+        }
+
+        if (errors.length > 0) {
+            alert('❌ Invalid Entries!\n\n' + errors.join('\n'));
             return;
         }
 
-        if (!this.isValidPort(portValue)) {
-            alert('❌ Invalid port!\n\nPlease enter a port number with 4 to 6 digits only (no special characters).');
-            return;
-        }
+        const port = parseInt(portInput, 10);
 
+        // Check for IP conflicts
         if (!window.nfManager?.isIPAddressAvailable(ipAddress)) {
             alert(`❌ IP Conflict Detected!\n\nIP address ${ipAddress} is already in use by another service.\n\nPlease choose a different IP address.`);
             return;
         }
 
+        // Check for port conflicts
         if (!window.nfManager?.isPortAvailable(port)) {
             alert(`❌ Port Conflict Detected!\n\nPort ${port} is already in use by another service.\n\nPlease choose a different port number.`);
             return;
         }
 
-        console.log('🚀 Starting new NF:', { nfType, name, ipAddress, port, httpProtocol });
+        console.log('🚀 Starting new NF:', { nfType, ipAddress, port, httpProtocol });
 
+        // Calculate position with proper spacing
         const position = this.calculateNFPositionWithSpacing(nfType);
 
+        // Create NF with automatic unique IP/port (will be overridden)
         if (window.nfManager) {
             const nf = window.nfManager.createNetworkFunction(nfType, position);
 
             if (nf) {
-                nf.name = name;
+                // Override with user-specified configuration
                 nf.config.ipAddress = ipAddress;
                 nf.config.port = port;
                 nf.config.httpProtocol = httpProtocol;
 
+                // Update in data store
                 window.dataStore.updateNF(nf.id, nf);
 
                 console.log('✅ NF started successfully:', nf.name);
 
+                // Log service creation with network info
                 if (window.logEngine) {
                     window.logEngine.addLog(nf.id, 'SUCCESS',
                         `${nf.name} created successfully`, {
@@ -1756,12 +1437,21 @@ if (clickedInterface) {
                     });
                 }
 
+                // Auto-connect to bus if applicable
                 this.autoConnectToBusIfApplicable(nf);
+
+                // Clear configuration panel
                 this.hideNFConfigPanel();
 
+                // Re-render canvas
                 if (window.canvasRenderer) {
                     window.canvasRenderer.render();
                 }
+            } else {
+                // NF creation failed (e.g., UE limit reached)
+                console.warn('⚠️ NF creation failed for type:', nfType);
+                // Don't clear the config panel so user can try a different NF type
+                return;
             }
         } else {
             console.error('❌ NFManager not available');
@@ -1769,16 +1459,22 @@ if (clickedInterface) {
         }
     }
 
+    /**
+     * Calculate NF position with proper spacing
+     * @param {string} nfType - NF type
+     * @returns {Object} {x, y} position
+     */
     calculateNFPositionWithSpacing(nfType) {
         const allNFs = window.dataStore?.getAllNFs() || [];
 
-        const nfsPerRow = 6;
-        const nfWidth = 60;
-        const nfHeight = 80;
-        const marginX = 40;
-        const marginY = 60;
-        const startX = 120;
-        const startY = 120;
+        // Grid layout with better spacing
+        const nfsPerRow = 6;  // More NFs per row
+        const nfWidth = 60;   // Smaller width for better fit
+        const nfHeight = 80;  // Height including label
+        const marginX = 40;   // Horizontal spacing
+        const marginY = 60;   // Vertical spacing
+        const startX = 120;   // Start position X
+        const startY = 120;   // Start position Y
 
         const totalNFs = allNFs.length;
         const row = Math.floor(totalNFs / nfsPerRow);
@@ -1790,14 +1486,20 @@ if (clickedInterface) {
         };
     }
 
+    /**
+     * Auto-connect NF to bus line if applicable
+     * @param {Object} nf - Network Function
+     */
     autoConnectToBusIfApplicable(nf) {
-        const excludedTypes = ['UPF', 'gNB', 'UE'];
+        // Don't auto-connect UPF, gNB, UE, MySQL, and ext-dn as per requirement
+        const excludedTypes = ['UPF', 'gNB', 'UE', 'MySQL', 'ext-dn'];
 
         if (excludedTypes.includes(nf.type)) {
             console.log(`🚫 Skipping auto-connect for ${nf.type} (excluded type)`);
             return;
         }
 
+        // Find available bus lines
         const allBuses = window.dataStore?.getAllBuses() || [];
 
         if (allBuses.length === 0) {
@@ -1805,6 +1507,7 @@ if (clickedInterface) {
             return;
         }
 
+        // Connect to the first available bus (or you can add logic to choose the best bus)
         const targetBus = allBuses[0];
 
         if (window.busManager) {
@@ -1812,8 +1515,8 @@ if (clickedInterface) {
             const connection = window.busManager.connectNFToBus(nf.id, targetBus.id);
 
             if (connection) {
-                console.log(`✅ Auto-connected ${nf.name} to ${targetBus.name}`);
-
+                
+                // Add log for auto-connection
                 if (window.logEngine) {
                     window.logEngine.addLog(nf.id, 'INFO',
                         `Auto-connected to ${targetBus.name} service bus`, {
@@ -1826,6 +1529,9 @@ if (clickedInterface) {
         }
     }
 
+    /**
+     * Hide NF configuration panel
+     */
     hideNFConfigPanel() {
         const configForm = document.getElementById('config-form');
         if (configForm) {
@@ -1833,82 +1539,191 @@ if (clickedInterface) {
         }
     }
 
+    /**
+     * Save NF configuration with IP conflict prevention
+     * @param {string} nfId - NF ID
+     */
     saveNFConfig(nfId) {
+        const nf = window.dataStore.getNFById(nfId);
+        if (!nf) return;
+
+        // UE: Save subscriber information
+        if (nf.type === 'UE') {
+            const imsi = document.getElementById('config-imsi')?.value;
+            const key = document.getElementById('config-key')?.value;
+            const opc = document.getElementById('config-opc')?.value;
+            const dnn = document.getElementById('config-dnn')?.value;
+            const sst = parseInt(document.getElementById('config-sst')?.value);
+
+            if (!imsi || !key || !opc || !dnn || !sst) {
+                alert('Please fill all subscriber fields');
+                return;
+            }
+
+            // Validate IMSI (15 digits)
+            if (!/^\d{15}$/.test(imsi)) {
+                alert('❌ Invalid IMSI!\n\nIMSI must be exactly 15 digits.');
+                return;
+            }
+
+            // Validate Key (32 hex characters)
+            if (!/^[0-9a-fA-F]{32}$/.test(key)) {
+                alert('❌ Invalid Key!\n\nKey must be exactly 32 hexadecimal characters.');
+                return;
+            }
+
+            // Validate OPc (32 hex characters)
+            if (!/^[0-9a-fA-F]{32}$/.test(opc)) {
+                alert('❌ Invalid OPc!\n\nOPc must be exactly 32 hexadecimal characters.');
+                return;
+            }
+
+            // Check for duplicate IMSI - ensure no other UE has the same IMSI
+            const allUEs = window.dataStore?.getAllNFs().filter(n => n.type === 'UE' && n.id !== nfId) || [];
+            const duplicateUE = allUEs.find(ue => ue.config.subscriberImsi === imsi);
+            if (duplicateUE) {
+                alert(`❌ Duplicate IMSI Detected!\n\nIMSI ${imsi} is already assigned to ${duplicateUE.name}.\n\nEach UE must have a unique IMSI number.`);
+                return;
+            }
+
+            // Validate IMSI exists in UDR subscriber database
+            const subscribers = window.dataStore?.getSubscribers() || [];
+            const subscriber = subscribers.find(s => s.imsi === imsi);
+            if (!subscriber) {
+                alert(`❌ IMSI Not Found in UDR!\n\nIMSI ${imsi} is not registered in the UDR/MySQL subscriber database.\n\nPlease register this subscriber in UDR first before configuring the UE.`);
+                return;
+            }
+
+            // Validate that UE configuration matches subscriber profile
+            if (subscriber.dnn && subscriber.dnn !== dnn) {
+                alert(`❌ DNN Mismatch!\n\nUE DNN (${dnn}) does not match subscriber profile DNN (${subscriber.dnn}).\n\nPlease update UE configuration to match the subscriber profile.`);
+                return;
+            }
+
+            if (subscriber.nssai_sst && subscriber.nssai_sst !== sst) {
+                alert(`❌ NSSAI SST Mismatch!\n\nUE SST (${sst}) does not match subscriber profile SST (${subscriber.nssai_sst}).\n\nPlease update UE configuration to match the subscriber profile.`);
+                return;
+            }
+
+            // Update subscriber configuration
+            nf.config.subscriberImsi = imsi;
+            nf.config.subscriberKey = key;
+            nf.config.subscriberOpc = opc;
+            nf.config.subscriberDnn = dnn;
+            nf.config.subscriberSst = sst;
+
+            window.dataStore.updateNF(nfId, nf);
+
+            // Log configuration change
+            if (window.logEngine) {
+                window.logEngine.addLog(nfId, 'SUCCESS',
+                    `Subscriber information updated`, {
+                    IMSI: imsi,
+                    DNN: dnn,
+                    NSSAI_SST: sst,
+                    Key: key.substring(0, 8) + '...',
+                    OPc: opc.substring(0, 8) + '...'
+                });
+            }
+
+            alert('✅ Subscriber information saved successfully!');
+            
+            // Re-render canvas
+            if (window.canvasRenderer) {
+                window.canvasRenderer.render();
+            }
+            return;
+        }
+
+        // Standard NF configuration
         const ipAddress = document.getElementById('config-ip')?.value;
-        const portValue = document.getElementById('config-port')?.value;
-        const port = parseInt(portValue, 10);
+        const portInput = document.getElementById('config-port')?.value;
         const httpProtocol = document.getElementById('config-http-protocol')?.value;
 
-        if (!ipAddress || !portValue) {
+        if (!ipAddress || !portInput) {
             alert('Please fill all required fields');
             return;
         }
 
+        const errors = [];
+
+        // Validate IP address
         if (!this.isValidIP(ipAddress)) {
-            alert('❌ Invalid IP address!\n\nPlease enter a valid IP address from 1.0.0.0 to 255.255.255.255.\nOnly dots are allowed as separators, and 0.0.0.0 is not permitted.');
+            errors.push('Invalid IP address! IP must be between 1.0.0.0 and 255.255.255.255, only digits and dots allowed, 0.0.0.0 is not allowed.');
+        }
+
+        // Validate port
+        if (!this.isValidPort(portInput)) {
+            errors.push('Invalid port! Port must be numeric only, 4-6 digits long.');
+        }
+
+        if (errors.length > 0) {
+            alert('❌ Invalid Entries!\n\n' + errors.join('\n'));
             return;
         }
 
-        if (!this.isValidPort(portValue)) {
-            alert('❌ Invalid port!\n\nPlease enter a port number with 4 to 6 digits only (no special characters).');
-            return;
-        }
+        const port = parseInt(portInput, 10);
 
-        const currentNf = window.dataStore.getNFById(nfId);
-        if (currentNf && currentNf.config.ipAddress !== ipAddress) {
+        // Check for IP conflicts (excluding current NF)
+        if (nf.config.ipAddress !== ipAddress) {
             if (!window.nfManager?.isIPAddressAvailable(ipAddress)) {
                 alert(`❌ IP Conflict Detected!\n\nIP address ${ipAddress} is already in use by another service.\n\nPlease choose a different IP address.`);
                 return;
             }
         }
 
-        if (currentNf && currentNf.config.port !== port) {
+        // Check for port conflicts (excluding current NF)
+        if (nf.config.port !== port) {
             if (!window.nfManager?.isPortAvailable(port)) {
                 alert(`❌ Port Conflict Detected!\n\nPort ${port} is already in use by another service.\n\nPlease choose a different port number.`);
                 return;
             }
         }
 
-        const nf = window.dataStore.getNFById(nfId);
-        if (nf) {
-            const oldIP = nf.config.ipAddress;
-            const oldPort = nf.config.port;
+        // Update NF
+        const oldIP = nf.config.ipAddress;
+        const oldPort = nf.config.port;
 
-            nf.config.ipAddress = ipAddress;
-            nf.config.port = port;
-            nf.config.httpProtocol = httpProtocol;
+        nf.config.ipAddress = ipAddress;
+        nf.config.port = port;
+        nf.config.httpProtocol = httpProtocol;
 
-            window.dataStore.updateNF(nfId, nf);
+        window.dataStore.updateNF(nfId, nf);
 
-            if (window.logEngine) {
-                const changes = [];
-                if (oldIP !== ipAddress) changes.push(`IP: ${oldIP} → ${ipAddress}`);
-                if (oldPort !== port) changes.push(`Port: ${oldPort} → ${port}`);
-                
-                if (changes.length > 0) {
-                    window.logEngine.addLog(nfId, 'INFO',
-                        `Configuration updated: ${changes.join(', ')}`, {
-                        previousIP: oldIP,
-                        newIP: ipAddress,
-                        previousPort: oldPort,
-                        newPort: port,
-                        subnet: window.nfManager?.getNetworkFromIP(ipAddress) + '.0/24'
-                    });
-                }
+        // Log configuration change
+        if (window.logEngine) {
+            const changes = [];
+            if (oldIP !== ipAddress) changes.push(`IP: ${oldIP} → ${ipAddress}`);
+            if (oldPort !== port) changes.push(`Port: ${oldPort} → ${port}`);
+            
+            if (changes.length > 0) {
+                window.logEngine.addLog(nfId, 'INFO',
+                    `Configuration updated: ${changes.join(', ')}`, {
+                    previousIP: oldIP,
+                    newIP: ipAddress,
+                    previousPort: oldPort,
+                    newPort: port,
+                    subnet: window.nfManager?.getNetworkFromIP(ipAddress) + '.0/24'
+                });
             }
-
-            if (window.canvasRenderer) {
-                window.canvasRenderer.render();
-            }
-
-            alert('✅ Configuration saved successfully!\n\n' + 
-                  `IP: ${ipAddress}\n` +
-                  `Port: ${port}\n` +
-                  `Subnet: ${window.nfManager?.getNetworkFromIP(ipAddress)}.0/24`);
-            console.log('✅ NF config saved:', nf.name);
         }
+
+        // Re-render
+        if (window.canvasRenderer) {
+            window.canvasRenderer.render();
+        }
+
+        alert('✅ Configuration saved successfully!\n\n' + 
+              `IP: ${ipAddress}\n` +
+              `Port: ${port}\n` +
+              `Subnet: ${window.nfManager?.getNetworkFromIP(ipAddress)}.0/24`);
+        console.log('✅ NF config saved:', nf.name);
     }
 
+    /**
+     * Delete NF
+     * @param {string} nfId - NF ID
+     */
     deleteNF(nfId) {
         const nf = window.dataStore.getNFById(nfId);
         if (!nf) return;
@@ -1924,16 +1739,25 @@ if (clickedInterface) {
         this.hideNFConfigPanel();
     }
 
+    // ==========================================
+    // LOG PANEL
+    // ==========================================
+
+    /**
+     * Initialize log panel
+     */
     initializeLogPanel() {
         console.log('📋 Initializing log panel...');
 
+        // Subscribe to log engine
         if (window.logEngine) {
             window.logEngine.subscribe((logEntry) => {
-                if (logEntry.type) return;
+                if (logEntry.type) return; // Skip event objects
                 this.appendLogToUI(logEntry);
             });
         }
 
+        // Setup log controls
         const filterNF = document.getElementById('log-filter-nf');
         const filterLevel = document.getElementById('log-filter-level');
         const clearBtn = document.getElementById('btn-clear-logs');
@@ -1971,6 +1795,10 @@ if (clickedInterface) {
         console.log('✅ Log panel initialized');
     }
 
+    /**
+     * Append log entry to UI
+     * @param {Object} logEntry - Log entry object
+     */
     appendLogToUI(logEntry) {
         const logContent = document.getElementById('log-content');
         if (!logContent) return;
@@ -1992,6 +1820,7 @@ if (clickedInterface) {
             <span class="log-message">${this.escapeHtml(logEntry.message)}</span>
         `;
 
+        // Add details if present
         if (logEntry.details && Object.keys(logEntry.details).length > 0) {
             const detailsDiv = document.createElement('div');
             detailsDiv.className = 'log-details';
@@ -2006,13 +1835,19 @@ if (clickedInterface) {
         }
 
         logContent.appendChild(logDiv);
+
+        // Auto-scroll to bottom
         logContent.scrollTop = logContent.scrollHeight;
 
+        // Limit displayed logs
         while (logContent.children.length > 500) {
             logContent.removeChild(logContent.firstChild);
         }
     }
 
+    /**
+     * Filter logs based on selected filters
+     */
     filterLogs() {
         const filterNF = document.getElementById('log-filter-nf')?.value || 'all';
         const filterLevel = document.getElementById('log-filter-level')?.value || 'all';
@@ -2037,16 +1872,21 @@ if (clickedInterface) {
         });
     }
 
+    /**
+     * Update NF filter dropdown in log panel
+     */
     updateLogNFFilter() {
         const select = document.getElementById('log-filter-nf');
         if (!select) return;
 
         const currentValue = select.value;
 
+        // Clear options except "All NFs"
         while (select.options.length > 1) {
             select.remove(1);
         }
 
+        // Add option for each NF
         const allNFs = window.dataStore?.getAllNFs() || [];
         allNFs.forEach(nf => {
             const option = document.createElement('option');
@@ -2055,11 +1895,15 @@ if (clickedInterface) {
             select.appendChild(option);
         });
 
+        // Restore previous selection if valid
         if (currentValue && [...select.options].some(opt => opt.value === currentValue)) {
             select.value = currentValue;
         }
     }
 
+    /**
+     * Export logs
+     */
     exportLogs() {
         if (!window.logEngine) return;
 
@@ -2094,15 +1938,423 @@ if (clickedInterface) {
         a.click();
         URL.revokeObjectURL(url);
 
-        console.log('✅ Logs exported as', format);
+        console.log(`✅ Logs exported as ${filename}`);
     }
 
+    // ==========================================
+    // DEPLOY CORE BUTTON
+    // ==========================================
+
+    /**
+     * Setup Deploy Core button
+     */
+    setupDeployCoreButton() {
+        const deployBtn = document.getElementById('btn-deploy-core');
+        if (!deployBtn) return;
+
+        deployBtn.addEventListener('click', () => {
+            console.log('🚀 Deploy Core clicked');
+            this.deployCoreSequence();
+        });
+    }
+
+        /**
+     * Execute step-by-step deployment of Core Topology
+     */
+    async deployCoreSequence() {
+        if (!confirm('⚠️ This will CLEAR the current topology and deploy the 5G Core Network.\n\nAre you sure you want to proceed?')) {
+            return;
+        }
+
+        console.log('🚀 Starting One-Click Core Deployment...');
+        
+        // 1. Fetch Logs first
+        let logsData = { logs: [] };
+        try {
+            // Fix: path needs to be relative to index.html location
+            const response = await fetch('../5g-logs.json'); 
+            if (response.ok) {
+                logsData = await response.json();
+                console.log('📄 Loaded logs:', logsData.logs.length, 'entries');
+                
+                // Debug: check if we have gNB logs
+                const gnbLogs = logsData.logs.filter(l => l.nfId && l.nfId.toLowerCase().includes('gnb'));
+                console.log('📄 gNB logs found:', gnbLogs.length);
+            } else {
+                console.warn('⚠️ Could not load 5g-logs.json - Status:', response.status);
+            }
+        } catch (e) {
+            console.error('❌ Error loading logs:', e);
+        }
+
+        // 2. Clear existing topology
+        if (window.dataStore) {
+            window.dataStore.clearAll();
+        }
+        if (window.logEngine) {
+            window.logEngine.clearAllLogs();
+            window.logEngine.addLog('system', 'INFO', 'Starting 5G Core Deployment Sequence...');
+        }
+
+        const topology = this.getCoreOneClickTopology();
+        const STEP_DELAY = 1500; // Increased delay as requested
+        const LOG_DELAY = 100;
+
+        // Helper to sleep
+        const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+        // Helper to find logs for a specific NF type/name
+        // We map the static IDs from logs to the dynamic sequence
+        const getLogsForType = (type, name) => {
+            return logsData.logs.filter(log => {
+                if (!log.nfId) return false;
+                if (log.nfId === 'system') return false;
+
+                // Robust matching:
+                // 1. Try generic type prefix (e.g. 'nrf-', 'gnb-')
+                if (log.nfId.toLowerCase().startsWith(type.toLowerCase() + '-')) return true;
+                
+                // 2. Try matching by name if available in log details or ID
+                if (name && log.nfId.toLowerCase().includes(name.toLowerCase())) return true;
+
+                return false;
+            });
+        };
+
+        // 3. Deploy Buses first (Immediate)
+        if (topology.buses && topology.buses.length > 0) {
+            console.log('🚌 Deploying Buses...');
+            topology.buses.forEach(bus => {
+                if (window.dataStore) window.dataStore.addBus(bus);
+                if (window.logEngine) window.logEngine.addLog('system', 'INFO', `Deployed ${bus.name}`);
+            });
+            if (window.canvasRenderer) window.canvasRenderer.render();
+            await sleep(1000);
+        }
+
+        // 4. Deploy NFs & Simultaneous Bus Connections
+        if (topology.nfs && topology.nfs.length > 0) {
+            for (const nf of topology.nfs) {
+                try {
+                    console.log('📦 Deploying NF:', nf.name);
+                    
+                    // Add NF
+                    if (window.dataStore) window.dataStore.addNF(nf);
+
+                    // Find and Add Simultaneous Bus Connection
+                    const busConn = topology.busConnections ? topology.busConnections.find(bc => bc.nfId === nf.id) : null;
+                    if (busConn) {
+                        if (window.dataStore) window.dataStore.addBusConnection(busConn);
+                        console.log('🔌 Auto-connected to bus:', nf.name);
+                    }
+
+                    // Render update
+                    if (window.canvasRenderer) window.canvasRenderer.render();
+
+                    // Play relevant logs for this NF
+                    const validLogs = getLogsForType(nf.type, nf.name);
+                    // Sort by timestamp to ensure sequence
+                    validLogs.sort((a, b) => a.timestamp - b.timestamp);
+
+                    if (validLogs.length > 0) {
+                        for (const log of validLogs) {
+                            if (window.logEngine) {
+                                // Use the log's original data
+                                window.logEngine.addLog(nf.id, log.level || 'INFO', log.message, log.details);
+                            }
+                            await sleep(LOG_DELAY); // Check tiny delay between logs for effect
+                        }
+                    } else {
+                        // Fallback log if no logs found in file
+                        if (window.logEngine) window.logEngine.addLog(nf.id, 'INFO', `${nf.name} deployed`, { type: nf.type });
+                    }
+
+                    // Wait for the main step delay before next NF
+                    await sleep(STEP_DELAY);
+
+                    // 5. Deploy Direct Connections relevant to this NF (Outgoing)
+                    // We do this AFTER the NF is fully established (simulated by delay)
+                    if (topology.connections) {
+                        // Find connections where this NF is the Source
+                        const relevantConnections = topology.connections.filter(c => c.sourceId === nf.id);
+                        
+                        if (relevantConnections.length > 0) {
+                            for (const conn of relevantConnections) {
+                                // Fix: Use getNFById instead of non-existent getNF
+                                // Also handle cases where target might be a bus (unlikely for direct connection) or not yet exists
+                                const source = window.dataStore ? window.dataStore.getNFById(conn.sourceId) : null;
+                                const target = window.dataStore ? window.dataStore.getNFById(conn.targetId) : null;
+                                
+                                // Only add if both exist. 
+                                // Note: In strict ordered deployment, target should exist IF it was earlier in the list.
+                                // If target is later in the list (e.g. circular dependency), we skip for now. 
+                                // But one-click.json is usually ordered topologically.
+                                if (source && target) {
+                                    if (window.dataStore) window.dataStore.addConnection(conn);
+                                    if (window.canvasRenderer) window.canvasRenderer.render();
+                                    await sleep(500); // Small delay for connection animation
+                                }
+                            }
+                        }
+                    }
+                } catch (err) {
+                    console.error('❌ Error deploying NF:', nf.name, err);
+                    // Continue to next NF despite error
+                }
+            }
+        }
+
+        // Final Message
+        console.log('✅ Core Deployment Completed');
+        if (window.logEngine) window.logEngine.addLog('system', 'SUCCESS', '5G Core Deployment Completed Successfully');
+        alert('✅ 5G Core Deployment Completed!');
+    }
+
+    /**
+     * Get the One-Click Topology Data
+     * @returns {Object} topology data
+     */
+    getCoreOneClickTopology() {
+        return {
+  "nfs": [
+    {
+      "id": "nrf-1766128434061-h6d5p",
+      "type": "NRF",
+      "name": "NRF-1",
+      "position": { "x": 119, "y": 38 },
+      "color": "#9b59b6",
+      "icon": "simulation/images/icons/nrf.svg",
+      "status": "stable",
+      "statusTimestamp": 1766128439071,
+      "config": { "ipAddress": "192.168.1.10", "port": 8080, "capacity": 1000, "load": 0, "httpProtocol": "HTTP/2" }
+    },
+    {
+      "id": "amf-1766128437620-qzum8",
+      "type": "AMF",
+      "name": "AMF-1",
+      "position": { "x": 274, "y": 222 },
+      "color": "#3498db",
+      "icon": "simulation/images/icons/amf.svg",
+      "status": "stable",
+      "statusTimestamp": 1766128442627,
+      "config": { "ipAddress": "192.168.1.11", "port": 8081, "capacity": 1000, "load": 0, "httpProtocol": "HTTP/2" }
+    },
+    {
+      "id": "smf-1766128441444-aeu8d",
+      "type": "SMF",
+      "name": "SMF-1",
+      "position": { "x": 395, "y": 228 },
+      "color": "#00bcd4",
+      "icon": "simulation/images/icons/smf.svg",
+      "status": "stable",
+      "statusTimestamp": 1766128446455,
+      "config": { "ipAddress": "192.168.1.12", "port": 8082, "capacity": 1000, "load": 0, "httpProtocol": "HTTP/2" }
+    },
+    {
+      "id": "upf-1766128444987-c07tk",
+      "type": "UPF",
+      "name": "UPF-1",
+      "position": { "x": 400, "y": 341 },
+      "color": "#4caf50",
+      "icon": "simulation/images/icons/upf.svg",
+      "status": "stable",
+      "statusTimestamp": 1766128449995,
+      "config": {
+        "ipAddress": "192.168.1.13", "port": 8083, "capacity": 1000, "load": 0, "httpProtocol": "HTTP/2",
+        "tun0Interface": { "interfaceName": "tun0", "network": "10.0.0.0/28", "gatewayIP": "10.0.0.1", "assignedIPs": [{"ueId": "ue-1766128703062-jvfa8", "ueName": "UE-1", "ip": "10.0.0.2", "assignedAt": 1766128715355}], "nextAvailableIP": 3, "name": "tun0", "ipAddress": "10.0.0.1", "netmask": "255.255.255.0" }
+      }
+    },
+    {
+      "id": "ausf-1766128449684-e9u2o",
+      "type": "AUSF",
+      "name": "AUSF-1",
+      "position": { "x": 510, "y": 225 },
+      "color": "#ff9800",
+      "icon": "simulation/images/icons/ausf.svg",
+      "status": "stable",
+      "statusTimestamp": 1766128454697,
+      "config": { "ipAddress": "192.168.1.14", "port": 8084, "capacity": 1000, "load": 0, "httpProtocol": "HTTP/2" }
+    },
+    {
+      "id": "ext-dn-1766128453002-votm4",
+      "type": "ext-dn",
+      "name": "ext-dn-1",
+      "position": { "x": 539, "y": 342 },
+      "color": "#27ae60",
+      "icon": null,
+      "status": "stable",
+      "statusTimestamp": 1766128458017,
+      "config": { "ipAddress": "192.168.1.15", "port": 80, "capacity": 1000, "load": 0, "httpProtocol": "HTTP/2" }
+    },
+    {
+      "id": "udm-1766128464413-gtx9n",
+      "type": "UDM",
+      "name": "UDM-1",
+      "position": { "x": 461, "y": 36 },
+      "color": "#ff5722",
+      "icon": "simulation/images/icons/udm.svg",
+      "status": "stable",
+      "statusTimestamp": 1766128469426,
+      "config": { "ipAddress": "192.168.1.16", "port": 8085, "capacity": 1000, "load": 0, "httpProtocol": "HTTP/2" }
+    },
+    {
+      "id": "pcf-1766128475142-4f0sr",
+      "type": "PCF",
+      "name": "PCF-1",
+      "position": { "x": 234, "y": 35 },
+      "color": "#e91e63",
+      "icon": "simulation/images/icons/pcf.svg",
+      "status": "stable",
+      "statusTimestamp": 1766128480152,
+      "config": { "ipAddress": "192.168.1.17", "port": 8086, "capacity": 1000, "load": 0, "httpProtocol": "HTTP/2" }
+    },
+    {
+      "id": "nssf-1766128667614-7q082",
+      "type": "NSSF",
+      "name": "NSSF-1",
+      "position": { "x": 336, "y": 38 },
+      "color": "#ffc107",
+      "icon": "simulation/images/icons/nssf.svg",
+      "status": "stable",
+      "statusTimestamp": 1766128672619,
+      "config": { "ipAddress": "192.168.1.18", "port": 8087, "capacity": 1000, "load": 0, "httpProtocol": "HTTP/2" }
+    },
+    {
+      "id": "udr-1766128679032-4s7yw",
+      "type": "UDR",
+      "name": "UDR-1",
+      "position": { "x": 577, "y": 35 },
+      "color": "#009688",
+      "icon": "simulation/images/icons/udr.svg",
+      "status": "stable",
+      "statusTimestamp": 1766128684042,
+      "config": { "ipAddress": "192.168.1.19", "port": 8088, "capacity": 1000, "load": 0, "httpProtocol": "HTTP/2" }
+    },
+    {
+      "id": "mysql-1766128680036-dkm7t",
+      "type": "MySQL",
+      "name": "MySQL-1",
+      "position": { "x": 726, "y": 36 },
+      "color": "#d35400",
+      "icon": "simulation/images/icons/mysql.svg",
+      "status": "stable",
+      "statusTimestamp": 1766128685048,
+      "config": { "ipAddress": "192.168.1.20", "port": 3306, "capacity": 1000, "load": 0, "httpProtocol": "HTTP/2" }
+    },
+    {
+      "id": "gnb-1766128695901-tfruy",
+      "type": "gNB",
+      "name": "gNB-1",
+      "position": { "x": 182, "y": 342 },
+      "color": "#8e44ad",
+      "icon": "simulation/images/icons/gnb.svg",
+      "status": "stable",
+      "statusTimestamp": 1766128700906,
+      "config": { "ipAddress": "192.168.1.21", "port": 8089, "capacity": 1000, "load": 0, "httpProtocol": "HTTP/2" }
+    },
+    {
+      "id": "ue-1766128703062-jvfa8",
+      "type": "UE",
+      "name": "UE-1",
+      "position": { "x": 33, "y": 342 },
+      "color": "#16a085",
+      "icon": "simulation/images/icons/ue.svg",
+      "status": "stable",
+      "statusTimestamp": 1766128708071,
+      "config": {
+        "ipAddress": "192.168.1.22", "port": 8090, "capacity": 1000, "load": 0, "httpProtocol": "HTTP/2",
+        "subscriberImsi": "001010000000101", "subscriberKey": "fec86ba6eb707ed08905757b1bb44b8f", "subscriberOpc": "C42449363BBAD02B66D16BC975D77CC1", "subscriberDnn": "5G-Lab", "subscriberSst": 1,
+        "pduSession": { "sessionId": "pdu-1766128715355-g2o13", "upfId": "upf-1766128444987-c07tk", "assignedIP": "10.0.0.2", "status": "established", "establishedAt": 1766128715355 },
+        "tunInterface": { "name": "tun_ue1", "ipAddress": "10.0.0.2", "netmask": "255.255.255.0", "destination": "10.0.0.2", "gateway": "10.0.0.1", "mtu": 1500, "flags": "UP,POINTOPOINT,RUNNING,NOARP,MULTICAST", "ipv6": "fe80::c47f:2307:2819:ddb2", "createdAt": 1766128715356 }
+      }
+    }
+  ],
+  "connections": [
+    { "id": "conn-1766128454666-vzsm9", "sourceId": "upf-1766128444987-c07tk", "targetId": "smf-1766128441444-aeu8d", "interfaceName": "N4", "protocol": "HTTP/2", "status": "connected", "createdAt": 1766128454666, "isManual": true, "showVisual": true },
+    { "id": "conn-1766128461769-ims3q", "sourceId": "ext-dn-1766128453002-votm4", "targetId": "upf-1766128444987-c07tk", "interfaceName": "N6", "protocol": "HTTP/2", "status": "connected", "createdAt": 1766128461769, "isManual": true, "showVisual": true },
+    { "id": "conn-1766128474214-tb5jo", "sourceId": "udm-1766128464413-gtx9n", "targetId": "nrf-1766128434061-h6d5p", "interfaceName": "Nnrf_NFManagement", "protocol": "HTTP/2", "status": "connected", "createdAt": 1766128474214, "isManual": true, "showVisual": true },
+    { "id": "conn-1766128688242-beruw", "sourceId": "mysql-1766128680036-dkm7t", "targetId": "udr-1766128679032-4s7yw", "interfaceName": "SQL/REST API", "protocol": "HTTP/2", "status": "connected", "createdAt": 1766128688242, "isManual": true, "showVisual": true },
+    { "id": "conn-1766128704364-zvi4l", "sourceId": "gnb-1766128695901-tfruy", "targetId": "amf-1766128437620-qzum8", "interfaceName": "N2", "protocol": "HTTP/2", "status": "connected", "createdAt": 1766128704364, "isManual": true, "showVisual": true },
+    { "id": "conn-1766128704368-gv5tb", "sourceId": "gnb-1766128695901-tfruy", "targetId": "upf-1766128444987-c07tk", "interfaceName": "N3", "protocol": "HTTP/2", "status": "connected", "createdAt": 1766128704368, "isManual": true, "showVisual": true },
+    { "id": "conn-1766128712118-5dz4x", "sourceId": "ue-1766128703062-jvfa8", "targetId": "gnb-1766128695901-tfruy", "interfaceName": "Radio", "protocol": "HTTP/2", "status": "connected", "createdAt": 1766128712118, "isManual": true, "showVisual": true },
+    { "id": "conn-1766128712126-zjnme", "sourceId": "ue-1766128703062-jvfa8", "targetId": "amf-1766128437620-qzum8", "interfaceName": "N1", "protocol": "HTTP/2", "status": "connected", "createdAt": 1766128712126, "isManual": true, "showVisual": true }
+  ],
+  "buses": [
+    {
+      "id": "bus-1766128427686-ph5nr",
+      "name": "Service Bus",
+      "orientation": "horizontal",
+      "position": { "x": 110, "y": 152 },
+      "length": 600,
+      "thickness": 8,
+      "color": "#3498db",
+      "type": "service-bus",
+      "connections": ["nrf-1766128434061-h6d5p", "amf-1766128437620-qzum8", "smf-1766128441444-aeu8d", "ausf-1766128449684-e9u2o", "udm-1766128464413-gtx9n", "pcf-1766128475142-4f0sr", "nssf-1766128667614-7q082", "udr-1766128679032-4s7yw"]
+    }
+  ],
+  "busConnections": [
+    { "id": "bus-conn-1766128434066-3k5q3", "nfId": "nrf-1766128434061-h6d5p", "busId": "bus-1766128427686-ph5nr", "type": "bus-connection", "interfaceName": "Nnrf", "protocol": "HTTP/2", "status": "connected", "createdAt": 1766128434066 },
+    { "id": "bus-conn-1766128437625-c4qqr", "nfId": "amf-1766128437620-qzum8", "busId": "bus-1766128427686-ph5nr", "type": "bus-connection", "interfaceName": "Namf", "protocol": "HTTP/2", "status": "connected", "createdAt": 1766128437625 },
+    { "id": "bus-conn-1766128441448-bg2yp", "nfId": "smf-1766128441444-aeu8d", "busId": "bus-1766128427686-ph5nr", "type": "bus-connection", "interfaceName": "Nsmf", "protocol": "HTTP/2", "status": "connected", "createdAt": 1766128441448 },
+    { "id": "bus-conn-1766128449690-3z327", "nfId": "ausf-1766128449684-e9u2o", "busId": "bus-1766128427686-ph5nr", "type": "bus-connection", "interfaceName": "Nausf", "protocol": "HTTP/2", "status": "connected", "createdAt": 1766128449690 },
+    { "id": "bus-conn-1766128464421-0g6wj", "nfId": "udm-1766128464413-gtx9n", "busId": "bus-1766128427686-ph5nr", "type": "bus-connection", "interfaceName": "Nudm", "protocol": "HTTP/2", "status": "connected", "createdAt": 1766128464421 },
+    { "id": "bus-conn-1766128475150-7tf37", "nfId": "pcf-1766128475142-4f0sr", "busId": "bus-1766128427686-ph5nr", "type": "bus-connection", "interfaceName": "Npcf", "protocol": "HTTP/2", "status": "connected", "createdAt": 1766128475150 },
+    { "id": "bus-conn-1766128667621-v1b2g", "nfId": "nssf-1766128667614-7q082", "busId": "bus-1766128427686-ph5nr", "type": "bus-connection", "interfaceName": "Nnssf", "protocol": "HTTP/2", "status": "connected", "createdAt": 1766128667621 },
+    { "id": "bus-conn-1766128679039-fl8n5", "nfId": "udr-1766128679032-4s7yw", "busId": "bus-1766128427686-ph5nr", "type": "bus-connection", "interfaceName": "Nudr", "protocol": "HTTP/2", "status": "connected", "createdAt": 1766128679039 }
+  ]
+};
+    }
+
+
+
+    /**
+     * Validate IP address
+     * @param {string} ip - IP address to validate
+     * @returns {boolean} True if valid
+     */
+    isValidIP(ip) {
+        if (!ip) return false;
+        const parts = ip.split('.');
+        if (parts.length !== 4) return false;
+        for (let part of parts) {
+            if (!/^\d+$/.test(part)) return false;
+            const num = parseInt(part, 10);
+            if (num < 0 || num > 255) return false;
+        }
+        if (ip === '0.0.0.0') return false;
+        const firstOctet = parseInt(parts[0], 10);
+        if (firstOctet < 1) return false;
+        return true;
+    }
+
+    /**
+     * Validate port number
+     * @param {string|number} port - Port to validate
+     * @returns {boolean} True if valid
+     */
+    isValidPort(port) {
+        const portStr = String(port);
+        if (!/^\d+$/.test(portStr)) return false;
+        const portNum = parseInt(portStr, 10);
+        if (portNum < 1000 || portNum > 999999) return false;
+        if (portStr.length < 4 || portStr.length > 6) return false;
+        return true;
+    }
+
+    /**
+     * Escape HTML to prevent XSS
+     * @param {string} text - Text to escape
+     * @returns {string} Escaped text
+     */
     escapeHtml(text) {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
     }
 
+    /**
+     * Toggle log panel visibility
+     */
     toggleLogPanel() {
         const logPanel = document.getElementById('log-panel');
         const toggleIcon = document.getElementById('toggle-icon');
@@ -2112,22 +2364,28 @@ if (clickedInterface) {
         const isCollapsed = logPanel.classList.contains('collapsed');
 
         if (isCollapsed) {
+            // Show logs
             logPanel.classList.remove('collapsed');
             toggleIcon.textContent = '▼';
             console.log('📋 Log panel expanded');
         } else {
+            // Hide logs
             logPanel.classList.add('collapsed');
             toggleIcon.textContent = '▲';
             console.log('📋 Log panel collapsed');
         }
 
+        // Trigger canvas resize after panel toggle animation completes
         setTimeout(() => {
             if (window.canvasRenderer) {
                 window.canvasRenderer.resizeCanvas();
             }
-        }, 350);
+        }, 350); // Wait for CSS transition to complete (300ms + buffer)
     }
 
+    /**
+     * Setup configuration panel toggle
+     */
     setupConfigPanelToggle() {
         const toggleBtn = document.getElementById('btn-toggle-config');
         
@@ -2139,6 +2397,9 @@ if (clickedInterface) {
         }
     }
 
+    /**
+     * Toggle configuration panel visibility
+     */
     toggleConfigPanel() {
         const sidebar = document.querySelector('.sidebar-right');
         const toggleIcon = document.getElementById('config-toggle-icon');
@@ -2148,34 +2409,43 @@ if (clickedInterface) {
         const isCollapsed = sidebar.classList.contains('collapsed');
 
         if (isCollapsed) {
+            // Show config panel
             sidebar.classList.remove('collapsed');
             toggleIcon.textContent = '◀';
             console.log('⚙️ Config panel expanded');
         } else {
+            // Hide config panel
             sidebar.classList.add('collapsed');
             toggleIcon.textContent = '▶';
             console.log('⚙️ Config panel collapsed');
         }
 
+        // Trigger canvas resize after panel toggle animation completes
         setTimeout(() => {
             if (window.canvasRenderer) {
                 window.canvasRenderer.resizeCanvas();
             }
-        }, 350);
+        }, 350); // Wait for CSS transition to complete (300ms + buffer)
     }
 
+    /**
+     * Setup keyboard shortcuts
+     */
     setupKeyboardShortcuts() {
         document.addEventListener('keydown', (e) => {
+            // Ctrl/Cmd + L to toggle logs
             if ((e.ctrlKey || e.metaKey) && e.key === 'l') {
                 e.preventDefault();
                 this.toggleLogPanel();
             }
 
+            // Ctrl/Cmd + K to toggle config panel
             if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
                 e.preventDefault();
                 this.toggleConfigPanel();
             }
 
+            // F1 or Ctrl/Cmd + H to show help
             if (e.key === 'F1' || ((e.ctrlKey || e.metaKey) && e.key === 'h')) {
                 e.preventDefault();
                 this.showHelpModal();
@@ -2185,45 +2455,231 @@ if (clickedInterface) {
         console.log('⌨️ Keyboard shortcuts initialized (Ctrl+L: Toggle logs, Ctrl+K: Toggle config, F1/Ctrl+H: Help)');
     }
 
+
+
+
+    /**
+     * Setup ping troubleshooting handlers
+     * @param {string} nfId - NF ID
+     */
     setupPingTroubleshootingHandlers(nfId) {
         const terminalBtn = document.getElementById('btn-open-terminal');
+        const pingHistoryBtn = document.getElementById('btn-ping-history');
 
         if (terminalBtn) {
             terminalBtn.addEventListener('click', () => {
                 this.openWindowsTerminal(nfId);
             });
         }
+
+        if (pingHistoryBtn) {
+            pingHistoryBtn.addEventListener('click', () => {
+                this.showPingHistory(nfId);
+            });
+        }
     }
 
+    /**
+     * Execute ping to specific target IP
+     * @param {string} nfId - Source NF ID
+     */
+    async executePingTarget(nfId) {
+        const targetIP = document.getElementById('ping-target-ip')?.value?.trim();
+        
+        if (!targetIP) {
+            alert('Please enter a target IP address');
+            return;
+        }
+
+        // Validate IP format
+        if (!this.isValidIP(targetIP)) {
+            alert('Please enter a valid IP address (e.g., 192.168.1.20)');
+            return;
+        }
+
+        const nf = window.dataStore?.getNFById(nfId);
+        if (!nf) return;
+
+        // Check if ping is already active
+        if (window.pingManager && window.pingManager.isPingActive(nfId)) {
+            alert('Ping is already in progress. Please wait for it to complete.');
+            return;
+        }
+
+        console.log(`🏓 Executing ping from ${nf.name} to ${targetIP}`);
+
+        // Disable button during ping
+        const btn = document.getElementById('btn-ping-target');
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = '🏓 Pinging...';
+        }
+
+        try {
+            if (window.pingManager) {
+                await window.pingManager.executePing(nfId, targetIP, 4);
+            } else {
+                console.error('❌ PingManager not available');
+                alert('Ping functionality not available');
+            }
+        } catch (error) {
+            console.error('❌ Ping error:', error);
+            if (window.logEngine) {
+                window.logEngine.addLog(nfId, 'ERROR', `Ping failed: ${error.message}`);
+            }
+        } finally {
+            // Re-enable button
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = '🏓 Ping Target IP';
+            }
+        }
+    }
+
+    /**
+     * Execute ping to all network services
+     * @param {string} nfId - Source NF ID
+     */
+    async executePingNetwork(nfId) {
+        const nf = window.dataStore?.getNFById(nfId);
+        if (!nf) return;
+
+        // Check if ping is already active
+        if (window.pingManager && window.pingManager.isPingActive(nfId)) {
+            alert('Ping is already in progress. Please wait for it to complete.');
+            return;
+        }
+
+        console.log(`📡 Executing network ping from ${nf.name}`);
+
+        // Disable button during ping
+        const btn = document.getElementById('btn-ping-network');
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = '📡 Scanning Network...';
+        }
+
+        try {
+            if (window.pingManager) {
+                await window.pingManager.pingNetworkServices(nfId);
+            } else {
+                console.error('❌ PingManager not available');
+                alert('Ping functionality not available');
+            }
+        } catch (error) {
+            console.error('❌ Network ping error:', error);
+            if (window.logEngine) {
+                window.logEngine.addLog(nfId, 'ERROR', `Network ping failed: ${error.message}`);
+            }
+        } finally {
+            // Re-enable button
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = '📡 Ping Network Services';
+            }
+        }
+    }
+
+    /**
+     * Show ping history for NF
+     * @param {string} nfId - NF ID
+     */
+    showPingHistory(nfId) {
+        const nf = window.dataStore?.getNFById(nfId);
+        if (!nf) return;
+
+        if (!window.pingManager) {
+            alert('Ping functionality not available');
+            return;
+        }
+
+        const history = window.pingManager.getPingHistory(nfId);
+        
+        if (history.length === 0) {
+            alert(`No ping history available for ${nf.name}\n\nExecute some ping commands first to see history.`);
+            return;
+        }
+
+        let historyText = `═══════════════════════════════════\n`;
+        historyText += `PING HISTORY FOR ${nf.name}\n`;
+        historyText += `═══════════════════════════════════\n\n`;
+
+        history.slice(-10).forEach((entry, index) => {
+            const timestamp = new Date(entry.timestamp).toLocaleString();
+            historyText += `${index + 1}. ${timestamp}\n`;
+            historyText += `   Target: ${entry.targetIP}\n`;
+            historyText += `   Result: ${entry.summary.received}/${entry.summary.sent} packets received (${entry.summary.lossPercentage}% loss)\n\n`;
+        });
+
+        historyText += `═══════════════════════════════════\n`;
+        historyText += `Total ping sessions: ${history.length}\n`;
+        historyText += `Showing last ${Math.min(10, history.length)} sessions\n`;
+        historyText += `═══════════════════════════════════`;
+
+        alert(historyText);
+    }
+
+    /**
+     * Open Windows-style terminal for NF
+     * @param {string} nfId - NF ID
+     */
     openWindowsTerminal(nfId) {
         const nf = window.dataStore?.getNFById(nfId);
         if (!nf) return;
 
+        // Terminal constraints: allow at most two windows (UE + ext-dn combo)
+        const openWindows = Array.from(document.querySelectorAll('.windows-terminal-window'));
+        const typesOpen = new Set(openWindows.map(w => w.dataset.terminalType));
+        const isUEorExt = nf.type === 'UE' || nf.type === 'ext-dn';
+        if (isUEorExt) {
+            if (typesOpen.size >= 2) {
+                alert('Only two terminals allowed at once: one UE and one ext-dn.');
+                return;
+            }
+            if (typesOpen.size === 1) {
+                const existing = [...typesOpen][0];
+                if (existing === nf.type) {
+                    alert(`Second terminal must be the other type (${nf.type === 'UE' ? 'ext-dn' : 'UE'}).`);
+                    return;
+                }
+            }
+        }
+
+        // Create terminal modal
         this.createTerminalModal(nf);
     }
 
+    /**
+     * Create Windows-style terminal modal
+     * @param {Object} nf - Network Function
+     */
     createTerminalModal(nf) {
-        const existingTerminal = document.getElementById('windows-terminal-modal');
-        if (existingTerminal) {
-            existingTerminal.remove();
+        // Unique modal per NF
+        const modalId = `windows-terminal-modal-${nf.id}`;
+        if (document.getElementById(modalId)) {
+            // Focus existing by bringing to front
+            const existing = document.getElementById(modalId);
+            existing.style.zIndex = String(2000 + Date.now() % 1000);
+            return;
         }
 
+        // Create terminal modal
         const terminalModal = document.createElement('div');
-        terminalModal.id = 'windows-terminal-modal';
+        terminalModal.id = modalId;
         terminalModal.className = 'windows-terminal-modal';
         
         terminalModal.innerHTML = `
-            <div class="windows-terminal-window">
+            <div class="windows-terminal-window" data-terminal-type="${nf.type}" style="position:fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 900px; height: 600px; z-index: 2000;">
                 <div class="windows-terminal-titlebar">
                     <div class="terminal-title">
                         <span class="terminal-icon">⬛</span>
-                        Command Prompt - ${nf.name} (${nf.config.ipAddress})
+                        ${nf.name} Terminal
                     </div>
                     <div class="terminal-controls">
-                        <button class="terminal-btn close" id="terminal-close">×</button>
+                        <button class="terminal-btn close" id="terminal-close" title="Close">×</button>
                     </div>
                 </div>
-                <div class="windows-terminal-content" id="terminal-content" tabindex="0">
+                <div class="windows-terminal-content" id="terminal-content">
                     <div class="terminal-output" id="terminal-output"></div>
                 </div>
             </div>
@@ -2231,327 +2687,414 @@ if (clickedInterface) {
 
         document.body.appendChild(terminalModal);
 
-        // Position the window centered on screen using fixed coords (not flexbox)
-        // so drag works without any jump
-        const terminalWindow = terminalModal.querySelector('.windows-terminal-window');
-        const titlebar = terminalModal.querySelector('.windows-terminal-titlebar');
-
-        // Set initial centered position as explicit left/top on the window
-        const initW = terminalWindow.offsetWidth || 800;
-        const initH = terminalWindow.offsetHeight || 600;
-        terminalWindow.style.position = 'fixed';
-        terminalWindow.style.left = Math.max(0, (window.innerWidth  - initW) / 2) + 'px';
-        terminalWindow.style.top  = Math.max(0, (window.innerHeight - initH) / 2) + 'px';
-        terminalWindow.style.margin = '0';
-
-        let isDragging = false, dragOffsetX = 0, dragOffsetY = 0;
-
-        titlebar.style.cursor = 'move';
-
-        titlebar.addEventListener('mousedown', (e) => {
-            if (e.target.closest('.terminal-btn')) return;
-            isDragging = true;
-            const rect = terminalWindow.getBoundingClientRect();
-            dragOffsetX = e.clientX - rect.left;
-            dragOffsetY = e.clientY - rect.top;
-            e.preventDefault();
-        });
-
-        const onMouseMove = (e) => {
-            if (!isDragging) return;
-            let newLeft = e.clientX - dragOffsetX;
-            let newTop  = e.clientY - dragOffsetY;
-            // Keep within viewport
-            newLeft = Math.max(0, Math.min(newLeft, window.innerWidth  - terminalWindow.offsetWidth));
-            newTop  = Math.max(0, Math.min(newTop,  window.innerHeight - terminalWindow.offsetHeight));
-            terminalWindow.style.left = newLeft + 'px';
-            terminalWindow.style.top  = newTop  + 'px';
-        };
-
-        const onMouseUp = () => { isDragging = false; };
-
-        document.addEventListener('mousemove', onMouseMove);
-        document.addEventListener('mouseup',   onMouseUp);
-
-        // Cleanup listeners when terminal is removed
-        const observer = new MutationObserver(() => {
-            if (!document.contains(terminalModal)) {
-                document.removeEventListener('mousemove', onMouseMove);
-                document.removeEventListener('mouseup',   onMouseUp);
-                observer.disconnect();
-            }
-        });
-        observer.observe(document.body, { childList: true });
-
+        // Setup terminal functionality
         this.setupWindowsTerminal(nf, terminalModal);
 
+        // Show terminal with animation
         setTimeout(() => {
             terminalModal.classList.add('show');
         }, 10);
-
-        // Focus on terminal content for keyboard input
-        const content = document.getElementById('terminal-content');
-        if (content) {
-            content.focus();
-        }
     }
 
+    /**
+     * Setup Windows terminal functionality
+     * @param {Object} nf - Network Function
+     * @param {HTMLElement} terminalModal - Terminal modal element
+     */
     setupWindowsTerminal(nf, terminalModal) {
-        const content = document.getElementById('terminal-content');
-        const output = document.getElementById('terminal-output');
-        const closeBtn = document.getElementById('terminal-close');
+        const win = terminalModal.querySelector('.windows-terminal-window');
+        const output = terminalModal.querySelector('#terminal-output');
+        const closeBtn = terminalModal.querySelector('#terminal-close');
         
-        let commandHistory = [];
-        let historyIndex = -1;
-        let currentCommand = '';
-        let cursorPosition = 0;
-        let currentInputLine = null;
-        let inputBlocked = false; // Flag to block input during command execution
+        // Command history for Up/Down navigation
+        this.nfCommandHistory = this.nfCommandHistory || {};
+        this.nfCommandHistory[nf.id] = this.nfCommandHistory[nf.id] || [];
+        this.nfHistoryIndex = this.nfHistoryIndex || {};
+        this.nfHistoryIndex[nf.id] = -1;
+        this.nfCurrentInput = this.nfCurrentInput || {};
+        this.nfCurrentInput[nf.id] = '';
+        this.nfCursorPosition = this.nfCursorPosition || {};
+        this.nfCursorPosition[nf.id] = 0;
 
+        // Close button - cleanup iperf3 server if running
         closeBtn.addEventListener('click', () => {
+            // Stop iperf3 server if running
+            if (this.iperf3Servers.has(nf.id)) {
+                this.iperf3Servers.delete(nf.id);
+            }
+            
             terminalModal.classList.remove('show');
             setTimeout(() => {
                 terminalModal.remove();
             }, 300);
         });
 
-        terminalModal.addEventListener('click', (e) => {
-            if (e.target === terminalModal) {
-                closeBtn.click();
-            }
-        });
+        // Setup keyboard handling for this NF terminal once
+        this.setupNFKeyboardHandling(nf, terminalModal, output);
 
-        // Create initial input line
-        const createInputLine = () => {
-            const line = document.createElement('div');
-            line.className = 'terminal-line terminal-input-active';
-            line.innerHTML = `<span class="terminal-prompt">C:\\${nf.name}></span><span class="terminal-cursor-line"></span>`;
-            output.appendChild(line);
-            output.scrollTop = output.scrollHeight;
-            return line;
-        };
-
-        const updateInputLine = () => {
-            if (currentInputLine) {
-                const before = this.escapeHtml(currentCommand.slice(0, cursorPosition));
-                const after = this.escapeHtml(currentCommand.slice(cursorPosition));
-                if (inputBlocked) {
-                    // Hide cursor when input is blocked
-                    currentInputLine.innerHTML = `<span class="terminal-prompt">C:\\${nf.name}></span><span class="terminal-command-text">${before}${after}</span>`;
-                } else {
-                    // Show cursor when input is not blocked
-                    currentInputLine.innerHTML = `<span class="terminal-prompt">C:\\${nf.name}></span><span class="terminal-command-text">${before}<span class="terminal-cursor">▋</span>${after}</span>`;
-                }
-            }
-        };
-
-        const resetInputState = () => {
-            currentCommand = '';
-            cursorPosition = 0;
-        };
-
-        content.addEventListener('keydown', async (e) => {
-            // Block all input if inputBlocked flag is set
-            if (inputBlocked) {
-                e.preventDefault();
-                return;
-            }
-
-            // Handle Ctrl+C (cancel)
-            if (e.ctrlKey && e.key === 'c') {
-                e.preventDefault();
-                // Convert current input line to regular line showing cancelled command
-                if (currentInputLine && currentCommand) {
-                    currentInputLine.innerHTML = `<span class="terminal-prompt">C:\\${nf.name}></span><span class="terminal-command-text">${this.escapeHtml(currentCommand)}</span><span class="terminal-cursor"></span>`;
-                    currentInputLine.classList.remove('terminal-input-active');
-                }
-                this.addTerminalLine(output, '^C', 'info');
-                resetInputState();
-                currentInputLine = createInputLine();
-                updateInputLine();
-                return;
-            }
-
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                const command = currentCommand.trim();
-                
-                // Convert input line to regular line
-                if (currentInputLine) {
-                    currentInputLine.innerHTML = `<span class="terminal-prompt">C:\\${nf.name}></span><span class="terminal-command-text">${this.escapeHtml(currentCommand)}</span>`;
-                    currentInputLine.classList.remove('terminal-input-active');
-                }
-                
-                if (command) {
-                    commandHistory.push(command);
-                    historyIndex = commandHistory.length;
-
-                    // Pass input control functions to command processor
-                    const inputControl = {
-                        block: () => {
-                            inputBlocked = true;
-                            updateInputLine();
-                        },
-                        unblock: () => {
-                            inputBlocked = false;
-                            updateInputLine();
-                        }
-                    };
-                    await this.processWindowsCommand(nf, command, output, inputControl);
-                }
-                
-                // Create new input line and show cursor
-                resetInputState();
-                currentInputLine = createInputLine();
-                updateInputLine();
-            } else if (e.key === 'ArrowUp') {
-                e.preventDefault();
-                if (historyIndex > 0) {
-                    historyIndex--;
-                    currentCommand = commandHistory[historyIndex];
-                    cursorPosition = currentCommand.length;
-                    updateInputLine();
-                }
-            } else if (e.key === 'ArrowDown') {
-                e.preventDefault();
-                if (historyIndex < commandHistory.length - 1) {
-                    historyIndex++;
-                    currentCommand = commandHistory[historyIndex];
-                    cursorPosition = currentCommand.length;
-                    updateInputLine();
-                } else {
-                    historyIndex = commandHistory.length;
-                    resetInputState();
-                    updateInputLine();
-                }
-            } else if (e.key === 'ArrowLeft') {
-                e.preventDefault();
-                cursorPosition = Math.max(0, cursorPosition - 1);
-                updateInputLine();
-            } else if (e.key === 'ArrowRight') {
-                e.preventDefault();
-                cursorPosition = Math.min(currentCommand.length, cursorPosition + 1);
-                updateInputLine();
-            } else if (e.key === 'Home') {
-                e.preventDefault();
-                cursorPosition = 0;
-                updateInputLine();
-            } else if (e.key === 'End') {
-                e.preventDefault();
-                cursorPosition = currentCommand.length;
-                updateInputLine();
-            } else if (e.key === 'Backspace') {
-                e.preventDefault();
-                if (cursorPosition > 0) {
-                    currentCommand =
-                        currentCommand.slice(0, cursorPosition - 1) +
-                        currentCommand.slice(cursorPosition);
-                    cursorPosition--;
-                    updateInputLine();
-                }
-            } else if (e.key === 'Delete') {
-                e.preventDefault();
-                if (cursorPosition < currentCommand.length) {
-                    currentCommand =
-                        currentCommand.slice(0, cursorPosition) +
-                        currentCommand.slice(cursorPosition + 1);
-                    updateInputLine();
-                }
-            } else if (e.key === 'Tab') {
-                e.preventDefault();
-                const allCommands = [
-                    'help',
-                    'ipconfig',
-                    'ifconfig',
-                    'ping',
-                    'systeminfo',
-                    'netstat',
-                    'cls',
-                    'clear',
-                    'exit',
-                ];
-                const input = currentCommand;
-                const matches = allCommands.filter(cmd =>
-                    cmd.toLowerCase().startsWith(input.toLowerCase())
-                );
-                if (matches.length === 0) {
-                    // no match
-                } else {
-                    const lcp = matches.reduce((acc, cmd) => {
-                        let i = 0;
-                        while (i < acc.length && i < cmd.length && acc[i].toLowerCase() === cmd[i].toLowerCase()) i++;
-                        return acc.slice(0, i);
-                    });
-                    const afterInput = lcp.slice(input.length);
-                    const nextSpaceIdx = afterInput.indexOf(' ');
-                    const oneWord = nextSpaceIdx === -1 ? afterInput : afterInput.slice(0, nextSpaceIdx);
-                    const completed = input + oneWord;
-                    if (completed.length > input.length) {
-                        currentCommand = completed;
-                        updateInputLine();
-                    } else {
-                        if (currentInputLine) {
-                            currentInputLine.innerHTML = `<span class="terminal-prompt">C:\\${nf.name}></span><span class="terminal-command-text">${this.escapeHtml(currentCommand)}</span>`;
-                            currentInputLine.classList.remove('terminal-input-active');
-                        }
-                        this.addTerminalLine(output, '', 'blank');
-                        matches.forEach(m => this.addTerminalLine(output, m, 'info'));
-                        this.addTerminalLine(output, '', 'blank');
-                        currentInputLine = createInputLine();
-                        updateInputLine();
-                    }
-                }
-            } else if (e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey) {
-                e.preventDefault();
-                currentCommand =
-                    currentCommand.slice(0, cursorPosition) +
-                    e.key +
-                    currentCommand.slice(cursorPosition);
-                cursorPosition++;
-                updateInputLine();
-            }
-        });
-
-        // Focus content on click
-        content.addEventListener('click', () => {
-            content.focus();
-        });
-
+        // Initial welcome message
         this.addTerminalLine(output, `Connected to ${nf.name} (${nf.config.ipAddress})`, 'info');
         this.addTerminalLine(output, 'Type "help" for available commands.', 'info');
-        this.addTerminalLine(output, '', 'blank');
-        
+
         // Create initial input line
-        currentInputLine = createInputLine();
-        updateInputLine();
+        this.createNFInputLine(nf, output);
     }
 
     /**
-     * Escape HTML special characters
-     * @param {string} text - Text to escape
-     * @returns {string} Escaped text
+     * Create a new inline input line for NF terminal
+     * @param {Object} nf - Network Function
+     * @param {HTMLElement} output - Output element
      */
-    escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
+    createNFInputLine(nf, output) {
+        // Remove any existing input line
+        const existingInput = output.querySelector(`#active-nf-input-${nf.id}`);
+        if (existingInput) {
+            existingInput.remove();
+        }
+
+        // Create input line container
+        const inputLine = document.createElement('div');
+        inputLine.id = `active-nf-input-${nf.id}`;
+        inputLine.className = 'terminal-input-line';
+        inputLine.innerHTML = `
+            <span class="terminal-prompt" style="color: #ffffff;">${nf.name}></span>
+            <span class="terminal-input-before" id="nf-input-before-${nf.id}"></span>
+            <span class="terminal-cursor" id="nf-cursor-${nf.id}">█</span>
+            <span class="terminal-input-after" id="nf-input-after-${nf.id}"></span>
+        `;
+        output.appendChild(inputLine);
+
+        // Store reference to input text elements
+        this.nfInputBeforeEl = this.nfInputBeforeEl || {};
+        this.nfInputBeforeEl[nf.id] = document.getElementById(`nf-input-before-${nf.id}`);
+        this.nfInputAfterEl = this.nfInputAfterEl || {};
+        this.nfInputAfterEl[nf.id] = document.getElementById(`nf-input-after-${nf.id}`);
+        this.nfCursorEl = this.nfCursorEl || {};
+        this.nfCursorEl[nf.id] = document.getElementById(`nf-cursor-${nf.id}`);
+
+        // Scroll to bottom
+        output.scrollTop = output.scrollHeight;
+
+        // Start cursor blink
+        this.startNFCursorBlink(nf.id);
     }
 
-    async processWindowsCommand(nf, command, output, inputControl = null) {
-        const cmd = command.toLowerCase().trim();
-        const args = command.split(' ');
+    /**
+     * Start cursor blinking animation for NF terminal
+     * @param {string} nfId - NF ID
+     */
+    startNFCursorBlink(nfId) {
+        // Clear existing blink interval
+        if (this.nfCursorBlinkInterval && this.nfCursorBlinkInterval[nfId]) {
+            clearInterval(this.nfCursorBlinkInterval[nfId]);
+        }
+        this.nfCursorBlinkInterval = this.nfCursorBlinkInterval || {};
+
+        let visible = true;
+        this.nfCursorBlinkInterval[nfId] = setInterval(() => {
+            const cursorEl = document.getElementById(`nf-cursor-${nfId}`);
+            if (cursorEl) {
+                cursorEl.style.opacity = visible ? '1' : '0';
+                visible = !visible;
+            }
+        }, 500);
+    }
+
+    /**
+     * Setup keyboard handling for NF terminal
+     * @param {Object} nf - Network Function
+     * @param {HTMLElement} terminalModal - Terminal modal element
+     * @param {HTMLElement} output - Output element
+     */
+    setupNFKeyboardHandling(nf, terminalModal, output) {
+        const keyHandler = async (e) => {
+            // Only handle if this terminal is visible
+            if (!terminalModal.classList.contains('show')) {
+                return;
+            }
+
+            // Handle Ctrl+C to stop iperf3 server
+            if (e.ctrlKey && e.key === 'c' && this.iperf3Servers.has(nf.id)) {
+                e.preventDefault();
+                this.stopIperf3Server(nf, output);
+                this.nfCurrentInput[nf.id] = '';
+                this.updateNFInputDisplay(nf.id);
+                this.createNFInputLine(nf, output);
+                return;
+            }
+
+            // Handle Ctrl+L to clear screen
+            if (e.ctrlKey && e.key === 'l') {
+                e.preventDefault();
+                output.innerHTML = '';
+                this.createNFInputLine(nf, output);
+                return;
+            }
+
+            // Handle Enter to execute command
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const command = this.nfCurrentInput[nf.id].trim();
+
+                // Remove the active input line
+                const activeInput = output.querySelector(`#active-nf-input-${nf.id}`);
+                if (activeInput) {
+                    activeInput.remove();
+                }
+
+                // Display the executed command
+                if (command) {
+                    this.addTerminalLine(output, `${nf.name}> ${command}`, 'command');
+                    
+                    // Add to history
+                    this.nfCommandHistory[nf.id].push(command);
+                    this.nfHistoryIndex[nf.id] = this.nfCommandHistory[nf.id].length;
+                    
+                    // Process command
+                    await this.processWindowsCommand(nf, command, output);
+                } else {
+                    // Empty command, just show prompt
+                    this.addTerminalLine(output, `${nf.name}>`, 'command');
+                }
+
+                // Reset current input and cursor position
+                this.nfCurrentInput[nf.id] = '';
+                this.nfCursorPosition[nf.id] = 0;
+
+                // Create new input line
+                this.createNFInputLine(nf, output);
+                return;
+            }
+
+            // Handle Up arrow for history
+            if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (this.nfHistoryIndex[nf.id] > 0) {
+                    this.nfHistoryIndex[nf.id]--;
+                    this.nfCurrentInput[nf.id] = this.nfCommandHistory[nf.id][this.nfHistoryIndex[nf.id]] || '';
+                    this.nfCursorPosition[nf.id] = this.nfCurrentInput[nf.id].length;
+                    this.updateNFInputDisplay(nf.id);
+                }
+                return;
+            }
+
+            // Handle Down arrow for history
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (this.nfHistoryIndex[nf.id] < this.nfCommandHistory[nf.id].length - 1) {
+                    this.nfHistoryIndex[nf.id]++;
+                    this.nfCurrentInput[nf.id] = this.nfCommandHistory[nf.id][this.nfHistoryIndex[nf.id]] || '';
+                } else {
+                    this.nfHistoryIndex[nf.id] = this.nfCommandHistory[nf.id].length;
+                    this.nfCurrentInput[nf.id] = '';
+                }
+                this.nfCursorPosition[nf.id] = this.nfCurrentInput[nf.id].length;
+                this.updateNFInputDisplay(nf.id);
+                return;
+            }
+
+            // Handle Left arrow to move cursor left
+            if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                if (this.nfCursorPosition[nf.id] > 0) {
+                    this.nfCursorPosition[nf.id]--;
+                    this.updateNFInputDisplay(nf.id);
+                }
+                return;
+            }
+
+            // Handle Right arrow to move cursor right
+            if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                if (this.nfCursorPosition[nf.id] < this.nfCurrentInput[nf.id].length) {
+                    this.nfCursorPosition[nf.id]++;
+                    this.updateNFInputDisplay(nf.id);
+                }
+                return;
+            }
+
+            // Handle Tab for auto-completion
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                this.handleNFTabCompletion(nf, output);
+                return;
+            }
+
+            // Handle Backspace (delete character before cursor)
+            if (e.key === 'Backspace') {
+                e.preventDefault();
+                if (this.nfCursorPosition[nf.id] > 0) {
+                    this.nfCurrentInput[nf.id] = this.nfCurrentInput[nf.id].substring(0, this.nfCursorPosition[nf.id] - 1) + 
+                                               this.nfCurrentInput[nf.id].substring(this.nfCursorPosition[nf.id]);
+                    this.nfCursorPosition[nf.id]--;
+                    this.updateNFInputDisplay(nf.id);
+                }
+                return;
+            }
+
+            // Handle Delete (delete character after cursor)
+            if (e.key === 'Delete') {
+                e.preventDefault();
+                if (this.nfCursorPosition[nf.id] < this.nfCurrentInput[nf.id].length) {
+                    this.nfCurrentInput[nf.id] = this.nfCurrentInput[nf.id].substring(0, this.nfCursorPosition[nf.id]) + 
+                                               this.nfCurrentInput[nf.id].substring(this.nfCursorPosition[nf.id] + 1);
+                    this.updateNFInputDisplay(nf.id);
+                }
+                return;
+            }
+
+            // Handle Home (move cursor to beginning)
+            if (e.key === 'Home') {
+                e.preventDefault();
+                this.nfCursorPosition[nf.id] = 0;
+                this.updateNFInputDisplay(nf.id);
+                return;
+            }
+
+            // Handle End (move cursor to end)
+            if (e.key === 'End') {
+                e.preventDefault();
+                this.nfCursorPosition[nf.id] = this.nfCurrentInput[nf.id].length;
+                this.updateNFInputDisplay(nf.id);
+                return;
+            }
+
+            // Handle character input (printable characters)
+            if (e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey) {
+                e.preventDefault();
+                this.nfCurrentInput[nf.id] = this.nfCurrentInput[nf.id].substring(0, this.nfCursorPosition[nf.id]) + 
+                                           e.key + 
+                                           this.nfCurrentInput[nf.id].substring(this.nfCursorPosition[nf.id]);
+                this.nfCursorPosition[nf.id]++;
+                this.updateNFInputDisplay(nf.id);
+            }
+        };
+
+        // Use persistent bound handlers per NF to avoid duplication
+        this.nfBoundKeyHandlers = this.nfBoundKeyHandlers || {};
+        if (this.nfBoundKeyHandlers[nf.id]) {
+            document.removeEventListener('keydown', this.nfBoundKeyHandlers[nf.id]);
+        }
+        this.nfBoundKeyHandlers[nf.id] = keyHandler;
+        document.addEventListener('keydown', keyHandler);
+    }
+
+    /**
+     * Update the NF input text display with cursor at correct position
+     * @param {string} nfId - NF ID
+     */
+    updateNFInputDisplay(nfId) {
+        const beforeEl = document.getElementById(`nf-input-before-${nfId}`);
+        const afterEl = document.getElementById(`nf-input-after-${nfId}`);
+        if (beforeEl && afterEl) {
+            const before = this.nfCurrentInput[nfId].substring(0, this.nfCursorPosition[nfId]);
+            const after = this.nfCurrentInput[nfId].substring(this.nfCursorPosition[nfId]);
+            beforeEl.textContent = before;
+            afterEl.textContent = after;
+            // Scroll to keep input visible
+            const output = beforeEl.closest('.terminal-output');
+            if (output) {
+                output.scrollTop = output.scrollHeight;
+            }
+        }
+    }
+
+    /**
+     * Handle Tab key for NF command completion
+     * @param {Object} nf - Network Function
+     * @param {HTMLElement} output - Output element
+     */
+    handleNFTabCompletion(nf, output) {
+        const commands = [
+            'help', 'ifconfig', 'ip addr', 'ping',
+            'cls', 'clear', 'exit', 'systeminfo', 'netstat',
+            'iperf3 -s', 'iperf3 -c', 'iperf3 -B', 'iperf3 -R'
+        ];
+
+        const input = this.nfCurrentInput[nf.id];
+        if (!input) return;
+
+        // Find matching commands (case-insensitive)
+        const matches = commands.filter(cmd => cmd.toLowerCase().startsWith(input.toLowerCase()));
+
+        if (matches.length === 0) {
+            // No matches - visual flicker feedback
+            const beforeEl = document.getElementById(`nf-input-before-${nf.id}`);
+            if (beforeEl) {
+                beforeEl.style.opacity = '0.3';
+                setTimeout(() => { if (beforeEl) beforeEl.style.opacity = '1'; }, 120);
+            }
+        } else if (matches.length === 1) {
+            // Single match - complete word-by-word
+            this.nfCurrentInput[nf.id] = this._nfCompleteNextWord(input, matches[0]);
+            this.nfCursorPosition[nf.id] = this.nfCurrentInput[nf.id].length;
+            this.updateNFInputDisplay(nf.id);
+        } else {
+            // Multiple matches - calculate LCP
+            const lcp = matches.reduce((prefix, cmd) => {
+                let i = 0;
+                while (i < prefix.length && i < cmd.length &&
+                       prefix[i].toLowerCase() === cmd[i].toLowerCase()) {
+                    i++;
+                }
+                return prefix.slice(0, i);
+            });
+
+            if (lcp.length > input.length) {
+                // Extend to next word boundary
+                this.nfCurrentInput[nf.id] = this._nfCompleteNextWord(input, lcp);
+                this.nfCursorPosition[nf.id] = this.nfCurrentInput[nf.id].length;
+                this.updateNFInputDisplay(nf.id);
+            } else {
+                // Show all matches, then restore the typed input
+                this.addTerminalLine(output, '', 'blank');
+                this.addTerminalLine(output, matches.join('  '), 'info');
+                this.addTerminalLine(output, '', 'blank');
+                // Recreate input line and restore what the user had typed
+                this.createNFInputLine(nf, output);
+                this.nfCurrentInput[nf.id] = input;
+                this.nfCursorPosition[nf.id] = input.length;
+                this.updateNFInputDisplay(nf.id);
+            }
+        }
+    }
+
+    /**
+     * Complete input up to the next word boundary from the full completion string.
+     * @param {string} val - Current input
+     * @param {string} full - Full completion candidate
+     * @returns {string}
+     */
+    _nfCompleteNextWord(val, full) {
+        const rest = full.slice(val.length);
+        const trimmed = rest.trimStart();
+        const spaceIdx = trimmed.indexOf(' ');
+        if (spaceIdx === -1) return full;
+        const leadingSpaces = rest.length - trimmed.length;
+        return val + rest.slice(0, leadingSpaces + spaceIdx + 1);
+    }
+
+    /**
+     * Process Windows command
+     * @param {Object} nf - Network Function
+     * @param {string} command - Command to process
+     * @param {HTMLElement} output - Output element
+     */
+    async processWindowsCommand(nf, command, output) {
+        const cmd = command.toLowerCase().trim().replace(/\s+/g, ' ');
+        const args = cmd.split(' ');
 
         if (cmd === 'help' || cmd === '?') {
             this.showWindowsHelp(output);
         } else if (cmd === 'ifconfig') {
             this.showifconfig(nf, output);
         } else if (cmd === 'ping subnet') {
-            this.addTerminalLine(output, `'ping subnet' is not recognized as an internal or external command,`, 'error');
+            this.addTerminalLine(output, "'ping subnet' is not recognized as an internal or external command,", 'error');
             this.addTerminalLine(output, 'operable program or batch file.', 'error');
         } else if (cmd.startsWith('ping ')) {
             const target = args[1];
             if (target) {
-                await this.executeWindowsPing(nf, target, output, inputControl);
+                await this.executeWindowsPing(nf, target, output);
             } else {
                 this.addTerminalLine(output, 'Usage: ping <hostname or IP address>', 'error');
             }
@@ -2564,8 +3107,12 @@ if (clickedInterface) {
             this.showSystemInfo(nf, output);
         } else if (cmd === 'netstat') {
             this.showNetstat(nf, output);
+        } else if (cmd === 'ifconfig' || cmd === 'ip addr') {
+            this.showIfConfig(nf, output);
+        } else if (cmd.startsWith('iperf3 ')) {
+            await this.processIperf3Command(nf, command, output);
         } else if (cmd === '') {
-            // Empty command
+            // Empty command, just show prompt
         } else {
             this.addTerminalLine(output, `'${command}' is not recognized as an internal or external command,`, 'error');
             this.addTerminalLine(output, 'operable program or batch file.', 'error');
@@ -2574,22 +3121,37 @@ if (clickedInterface) {
         this.addTerminalLine(output, '', 'blank');
     }
 
+    /**
+     * Add line to terminal output
+     * @param {HTMLElement} output - Output element
+     * @param {string} text - Text to add
+     * @param {string} type - Line type (command, info, error, success, blank)
+     */
     addTerminalLine(output, text, type = 'normal') {
         const line = document.createElement('div');
         line.className = `terminal-line terminal-${type}`;
         line.innerHTML = text || '&nbsp;';
         output.appendChild(line);
         
+        // Auto-scroll to bottom
         output.scrollTop = output.scrollHeight;
     }
 
+    /**
+     * Show Windows help
+     * @param {HTMLElement} output - Output element
+     */
     showWindowsHelp(output) {
         const helpText = [
             'Available commands:',
             '',
             'HELP        - Display this help message',
-            'ifconfig    - Display network configuration',
+            'ifconfig    - Display network configuration (Windows style)',
+            'IFCONFIG    - Display network interfaces (Linux style)',
             'PING        - Test network connectivity',
+            'IPERF3      - Network throughput testing',
+            '  Server:   iperf3 -s (ext-dn only)',
+            '  Client:   iperf3 -B <UE_IP> -c <EXT_DN_IP> [-R] (UE only)',
             'SYSTEMINFO  - Display system information',
             'NETSTAT     - Display network connections',
             'CLS         - Clear the screen',
@@ -2602,6 +3164,11 @@ if (clickedInterface) {
         });
     }
 
+    /**
+     * Show IP configuration
+     * @param {Object} nf - Network Function
+     * @param {HTMLElement} output - Output element
+     */
     showifconfig(nf, output) {
         const lines = [
             'Windows IP Configuration',
@@ -2620,132 +3187,257 @@ if (clickedInterface) {
         lines.forEach(line => {
             this.addTerminalLine(output, line, 'info');
         });
-    }
 
-    async executeWindowsPing(nf, target, output, inputControl = null) {
-        // Block terminal input during ping
-        if (inputControl) {
-            inputControl.block();
+        // Show ogstun interface for UPF
+        if (nf.type === 'UPF' && nf.config.ogstunInterface) {
+            const ogstun = nf.config.ogstunInterface;
+            const tunLines = [
+                'Tunnel adapter ogstun (tun0):',
+                '',
+                `   Connection-specific DNS Suffix  . : `,
+                `   IPv4 Address. . . . . . . . . . . : ${ogstun.ipAddress}`,
+                `   Subnet Mask . . . . . . . . . . . : ${ogstun.netmask}`,
+                `   Default Gateway . . . . . . . . . : ${ogstun.gatewayIP}`,
+                `   MTU . . . . . . . . . . . . . . . : ${ogstun.mtu}`,
+                `   Flags . . . . . . . . . . . . . . : ${ogstun.flags}`,
+                `   IPv6 Address. . . . . . . . . . . : ${ogstun.ipv6}`,
+                ''
+            ];
+            tunLines.forEach(line => {
+                this.addTerminalLine(output, line, 'info');
+            });
         }
 
-        try {
-            if (!this.isValidIP(target)) {
-                this.addTerminalLine(output, `Ping request could not find host ${target}. Please check the name and try again.`, 'error');
-                return;
-            }
-
-            const sourceNetwork = this.getNetworkFromIP(nf.config.ipAddress);
-            const targetNetwork = this.getNetworkFromIP(target);
-            
-            if (sourceNetwork !== targetNetwork) {
-                this.addTerminalLine(output, `Pinging ${target} with 32 bytes of data:`, 'info');
-                this.addTerminalLine(output, '', 'blank');
-                this.addTerminalLine(output, `PING: transmit failed. General failure.`, 'error');
-                this.addTerminalLine(output, '', 'blank');
-                this.addTerminalLine(output, `Network Error: Cannot reach ${target}`, 'error');
-                this.addTerminalLine(output, `Source subnet: ${sourceNetwork}.0/24`, 'error');
-                this.addTerminalLine(output, `Target subnet: ${targetNetwork}.0/24`, 'error');
-                this.addTerminalLine(output, `Reason: Cross-subnet communication not allowed`, 'error');
-                this.addTerminalLine(output, '', 'blank');
-                this.addTerminalLine(output, `Ping statistics for ${target}:`, 'info');
-                this.addTerminalLine(output, `    Packets: Sent = 4, Received = 0, Lost = 4 (100% loss),`, 'info');
-                return;
-            }
-
-            this.addTerminalLine(output, `Pinging ${target} with 32 bytes of data:`, 'info');
-            this.addTerminalLine(output, '', 'blank');
-
-            const isReachable = this.isTargetReachable(nf, target);
-            const results = [];
-
-            for (let i = 1; i <= 4; i++) {
-                await this.delay(500);
-
-                if (isReachable) {
-                    const responseTime = this.generateResponseTime();
-                    const ttl = 255;
-                    
-                    results.push({
-                        sequence: i,
-                        time: responseTime,
-                        ttl: ttl,
-                        success: true
-                    });
-
-                    this.addTerminalLine(output, 
-                        `Reply from ${target}: bytes=32 time=${responseTime}ms TTL=${ttl}`, 
-                        'success'
-                    );
-                } else {
-                    await this.delay(500);
-                    
-                    results.push({
-                        sequence: i,
-                        success: false,
-                        timeout: true
-                    });
-
-                    this.addTerminalLine(output, 'Request timed out.', 'error');
-                }
-            }
-
-            await this.delay(500);
-            this.showPingStatistics(target, results, output);
-        } finally {
-            // Unblock terminal input after ping completes
-            if (inputControl) {
-                inputControl.unblock();
-            }
+        // Show tun interface for UE
+        if (nf.type === 'UE' && nf.config.tunInterface) {
+            const tun = nf.config.tunInterface;
+            const tunLines = [
+                `Tunnel adapter ${tun.name}:`,
+                '',
+                `   Connection-specific DNS Suffix  . : `,
+                `   IPv4 Address. . . . . . . . . . . : ${tun.ipAddress}`,
+                `   Subnet Mask . . . . . . . . . . . : ${tun.netmask}`,
+                `   Default Gateway . . . . . . . . . : ${tun.gateway}`,
+                `   MTU . . . . . . . . . . . . . . . : ${tun.mtu}`,
+                `   Flags . . . . . . . . . . . . . . : ${tun.flags}`,
+                `   IPv6 Address. . . . . . . . . . . : ${tun.ipv6}`,
+                `   Destination . . . . . . . . . . . : ${tun.destination}`,
+                ''
+            ];
+            tunLines.forEach(line => {
+                this.addTerminalLine(output, line, 'info');
+            });
         }
     }
 
-    async executeWindowsPingSubnet(nf, output) {
-        const sourceNetwork = this.getNetworkFromIP(nf.config.ipAddress);
-        const allNFs = window.dataStore?.getAllNFs() || [];
-        
-        const sameSubnetServices = allNFs.filter(otherNf => 
-            otherNf.id !== nf.id && 
-            this.getNetworkFromIP(otherNf.config.ipAddress) === sourceNetwork
-        );
+    /**
+     * Show Linux-style ifconfig output
+     * @param {Object} nf - Network Function
+     * @param {HTMLElement} output - Output element
+     */
+    showIfConfig(nf, output) {
+        // Show eth0 interface (main IP)
+        const eth0Lines = [
+            `eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500`,
+            `        inet ${nf.config.ipAddress}  netmask 255.255.255.0  broadcast ${this.getBroadcastIP(nf.config.ipAddress)}`,
+            `        inet6 fe80::${Math.floor(Math.random() * 65535).toString(16).padStart(4, '0')}:${Math.floor(Math.random() * 65535).toString(16).padStart(4, '0')}:${Math.floor(Math.random() * 65535).toString(16).padStart(4, '0')}:${Math.floor(Math.random() * 65535).toString(16).padStart(4, '0')}  prefixlen 64  scopeid 0x20<link>`,
+            `        ether ${this.generateMACAddress()}  txqueuelen 1000  (Ethernet)`,
+            `        RX packets ${Math.floor(Math.random() * 10000) + 1000}  bytes ${Math.floor(Math.random() * 1000000) + 100000} (${(Math.random() * 100).toFixed(1)} KB)`,
+            `        RX errors 0  dropped 0  overruns 0  frame 0`,
+            `        TX packets ${Math.floor(Math.random() * 10000) + 1000}  bytes ${Math.floor(Math.random() * 1000000) + 100000} (${(Math.random() * 100).toFixed(1)} KB)`,
+            `        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0`,
+            ''
+        ];
+        eth0Lines.forEach(line => {
+            this.addTerminalLine(output, line, 'info');
+        });
 
-        this.addTerminalLine(output, `Subnet Scan: ${sourceNetwork}.0/24`, 'info');
-        this.addTerminalLine(output, `Source: ${nf.name} (${nf.config.ipAddress})`, 'info');
-        this.addTerminalLine(output, `Restriction: Only same-subnet services can be pinged`, 'info');
-        this.addTerminalLine(output, '', 'blank');
+        // Show tun0 interface for UPF (when connected to ext-dn)
+        if (nf.type === 'UPF' && nf.config.tun0Interface) {
+            const tun0 = nf.config.tun0Interface;
+            const flagsValue = 4305; // UP,POINTOPOINT,RUNNING,NOARP,MULTICAST
+            const tun0Lines = [
+                `tun0: flags=${flagsValue}<UP,POINTOPOINT,RUNNING,NOARP,MULTICAST>  mtu 1500`,
+                `        inet ${tun0.ipAddress}  netmask ${tun0.netmask}  destination ${tun0.ipAddress}`,
+                `        inet6 fe80::${Math.floor(Math.random() * 65535).toString(16).padStart(4, '0')}:${Math.floor(Math.random() * 65535).toString(16).padStart(4, '0')}:${Math.floor(Math.random() * 65535).toString(16).padStart(4, '0')}:${Math.floor(Math.random() * 65535).toString(16).padStart(4, '0')}  prefixlen 64  scopeid 0x20<link>`,
+                `        unspec 00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00  txqueuelen 500  (UNSPEC)`,
+                `        RX packets ${Math.floor(Math.random() * 100)}  bytes ${Math.floor(Math.random() * 10000)} (${(Math.random() * 10).toFixed(1)} KB)`,
+                `        RX errors 0  dropped 0  overruns 0  frame 0`,
+                `        TX packets ${Math.floor(Math.random() * 100) + 5}  bytes ${Math.floor(Math.random() * 1000) + 300} (${(Math.random() * 1).toFixed(1)} KB)`,
+                `        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0`,
+                ''
+            ];
+            tun0Lines.forEach(line => {
+                this.addTerminalLine(output, line, 'info');
+            });
+        }
 
-        if (sameSubnetServices.length === 0) {
-            this.addTerminalLine(output, `No other services found in subnet ${sourceNetwork}.0/24`, 'error');
-            this.addTerminalLine(output, `Add more services with IPs in range ${sourceNetwork}.1-${sourceNetwork}.254`, 'info');
+        // Show tun_ue interface for UE (when PDU session is established)
+        if (nf.type === 'UE' && nf.config.tunInterface && nf.config.pduSession) {
+            const tun = nf.config.tunInterface;
+            const flagsValue = 4305; // UP,POINTOPOINT,RUNNING,NOARP,MULTICAST
+            const tunLines = [
+                `${tun.name}: flags=${flagsValue}<UP,POINTOPOINT,RUNNING,NOARP,MULTICAST>  mtu ${tun.mtu}`,
+                `        inet ${tun.ipAddress}  netmask ${tun.netmask}  destination ${tun.destination}`,
+                `        inet6 ${tun.ipv6}  prefixlen 64  scopeid 0x20<link>`,
+                `        unspec 00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00  txqueuelen 500  (UNSPEC)`,
+                `        RX packets ${Math.floor(Math.random() * 100)}  bytes ${Math.floor(Math.random() * 10000)} (${(Math.random() * 10).toFixed(1)} KB)`,
+                `        RX errors 0  dropped 0  overruns 0  frame 0`,
+                `        TX packets ${Math.floor(Math.random() * 100) + 5}  bytes ${Math.floor(Math.random() * 1000) + 300} (${(Math.random() * 1).toFixed(1)} KB)`,
+                `        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0`,
+                ''
+            ];
+            tunLines.forEach(line => {
+                this.addTerminalLine(output, line, 'info');
+            });
+        }
+    }
+
+    /**
+     * Generate MAC address
+     * @returns {string} MAC address
+     */
+    generateMACAddress() {
+        const parts = [];
+        for (let i = 0; i < 6; i++) {
+            parts.push(Math.floor(Math.random() * 256).toString(16).padStart(2, '0'));
+        }
+        return parts.join(':');
+    }
+
+    /**
+     * Get broadcast IP from IP address
+     * @param {string} ip - IP address
+     * @returns {string} Broadcast IP
+     */
+    getBroadcastIP(ip) {
+        const parts = ip.split('.');
+        return `${parts[0]}.${parts[1]}.${parts[2]}.255`;
+    }
+
+    /**
+     * Execute Windows-style ping with subnet restrictions
+     * @param {Object} nf - Network Function
+     * @param {string} target - Target IP or hostname
+     * @param {HTMLElement} output - Output element
+     */
+    async executeWindowsPing(nf, target, output) {
+        // Validate IP
+        if (!this.isValidIP(target)) {
+            this.addTerminalLine(output, `Ping request could not find host ${target}. Please check the name and try again.`, 'error');
             return;
         }
 
-        this.addTerminalLine(output, `Found ${sameSubnetServices.length} services in subnet ${sourceNetwork}.0/24:`, 'info');
-        
-        sameSubnetServices.forEach(targetNf => {
-            const statusIcon = targetNf.status === 'stable' ? '✅' : '⚠️';
-            this.addTerminalLine(output, `  ${statusIcon} ${targetNf.name} (${targetNf.config.ipAddress}) [${targetNf.status.toUpperCase()}]`, 'info');
-        });
-        
-        this.addTerminalLine(output, '', 'blank');
-        this.addTerminalLine(output, 'Starting connectivity tests...', 'info');
-        this.addTerminalLine(output, '', 'blank');
-
-        for (const targetNf of sameSubnetServices) {
-            const statusInfo = targetNf.status === 'stable' ? 'STABLE' : targetNf.status.toUpperCase();
-            this.addTerminalLine(output, `Testing ${targetNf.name} (${targetNf.config.ipAddress}) [${statusInfo}]`, 'info');
-            await this.executeWindowsPing(nf, targetNf.config.ipAddress, output);
+        // SPECIAL CASE: UE can ping its gateway (10.0.0.1) via tun interface
+        if (nf.type === 'UE' && nf.config.tunInterface && target === nf.config.tunInterface.gateway) {
+            this.addTerminalLine(output, `Pinging ${target} (UPF Gateway) with 32 bytes of data:`, 'info');
             this.addTerminalLine(output, '', 'blank');
-            await this.delay(200);
+            
+            // Simulate successful ping to gateway
+            for (let i = 0; i < 4; i++) {
+                await this.delay(500);
+                const time = Math.floor(Math.random() * 10) + 1;
+                this.addTerminalLine(output, `Reply from ${target}: bytes=32 time=${time}ms TTL=64`, 'success');
+            }
+            
+            this.addTerminalLine(output, '', 'blank');
+            this.addTerminalLine(output, `Ping statistics for ${target}:`, 'info');
+            this.addTerminalLine(output, `    Packets: Sent = 4, Received = 4, Lost = 0 (0% loss),`, 'info');
+            this.addTerminalLine(output, `Approximate round trip times in milli-seconds:`, 'info');
+            this.addTerminalLine(output, `    Minimum = 1ms, Maximum = 10ms, Average = 5ms`, 'info');
+            return;
         }
 
-        this.addTerminalLine(output, '═══════════════════════════════════════', 'info');
-        this.addTerminalLine(output, `Subnet scan completed for ${sourceNetwork}.0/24`, 'success');
-        this.addTerminalLine(output, `Total services tested: ${sameSubnetServices.length}`, 'info');
-        this.addTerminalLine(output, `Stable services: ${sameSubnetServices.filter(nf => nf.status === 'stable').length}`, 'info');
-        this.addTerminalLine(output, `Unstable services: ${sameSubnetServices.filter(nf => nf.status !== 'stable').length}`, 'info');
-        this.addTerminalLine(output, '═══════════════════════════════════════', 'info');
+        // SPECIAL CASE: UE can ping other IPs in 10.0.0.0/24 network via tun interface
+        if (nf.type === 'UE' && nf.config.tunInterface) {
+            const tunNetwork = this.getNetworkFromIP(nf.config.tunInterface.ipAddress);
+            const targetNetwork = this.getNetworkFromIP(target);
+            
+            if (tunNetwork === targetNetwork) {
+                // UE can ping within ogstun network
+                this.addTerminalLine(output, `Pinging ${target} via ${nf.config.tunInterface.name} with 32 bytes of data:`, 'info');
+                this.addTerminalLine(output, '', 'blank');
+                
+                // Use ping manager for realistic ping
+                if (window.pingManager) {
+                    await window.pingManager.executePing(nf.id, target, 4);
+                }
+                return;
+            }
+        }
+
+        // Check subnet restriction FIRST
+        const sourceNetwork = this.getNetworkFromIP(nf.config.ipAddress);
+        const targetNetwork = this.getNetworkFromIP(target);
+        
+        if (sourceNetwork !== targetNetwork) {
+            this.addTerminalLine(output, `Pinging ${target} with 32 bytes of data:`, 'info');
+            this.addTerminalLine(output, '', 'blank');
+            this.addTerminalLine(output, `PING: transmit failed. General failure.`, 'error');
+            this.addTerminalLine(output, '', 'blank');
+            this.addTerminalLine(output, `Network Error: Cannot reach ${target}`, 'error');
+            this.addTerminalLine(output, `Source subnet: ${sourceNetwork}.0/24`, 'error');
+            this.addTerminalLine(output, `Target subnet: ${targetNetwork}.0/24`, 'error');
+            this.addTerminalLine(output, `Reason: Cross-subnet communication not allowed`, 'error');
+            this.addTerminalLine(output, '', 'blank');
+            this.addTerminalLine(output, `Ping statistics for ${target}:`, 'info');
+            this.addTerminalLine(output, `    Packets: Sent = 4, Received = 0, Lost = 4 (100% loss),`, 'info');
+            return;
+        }
+
+        // Initial ping message
+        this.addTerminalLine(output, `Pinging ${target} with 32 bytes of data:`, 'info');
+        this.addTerminalLine(output, '', 'blank');
+
+        // Check if target is reachable (same subnet)
+        const isReachable = this.isTargetReachable(nf, target);
+        const results = [];
+
+        // Send 4 ping packets with 0.5 second delays
+        for (let i = 1; i <= 4; i++) {
+            await this.delay(500); // 0.5 second delay
+
+            if (isReachable) {
+                const responseTime = this.generateResponseTime();
+                const ttl = 255;
+                
+                results.push({
+                    sequence: i,
+                    time: responseTime,
+                    ttl: ttl,
+                    success: true
+                });
+
+                this.addTerminalLine(output, 
+                    `Reply from ${target}: bytes=32 time=${responseTime}ms TTL=${ttl}`, 
+                    'success'
+                );
+            } else {
+                await this.delay(500); // Additional delay for timeout
+                
+                results.push({
+                    sequence: i,
+                    success: false,
+                    timeout: true
+                });
+
+                this.addTerminalLine(output, 'Request timed out.', 'error');
+            }
+        }
+
+        // Show statistics after final delay
+        await this.delay(500);
+        this.showPingStatistics(target, results, output);
     }
 
+
+
+    /**
+     * Show ping statistics
+     * @param {string} target - Target IP
+     * @param {Array} results - Ping results
+     * @param {HTMLElement} output - Output element
+     */
     showPingStatistics(target, results, output) {
         const successful = results.filter(r => r.success);
         const failed = results.filter(r => !r.success);
@@ -2772,6 +3464,17 @@ if (clickedInterface) {
         }
     }
 
+    /**
+     * Show directory listing
+     * @param {HTMLElement} output - Output element
+     */
+   
+
+    /**
+     * Show system information
+     * @param {Object} nf - Network Function
+     * @param {HTMLElement} output - Output element
+     */
     showSystemInfo(nf, output) {
         const uptime = window.nfManager?.getServiceUptime(nf) || 'Unknown';
         const lines = [
@@ -2791,6 +3494,11 @@ if (clickedInterface) {
         });
     }
 
+    /**
+     * Show network statistics
+     * @param {Object} nf - Network Function
+     * @param {HTMLElement} output - Output element
+     */
     showNetstat(nf, output) {
         const connections = window.dataStore?.getConnectionsForNF(nf.id) || [];
         const busConnections = window.dataStore?.getBusConnectionsForNF(nf.id) || [];
@@ -2799,6 +3507,7 @@ if (clickedInterface) {
         this.addTerminalLine(output, '', 'blank');
         this.addTerminalLine(output, '  Proto  Local Address          Foreign Address        State', 'info');
 
+        // Show direct connections
         connections.forEach(conn => {
             const otherNfId = conn.sourceId === nf.id ? conn.targetId : conn.sourceId;
             const otherNf = window.dataStore?.getNFById(otherNfId);
@@ -2810,6 +3519,7 @@ if (clickedInterface) {
             }
         });
 
+        // Show bus connections
         busConnections.forEach(busConn => {
             const bus = window.dataStore?.getBusById(busConn.busId);
             if (bus) {
@@ -2827,125 +3537,11 @@ if (clickedInterface) {
         this.addTerminalLine(output, '', 'blank');
     }
 
+    /**
+     * Helper methods for terminal functionality
+     */
     delay(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
-    }
-
-    /**
-     * Load and display logs for a specific interface from 5g-logs.json
-     */
-    async loadLogsForInterface(interfaceId, allLogs, nfIdMap) {
-        if (!window.logEngine || !allLogs || allLogs.length === 0) {
-            return;
-        }
-        
-        // Get interface configuration to find related NF types
-        const interfaceConfig = window.interfaceManager?.deployedInterfaces.get(interfaceId);
-        const relatedNFTypes = new Set();
-        const relatedNFIds = new Set();
-        
-        if (interfaceConfig && interfaceConfig.nfs) {
-            Object.entries(interfaceConfig.nfs).forEach(([type, nf]) => {
-                if (nf && nf.id) {
-                    relatedNFTypes.add(type);
-                    relatedNFIds.add(nf.id);
-                }
-            });
-        }
-        
-        // Find logs that match this interface
-        const interfaceLogs = [];
-        let interfaceDeploymentLogFound = false;
-        
-        for (const log of allLogs) {
-            const message = (log.message || '').toLowerCase();
-            
-            // Check if this is the interface deployment log
-            if (log.nfId === 'system' && 
-                (message.includes(`${interfaceId.toLowerCase()} interface deployed`) ||
-                 message.includes(`${interfaceId.toLowerCase()} interface configured`))) {
-                interfaceLogs.push(log);
-                interfaceDeploymentLogFound = true;
-                continue;
-            }
-            
-            // If we haven't found the deployment log yet, skip other logs
-            // (we want logs that happen during/after this interface deployment)
-            if (!interfaceDeploymentLogFound) {
-                continue;
-            }
-            
-            // Include logs from related NFs
-            if (relatedNFIds.has(log.nfId)) {
-                interfaceLogs.push(log);
-                continue;
-            }
-            
-            // Include logs from NFs of related types (by matching NF ID prefix)
-            const logNFType = log.nfId.split('-')[0];
-            if (relatedNFTypes.has(logNFType.charAt(0).toUpperCase() + logNFType.slice(1))) {
-                interfaceLogs.push(log);
-                continue;
-            }
-            
-            // Stop collecting logs when we hit the next interface deployment
-            if (log.nfId === 'system' && 
-                message.includes('interface deployed') &&
-                !message.includes(interfaceId.toLowerCase())) {
-                break;
-            }
-        }
-        
-        // Sort logs by timestamp
-        interfaceLogs.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
-        
-        // Add logs with timing delays to simulate real-time logging
-        let firstTimestamp = interfaceLogs.length > 0 ? interfaceLogs[0].timestamp : Date.now();
-        
-        for (const log of interfaceLogs) {
-            // Calculate delay based on log timestamp relative to first log
-            const logTimestamp = log.timestamp || Date.now();
-            const delay = Math.max(50, Math.min(logTimestamp - firstTimestamp, 500)); // 50ms min, 500ms max
-            
-            // Map NF ID
-            let nfId = log.nfId;
-            
-            // Try to find matching NF
-            if (!nfIdMap.has(nfId)) {
-                const allNFs = window.dataStore?.getAllNFs() || [];
-                
-                // Try to match by extracting type from old ID
-                const oldIdParts = log.nfId.split('-');
-                if (oldIdParts.length > 0) {
-                    const oldType = oldIdParts[0];
-                    const matchingNF = allNFs.find(nf => {
-                        return nf.type.toLowerCase() === oldType.toLowerCase();
-                    });
-                    if (matchingNF) {
-                        nfIdMap.set(log.nfId, matchingNF.id);
-                        nfId = matchingNF.id;
-                    }
-                }
-            } else {
-                nfId = nfIdMap.get(nfId);
-            }
-            
-            // Add log after delay
-            await this.delay(delay);
-            
-            if (window.logEngine) {
-                window.logEngine.addLog(
-                    nfId,
-                    log.level || 'INFO',
-                    log.message || '',
-                    log.details || {}
-                );
-            }
-            
-            firstTimestamp = logTimestamp;
-        }
-        
-        console.log(`📋 Loaded ${interfaceLogs.length} logs for ${interfaceId}`);
     }
 
     isTargetReachable(sourceNf, targetIP) {
@@ -2953,21 +3549,22 @@ if (clickedInterface) {
         const targetNf = allNFs.find(nf => nf.config.ipAddress === targetIP);
         
         if (!targetNf) {
-            return Math.random() < 0.1;
+            return Math.random() < 0.1; // 10% success for unknown IPs
         }
 
         const sourceNetwork = this.getNetworkFromIP(sourceNf.config.ipAddress);
         const targetNetwork = this.getNetworkFromIP(targetIP);
         
         if (sourceNetwork !== targetNetwork) {
-            return Math.random() < 0.2;
+            return Math.random() < 0.2; // 20% success for different networks
         }
 
+        // Check if both services are stable
         if (sourceNf.status !== 'stable' || targetNf.status !== 'stable') {
-            return Math.random() < 0.3;
+            return Math.random() < 0.3; // 30% success if not both stable
         }
 
-        return Math.random() < 0.9;
+        return Math.random() < 0.9; // 90% success for stable same-network services
     }
 
     getNetworkFromIP(ip) {
@@ -2981,17 +3578,23 @@ if (clickedInterface) {
         return Math.max(1, Math.round(baseTime + variation));
     }
 
+    /**
+     * Get next available IP address automatically
+     * @returns {string} Next available IP address
+     */
     getNextAvailableIP() {
         const allNFs = window.dataStore?.getAllNFs() || [];
         const usedIPs = new Set(allNFs.map(nf => nf.config.ipAddress));
         
+        // Define subnets in priority order
         const subnets = [
-            '192.168.1',
-            '192.168.2',
-            '192.168.3',
-            '192.168.4'
+            '192.168.1', // Core network functions
+            '192.168.2', // User plane functions  
+            '192.168.3', // Edge services
+            '192.168.4'  // Additional services
         ];
 
+        // Find next available IP in priority order
         for (const subnet of subnets) {
             for (let host = 10; host <= 254; host++) {
                 const ip = `${subnet}.${host}`;
@@ -3002,6 +3605,7 @@ if (clickedInterface) {
             }
         }
 
+        // Fallback if all subnets are full
         const randomSubnet = Math.floor(Math.random() * 254) + 1;
         const randomHost = Math.floor(Math.random() * 244) + 10;
         const fallbackIP = `192.168.${randomSubnet}.${randomHost}`;
@@ -3010,10 +3614,15 @@ if (clickedInterface) {
         return fallbackIP;
     }
 
+    /**
+     * Get next available port number automatically
+     * @returns {number} Next available port number
+     */
     getNextAvailablePort() {
         const allNFs = window.dataStore?.getAllNFs() || [];
         const usedPorts = new Set(allNFs.map(nf => nf.config.port));
         
+        // Find next available port starting from 8080
         for (let port = 8080; port <= 9999; port++) {
             if (!usedPorts.has(port)) {
                 console.log(`🔌 Auto-assigned next available port: ${port}`);
@@ -3021,107 +3630,624 @@ if (clickedInterface) {
             }
         }
 
+        // Fallback if all ports are used
         const randomPort = Math.floor(Math.random() * 1000) + 8000;
         console.warn(`⚠️ Using fallback port: ${randomPort}`);
         return randomPort;
     }
 
+    /**
+     * Validate IP address format
+     * @param {string} ip - IP address to validate
+     * @returns {boolean} True if valid IP
+     */
     isValidIP(ip) {
-        if (!ip) return false;
-        const ipRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[1-9])\.)(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){2}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-        if (!ipRegex.test(ip)) return false;
-        const parts = ip.split('.').map(Number);
-        if (parts[0] === 0) return false;
-        return true;
+        const ipRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+        return ipRegex.test(ip);
     }
 
-    isValidPort(port) {
-        if (typeof port === 'string') {
-            if (!/^\d+$/.test(port)) return false;
-            port = parseInt(port, 10);
+    /**
+     * Process iperf3 command
+     * @param {Object} nf - Network Function
+     * @param {string} command - Full iperf3 command
+     * @param {HTMLElement} output - Output element
+     */
+    async processIperf3Command(nf, command, output) {
+        const args = command.split(' ').filter(arg => arg.trim());
+        const cmd = args[0].toLowerCase();
+        
+        // Server mode: iperf3 -s
+        if (args.includes('-s') || args.includes('--server')) {
+            if (nf.type !== 'ext-dn') {
+                this.addTerminalLine(output, 'Error: iperf3 server can only run on ext-dn terminals', 'error');
+                return;
+            }
+            
+            // Check if server is already running
+            if (this.iperf3Servers.has(nf.id)) {
+                this.addTerminalLine(output, 'iperf3 server is already running on port 5201', 'error');
+                this.addTerminalLine(output, 'Use Ctrl+C to stop the server', 'info');
+                return;
+            }
+            
+            await this.startIperf3Server(nf, output);
+            return;
         }
-        if (isNaN(port)) return false;
-        const portStr = port.toString();
-        return portStr.length >= 4 && portStr.length <= 6;
-    }
-    
-    blockSpecialCharactersInInputs() {
-        const ipInput = document.getElementById('config-ip');
-        const portInput = document.getElementById('config-port');
         
-        // Define disallowed keys/characters
-        const disallowedKeys = ['/', '*', '-', '+', ',', '!', '@', '#', '$', '%', '^', '&', '(', ')', '=', '_', '`', '~', '[', ']', '{', '}', '|', '\\', ';', ':', "'", '"', '<', '>', '?'];
-        const disallowedCharsRegex = /[/*\-+,!@#$%^&()=_`~\[\]{}|\\;:'"<>?]/g;
-        const lettersRegex = /[a-zA-Z]/g;
+        // Client mode: iperf3 -B <UE_IP> -c <EXT_DN_IP> [-R]
+        if (args.includes('-c') || args.includes('--client')) {
+            if (nf.type !== 'UE') {
+                this.addTerminalLine(output, 'Error: iperf3 client can only run on UE terminals', 'error');
+                return;
+            }
+            
+            await this.startIperf3Client(nf, args, output);
+            return;
+        }
         
-        // Helper function to handle input and keydown, avoiding duplicate listeners
-        const setupInput = (input, isIP) => {
-            if (!input) return;
-            
-            // Remove existing listeners by cloning the node (this clears all event listeners)
-            const newInput = input.cloneNode(true);
-            input.parentNode.replaceChild(newInput, input);
-            
-            // Add new keydown listener
-            newInput.addEventListener('keydown', (e) => {
-                // Allow backspace, delete, arrow keys, home, end, tab, enter
-                const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'Tab', 'Enter'];
-                if (allowedKeys.includes(e.key) || e.ctrlKey || e.metaKey) {
-                    return;
-                }
-                
-                // Block disallowed keys and letters
-                if (disallowedKeys.includes(e.key) || /[a-zA-Z]/.test(e.key)) {
-                    e.preventDefault();
-                    return;
-                }
-                
-                // For IP, only allow digits and .
-                if (isIP) {
-                    if (!/[0-9.]/.test(e.key)) {
-                        e.preventDefault();
-                        return;
-                    }
-                } else {
-                    // For port, only allow digits
-                    if (!/[0-9]/.test(e.key)) {
-                        e.preventDefault();
-                        return;
-                    }
-                }
-            });
-            
-            // Add input listener to clean up pasted content
-            newInput.addEventListener('input', (e) => {
-                let cleaned = e.target.value.replace(disallowedCharsRegex, '').replace(lettersRegex, '');
-                if (isIP) {
-                    // Remove anything that's not digit or .
-                    cleaned = cleaned.replace(/[^0-9.]/g, '');
-                } else {
-                    // Remove anything that's not digit
-                    cleaned = cleaned.replace(/[^0-9]/g, '');
-                }
-                if (e.target.value !== cleaned) {
-                    e.target.value = cleaned;
-                }
-            });
-        };
-        
-        // Setup both inputs
-        setupInput(ipInput, true);
-        setupInput(portInput, false);
+        // Help or invalid
+        this.addTerminalLine(output, 'iperf3: missing or invalid option', 'error');
+        this.addTerminalLine(output, 'Usage:', 'info');
+        this.addTerminalLine(output, '  Server: iperf3 -s', 'info');
+        this.addTerminalLine(output, '  Client: iperf3 -B <UE_IP> -c <EXT_DN_IP> [-R]', 'info');
     }
 
-    isNFTypeAlreadyExists(type) {
+    /**
+     * Start iperf3 server on ext-dn
+     * @param {Object} nf - ext-dn Network Function
+     * @param {HTMLElement} output - Output element
+     */
+    async startIperf3Server(nf, output) {
+        this.addTerminalLine(output, '-----------------------------------------------------------', 'info');
+        this.addTerminalLine(output, 'Server listening on 5201', 'info');
+        this.addTerminalLine(output, '-----------------------------------------------------------', 'info');
+        this.addTerminalLine(output, '', 'blank');
+        
+        // Store server state
+        this.iperf3Servers.set(nf.id, {
+            nf: nf,
+            output: output,
+            isRunning: true,
+            currentTest: null
+        });
+        
+        // Note: Server runs until Ctrl+C (handled separately)
+        // The server will handle incoming connections when client connects
+    }
+
+    /**
+     * Start iperf3 client on UE
+     * @param {Object} nf - UE Network Function
+     * @param {Array} args - Command arguments
+     * @param {HTMLElement} output - Output element
+     */
+    async startIperf3Client(nf, args, output) {
+        // Parse arguments
+        const bindIndex = args.indexOf('-B');
+        const clientIndex = args.indexOf('-c');
+        const reverseFlag = args.includes('-R') || args.includes('--reverse');
+        
+        if (bindIndex === -1 || clientIndex === -1) {
+            this.addTerminalLine(output, 'Error: Missing required arguments', 'error');
+            this.addTerminalLine(output, 'Usage: iperf3 -B <UE_IP> -c <EXT_DN_IP> [-R]', 'error');
+            return;
+        }
+        
+        const ueIP = args[bindIndex + 1];
+        const extDNIP = args[clientIndex + 1];
+        
+        if (!ueIP || !extDNIP) {
+            this.addTerminalLine(output, 'Error: Missing IP addresses', 'error');
+            return;
+        }
+        
+        if (!this.isValidIP(ueIP) || !this.isValidIP(extDNIP)) {
+            this.addTerminalLine(output, 'Error: Invalid IP address format', 'error');
+            return;
+        }
+        
+        // Find ext-dn NF
         const allNFs = window.dataStore?.getAllNFs() || [];
-        return allNFs.some(nf => nf.type === type);
+        const extDN = allNFs.find(n => n.type === 'ext-dn' && n.config.ipAddress === extDNIP);
+        
+        if (!extDN) {
+            this.addTerminalLine(output, `Error: ext-dn with IP ${extDNIP} not found`, 'error');
+            return;
+        }
+        
+        // Check if server is running on ext-dn
+        if (!this.iperf3Servers.has(extDN.id)) {
+            this.addTerminalLine(output, `Error: iperf3 server is not running on ${extDNIP}`, 'error');
+            this.addTerminalLine(output, 'Please start the server first: iperf3 -s', 'error');
+            return;
+        }
+        
+        // Get UE's tun interface IP if PDU session is established
+        const ueTunIP = nf.config.tunInterface?.ipAddress;
+        if (!ueTunIP) {
+            this.addTerminalLine(output, 'Error: UE does not have PDU session established', 'error');
+            this.addTerminalLine(output, 'Please register UE and establish PDU session first', 'error');
+            return;
+        }
+        
+        // Validate that provided UE IP matches tun interface IP
+        if (ueIP !== ueTunIP) {
+            this.addTerminalLine(output, `Warning: Provided UE IP (${ueIP}) does not match tun interface IP (${ueTunIP})`, 'error');
+            this.addTerminalLine(output, `Using tun interface IP: ${ueTunIP}`, 'info');
+        }
+        
+        // Start the test
+        await this.executeIperf3Test(nf, extDN, ueTunIP, extDNIP, reverseFlag, output);
     }
 
+    /**
+     * Execute iperf3 test between UE and ext-dn
+     * @param {Object} ue - UE Network Function
+     * @param {Object} extDN - ext-dn Network Function
+     * @param {string} ueIP - UE IP address (from tun interface)
+     * @param {string} extDNIP - ext-dn IP address
+     * @param {boolean} reverse - True for downlink test
+     * @param {HTMLElement} output - UE terminal output
+     */
+    async executeIperf3Test(ue, extDN, ueIP, extDNIP, reverse, output) {
+        // Get ext-dn terminal output
+        const extDNModal = document.getElementById(`windows-terminal-modal-${extDN.id}`);
+        const extDNOutput = extDNModal?.querySelector('#terminal-output');
+        
+        if (!extDNOutput) {
+            this.addTerminalLine(output, 'Error: ext-dn terminal not found', 'error');
+            return;
+        }
+        
+        // Update server state
+        const serverState = this.iperf3Servers.get(extDN.id);
+        serverState.currentTest = { ue, ueIP, extDNIP, reverse, startTime: Date.now() };
+        
+        // Generate random port for connection
+        const clientPort = Math.floor(Math.random() * 50000) + 10000;
+        const serverPort = 5201;
+        
+        // Client output
+        this.addTerminalLine(output, `Connecting to host ${extDNIP}, port ${serverPort}`, 'info');
+        
+        // Server output
+        this.addTerminalLine(extDNOutput, `Accepted connection from ${ue.config.ipAddress}, port ${clientPort}`, 'info');
+        
+        // Simulate connection delay
+        await this.delay(300);
+        
+        // Client connection established
+        this.addTerminalLine(output, `[  5] local ${ueIP} port ${clientPort} connected to ${extDNIP} port ${serverPort}`, 'info');
+        
+        if (reverse) {
+            this.addTerminalLine(output, 'Reverse mode, remote host ' + extDNIP + ' is sending', 'info');
+        }
+        
+        // Server connection established
+        this.addTerminalLine(extDNOutput, `[  5] local ${extDNIP} port ${serverPort} connected to ${ue.config.ipAddress} port ${clientPort}`, 'info');
+        
+        this.addTerminalLine(output, '', 'blank');
+        this.addTerminalLine(extDNOutput, '', 'blank');
+        
+        // Header
+        if (reverse) {
+            // Server sends in reverse mode
+            this.addTerminalLine(extDNOutput, '[ ID] Interval           Transfer     Bitrate         Retr  Cwnd', 'info');
+            this.addTerminalLine(output, '[ ID] Interval           Transfer     Bitrate', 'info');
+        } else {
+            // Client sends in normal mode
+            this.addTerminalLine(extDNOutput, '[ ID] Interval           Transfer     Bitrate', 'info');
+            this.addTerminalLine(output, '[ ID] Interval           Transfer     Bitrate         Retr  Cwnd', 'info');
+        }
+        
+        // Run test for 10 seconds with 1-second intervals
+        const testDuration = 10;
+        let totalTransfer = 0;
+        let totalBitrate = 0;
+        
+        for (let i = 0; i < testDuration; i++) {
+            await this.delay(1000); // 1 second delay per interval
+            
+            // Generate realistic throughput values
+            const baseBitrate = reverse ? 45 : 20; // Downlink typically higher
+            const variance = Math.random() * 10 - 5; // ±5 Mbits/sec variance
+            const bitrate = Math.max(5, baseBitrate + variance); // Minimum 5 Mbits/sec
+            
+            const transfer = (bitrate * 1.0) / 8; // MBytes for 1 second
+            totalTransfer += transfer;
+            totalBitrate += bitrate;
+            
+            const transferStr = transfer >= 1 ? `${transfer.toFixed(2)} MBytes` : `${(transfer * 1024).toFixed(0)} KBytes`;
+            const bitrateStr = `${bitrate.toFixed(1)} Mbits/sec`;
+            
+            const interval = `[  5]   ${i.toFixed(2)}-${(i + 1).toFixed(2)}  sec`;
+            
+            if (reverse) {
+                // Server sends
+                const cwnd = `${(100 + i * 20 + Math.random() * 50).toFixed(0)} KBytes`;
+                this.addTerminalLine(extDNOutput, `${interval}  ${transferStr.padStart(10)}  ${bitrateStr.padStart(12)}    0    ${cwnd}`, 'info');
+                // Client receives
+                this.addTerminalLine(output, `${interval}  ${transferStr.padStart(10)}  ${bitrateStr.padStart(12)}`, 'info');
+            } else {
+                // Client sends
+                const cwnd = `${(100 + i * 20 + Math.random() * 50).toFixed(0)} KBytes`;
+                this.addTerminalLine(output, `${interval}  ${transferStr.padStart(10)}  ${bitrateStr.padStart(12)}    0    ${cwnd}`, 'info');
+                // Server receives
+                this.addTerminalLine(extDNOutput, `${interval}  ${transferStr.padStart(10)}  ${bitrateStr.padStart(12)}`, 'info');
+            }
+        }
+        
+        // Final summary line
+        await this.delay(500);
+        
+        const avgBitrate = totalBitrate / testDuration;
+        const totalTransferStr = `${totalTransfer.toFixed(1)} MBytes`;
+        const avgBitrateStr = `${avgBitrate.toFixed(1)} Mbits/sec`;
+        
+        this.addTerminalLine(output, '- - - - - - - - - - - - - - - - - - - - - - - - -', 'info');
+        this.addTerminalLine(extDNOutput, '- - - - - - - - - - - - - - - - - - - - - - - - -', 'info');
+        
+        if (reverse) {
+            // Server summary (sender)
+            this.addTerminalLine(extDNOutput, `[  5]   0.00-${testDuration.toFixed(2)}  sec  ${totalTransferStr.padStart(10)}  ${avgBitrateStr.padStart(12)}    0             sender`, 'info');
+            // Client summary (receiver)
+            this.addTerminalLine(output, `[  5]   0.00-${testDuration.toFixed(2)}  sec  ${totalTransferStr.padStart(10)}  ${avgBitrateStr.padStart(12)}    0             sender`, 'info');
+            this.addTerminalLine(output, `[  5]   0.00-${testDuration.toFixed(2)}  sec  ${(totalTransfer * 0.95).toFixed(1)} MBytes  ${(avgBitrate * 0.95).toFixed(1)} Mbits/sec                  receiver`, 'info');
+            // Server also shows receiver stats
+            this.addTerminalLine(extDNOutput, `[  5]   0.00-${testDuration.toFixed(2)}  sec  ${(totalTransfer * 0.95).toFixed(1)} MBytes  ${(avgBitrate * 0.95).toFixed(1)} Mbits/sec                  receiver`, 'info');
+        } else {
+            // Client summary (sender)
+            this.addTerminalLine(output, `[  5]   0.00-${testDuration.toFixed(2)}  sec  ${totalTransferStr.padStart(10)}  ${avgBitrateStr.padStart(12)}    0             sender`, 'info');
+            this.addTerminalLine(output, `[  5]   0.00-${testDuration.toFixed(2)}  sec  ${(totalTransfer * 0.95).toFixed(1)} MBytes  ${(avgBitrate * 0.95).toFixed(1)} Mbits/sec                  receiver`, 'info');
+            // Server summary (receiver)
+            this.addTerminalLine(extDNOutput, `[  5]   0.00-${testDuration.toFixed(2)}  sec  ${totalTransferStr.padStart(10)}  ${avgBitrateStr.padStart(12)}                  receiver`, 'info');
+        }
+        
+        // Server returns to listening
+        await this.delay(500);
+        this.addTerminalLine(extDNOutput, '', 'blank');
+        this.addTerminalLine(extDNOutput, '-----------------------------------------------------------', 'info');
+        this.addTerminalLine(extDNOutput, 'Server listening on 5201', 'info');
+        this.addTerminalLine(extDNOutput, '-----------------------------------------------------------', 'info');
+        
+        // Client done
+        this.addTerminalLine(output, '', 'blank');
+        this.addTerminalLine(output, 'iperf Done.', 'info');
+        
+        // Clear current test
+        serverState.currentTest = null;
+    }
+
+    /**
+     * Stop iperf3 server
+     * @param {Object} nf - Network Function (ext-dn)
+     * @param {HTMLElement} output - Output element
+     */
+    stopIperf3Server(nf, output) {
+        if (!this.iperf3Servers.has(nf.id)) {
+            this.addTerminalLine(output, 'No iperf3 server is running', 'error');
+            return;
+        }
+        
+        const serverState = this.iperf3Servers.get(nf.id);
+        
+        // If test is running, wait for it to complete
+        if (serverState.currentTest) {
+            this.addTerminalLine(output, 'Test in progress. Please wait for test to complete.', 'info');
+            return;
+        }
+        
+        // Stop server
+        this.iperf3Servers.delete(nf.id);
+        this.addTerminalLine(output, '', 'blank');
+        this.addTerminalLine(output, '^C', 'info');
+        this.addTerminalLine(output, '', 'blank');
+        this.addTerminalLine(output, 'iperf3 server stopped', 'info');
+    }
+
+    /**
+     * Delay helper function
+     * @param {number} ms - Milliseconds to delay
+     * @returns {Promise}
+     */
+    delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    /**
+     * Validate UE against UDR subscriber information
+     * @param {string} ueId - UE ID
+     */
+    validateUEAgainstUDR(ueId) {
+        const ue = window.dataStore?.getNFById(ueId);
+        if (!ue || ue.type !== 'UE') {
+            alert('Error: UE not found');
+            return;
+        }
+
+        // Get subscriber information from UDR
+        const subscribers = window.dataStore?.getSubscribers() || [];
+        const ueImsi = ue.config.subscriberImsi;
+
+        if (!ueImsi) {
+            alert('❌ Validation Failed!\n\nUE does not have IMSI configured.\n\nPlease configure subscriber information first.');
+            return;
+        }
+
+        // Find matching subscriber in UDR
+        const subscriber = subscribers.find(s => s.imsi === ueImsi);
+
+        if (!subscriber) {
+            alert('❌ Validation Failed!\n\n' +
+                  `UE IMSI: ${ueImsi}\n` +
+                  'Status: Not found in UDR/MySQL subscriber database\n\n' +
+                  'Please ensure the subscriber is registered in UDR.');
+            
+            if (window.logEngine) {
+                window.logEngine.addLog(ueId, 'ERROR',
+                    'UE validation failed: Subscriber not found in UDR', {
+                    ueImsi: ueImsi,
+                    reason: 'Subscriber not registered in UDR/MySQL'
+                });
+            }
+            return;
+        }
+
+        // Validate all parameters
+        const mismatches = [];
+        
+        if (ue.config.subscriberKey && ue.config.subscriberKey !== subscriber.key) {
+            mismatches.push('Key');
+        }
+        
+        if (ue.config.subscriberOpc && ue.config.subscriberOpc !== subscriber.opc) {
+            mismatches.push('OPc');
+        }
+        
+        if (ue.config.subscriberDnn && ue.config.subscriberDnn !== subscriber.dnn) {
+            mismatches.push('DNN');
+        }
+        
+        if (ue.config.subscriberSst && ue.config.subscriberSst !== subscriber.nssai_sst) {
+            mismatches.push('NSSAI SST');
+        }
+
+        if (mismatches.length > 0) {
+            alert('⚠️ Validation Warning!\n\n' +
+                  `UE IMSI: ${ueImsi}\n` +
+                  `Status: Found in UDR but parameters mismatch\n\n` +
+                  `Mismatched parameters: ${mismatches.join(', ')}\n\n` +
+                  'Please update UE configuration to match UDR subscriber data.');
+            
+            if (window.logEngine) {
+                window.logEngine.addLog(ueId, 'WARNING',
+                    'UE validation warning: Parameter mismatches detected', {
+                    ueImsi: ueImsi,
+                    mismatches: mismatches,
+                    udrSubscriber: {
+                        key: subscriber.key.substring(0, 8) + '...',
+                        opc: subscriber.opc.substring(0, 8) + '...',
+                        dnn: subscriber.dnn,
+                        nssai_sst: subscriber.nssai_sst
+                    }
+                });
+            }
+            return;
+        }
+
+        // Validation successful
+        alert('✅ Validation Successful!\n\n' +
+              `UE IMSI: ${ueImsi}\n` +
+              `Status: All parameters match UDR subscriber data\n\n` +
+              `DNN: ${subscriber.dnn}\n` +
+              `NSSAI SST: ${subscriber.nssai_sst}\n\n` +
+              'UE is ready for network registration and testing.');
+        
+        if (window.logEngine) {
+            window.logEngine.addLog(ueId, 'SUCCESS',
+                'UE validation successful: All parameters match UDR', {
+                ueImsi: ueImsi,
+                dnn: subscriber.dnn,
+                nssai_sst: subscriber.nssai_sst,
+                validationStatus: 'PASSED'
+            });
+        }
+    }
+
+    /**
+     * Collect network logs (NGAP, NAS, GTP-U, PDU Session)
+     * @param {string} ueId - UE ID
+     */
+    collectNetworkLogs(ueId) {
+        const ue = window.dataStore?.getNFById(ueId);
+        if (!ue || ue.type !== 'UE') {
+            alert('Error: UE not found');
+            return;
+        }
+
+        // Check if UE is registered and has PDU session
+        if (!ue.config.pduSession) {
+            alert('⚠️ Log Collection Unavailable!\n\n' +
+                  'UE must be registered and have an active PDU session to collect logs.\n\n' +
+                  'Please:\n' +
+                  '1. Register UE with AMF (NAS registration)\n' +
+                  '2. Establish PDU session\n' +
+                  '3. Ensure GTP tunnel is active');
+            return;
+        }
+
+        // Collect logs from log engine
+        const allLogs = [];
+        const allNFs = window.dataStore?.getAllNFs() || [];
+        
+        // Find related NFs
+        const gNB = allNFs.find(n => n.type === 'gNB');
+        const amf = allNFs.find(n => n.type === 'AMF');
+        const upf = allNFs.find(n => n.type === 'UPF' && n.id === ue.config.pduSession?.upfId);
+        const smf = allNFs.find(n => n.type === 'SMF');
+
+        // Collect NGAP logs (gNB <-> AMF)
+        if (gNB && amf && window.logEngine) {
+            const ngapLogs = window.logEngine.logs.get(gNB.id) || [];
+            const amfLogs = window.logEngine.logs.get(amf.id) || [];
+            
+            ngapLogs.forEach(log => {
+                if (log.message.includes('NGAP') || log.message.includes('NG Setup')) {
+                    allLogs.push({ ...log, category: 'NGAP', source: gNB.name });
+                }
+            });
+            
+            amfLogs.forEach(log => {
+                if (log.message.includes('NGAP') || log.message.includes('NG Setup')) {
+                    allLogs.push({ ...log, category: 'NGAP', source: amf.name });
+                }
+            });
+        }
+
+        // Collect NAS logs (UE <-> AMF)
+        if (window.logEngine) {
+            const ueLogs = window.logEngine.logs.get(ueId) || [];
+            const amfLogs = amf ? (window.logEngine.logs.get(amf.id) || []) : [];
+            
+            ueLogs.forEach(log => {
+                if (log.message.includes('NAS') || log.message.includes('Registration') || 
+                    log.message.includes('SUCI') || log.message.includes('Authentication')) {
+                    allLogs.push({ ...log, category: 'NAS', source: ue.name });
+                }
+            });
+            
+            amfLogs.forEach(log => {
+                if (log.message.includes('NAS') || log.message.includes('Registration') || 
+                    log.message.includes('SUCI') || log.message.includes('Authentication')) {
+                    allLogs.push({ ...log, category: 'NAS', source: amf.name });
+                }
+            });
+        }
+
+        // Collect GTP-U logs (gNB <-> UPF)
+        if (gNB && upf && window.logEngine) {
+            const gnbLogs = window.logEngine.logs.get(gNB.id) || [];
+            const upfLogs = window.logEngine.logs.get(upf.id) || [];
+            
+            gnbLogs.forEach(log => {
+                if (log.message.includes('GTP-U') || log.message.includes('GTP') || 
+                    log.message.includes('tunnel') || log.message.includes('N3')) {
+                    allLogs.push({ ...log, category: 'GTP-U', source: gNB.name });
+                }
+            });
+            
+            upfLogs.forEach(log => {
+                if (log.message.includes('GTP-U') || log.message.includes('GTP') || 
+                    log.message.includes('tunnel') || log.message.includes('N3')) {
+                    allLogs.push({ ...log, category: 'GTP-U', source: upf.name });
+                }
+            });
+        }
+
+        // Collect PDU Session logs
+        if (window.logEngine) {
+            const ueLogs = window.logEngine.logs.get(ueId) || [];
+            const smfLogs = smf ? (window.logEngine.logs.get(smf.id) || []) : [];
+            const upfLogs = upf ? (window.logEngine.logs.get(upf.id) || []) : [];
+            
+            ueLogs.forEach(log => {
+                if (log.message.includes('PDU') || log.message.includes('session') || 
+                    log.message.includes('tun_ue') || log.message.includes('10.0.0.')) {
+                    allLogs.push({ ...log, category: 'PDU Session', source: ue.name });
+                }
+            });
+            
+            smfLogs.forEach(log => {
+                if (log.message.includes('PDU') || log.message.includes('session')) {
+                    allLogs.push({ ...log, category: 'PDU Session', source: smf.name });
+                }
+            });
+            
+            upfLogs.forEach(log => {
+                if (log.message.includes('PDU') || log.message.includes('session') || 
+                    log.message.includes('tun0') || log.message.includes('ogstun')) {
+                    allLogs.push({ ...log, category: 'PDU Session', source: upf.name });
+                }
+            });
+        }
+
+        // Sort logs by timestamp
+        allLogs.sort((a, b) => a.timestamp - b.timestamp);
+
+        if (allLogs.length === 0) {
+            alert('⚠️ No Logs Available!\n\n' +
+                  'No network logs found for this UE.\n\n' +
+                  'Please ensure:\n' +
+                  '1. UE is registered with AMF\n' +
+                  '2. PDU session is established\n' +
+                  '3. Network functions are connected and operational');
+            return;
+        }
+
+        // Format and display logs
+        let logReport = '═══════════════════════════════════════════════════════\n';
+        logReport += `NETWORK LOG COLLECTION REPORT\n`;
+        logReport += `UE: ${ue.name} (${ue.config.subscriberImsi || 'N/A'})\n`;
+        logReport += `Timestamp: ${new Date().toLocaleString()}\n`;
+        logReport += `═══════════════════════════════════════════════════════\n\n`;
+
+        // Group by category
+        const categories = ['NGAP', 'NAS', 'GTP-U', 'PDU Session'];
+        categories.forEach(category => {
+            const categoryLogs = allLogs.filter(log => log.category === category);
+            if (categoryLogs.length > 0) {
+                logReport += `\n[${category} LOGS] (${categoryLogs.length} entries)\n`;
+                logReport += '─────────────────────────────────────────────────────\n';
+                categoryLogs.forEach(log => {
+                    const time = new Date(log.timestamp).toLocaleTimeString();
+                    logReport += `[${time}] ${log.source} | ${log.level} | ${log.message}\n`;
+                    if (log.details && Object.keys(log.details).length > 0) {
+                        Object.entries(log.details).forEach(([key, value]) => {
+                            logReport += `  └─ ${key}: ${value}\n`;
+                        });
+                    }
+                });
+                logReport += '\n';
+            }
+        });
+
+        logReport += '═══════════════════════════════════════════════════════\n';
+        logReport += `Total Logs Collected: ${allLogs.length}\n`;
+        logReport += '═══════════════════════════════════════════════════════\n';
+
+        // Display in alert (or could be exported to file)
+        const logWindow = window.open('', '_blank', 'width=800,height=600');
+        if (logWindow) {
+            logWindow.document.write(`<pre style="font-family: monospace; padding: 20px;">${logReport}</pre>`);
+            logWindow.document.close();
+        } else {
+            // Fallback to alert if popup blocked
+            alert(logReport.substring(0, 2000) + (logReport.length > 2000 ? '\n\n... (truncated, see console for full report)' : ''));
+            console.log('═══════════════════════════════════════════════════════');
+            console.log('NETWORK LOG COLLECTION REPORT');
+            console.log('═══════════════════════════════════════════════════════');
+            console.log(logReport);
+        }
+
+        // Log the collection event
+        if (window.logEngine) {
+            window.logEngine.addLog(ueId, 'SUCCESS',
+                'Network logs collected successfully', {
+                totalLogs: allLogs.length,
+                categories: categories.filter(cat => allLogs.some(log => log.category === cat)),
+                reportGenerated: true
+            });
+        }
+    }
+
+    /**
+     * Get bus at position (for clicking)
+     */
     getBusAtPosition(x, y) {
         const allBuses = window.dataStore?.getAllBuses() || [];
 
         for (const bus of allBuses) {
-            const tolerance = 30;
+            const tolerance = 30; // Increased for easier clicking
 
             if (bus.orientation === 'horizontal') {
                 if (x >= bus.position.x &&
@@ -3140,1784 +4266,560 @@ if (clickedInterface) {
 
         return null;
     }
-/**
- * Check if click is on N1 or N2 label area
- * @param {number} x - X coordinate
- * @param {number} y - Y coordinate  
- * @returns {Object|null} Interface info if clicked, null otherwise
- */
-isClickOnInterfaceLabel(x, y) {
-    // Check N1 Interface
-    if (window.interfaceManager && window.interfaceManager.isInterfaceDeployed('N1')) {
-        const n1Config = window.interfaceManager.getN1Configuration();
-        if (n1Config && n1Config.nfs) {
-            const { UE, gNB, AMF } = n1Config.nfs;
-            
-            const connections = window.dataStore?.getAllConnections() || [];
-            
-            // Find N1-related connections (blue lines)
-            const n1Connections = connections.filter(conn => {
-                return conn.options && 
-                       conn.options.color === '#3498db' && 
-                       (conn.options.label === 'N1 (NAS/RRC)' || conn.options.label === 'N1') &&
-                       (
-                           (conn.sourceId === UE?.id && conn.targetId === gNB?.id) ||
-                           (conn.sourceId === gNB?.id && conn.targetId === AMF?.id)
-                       );
-            });
-
-            // Check N1 labels
-            for (const conn of n1Connections) {
-                if (this.isClickOnConnectionLabel(x, y, conn)) {
-                    console.log('✅ Click detected on N1 label');
-                    return { interface: 'N1', connection: conn };
-                }
-            }
-        }
-    }
-
-    // Check N2 Interface
-    if (window.interfaceManager && window.interfaceManager.isInterfaceDeployed('N2')) {
-        const n2Config = window.interfaceManager.getN2Configuration();
-        if (n2Config && n2Config.nfs) {
-            const { gNB, AMF } = n2Config.nfs;
-            
-            const connections = window.dataStore?.getAllConnections() || [];
-            
-            // Find N2-related connection (pink line)
-            const n2Connections = connections.filter(conn => {
-                return conn.options && 
-                       conn.options.color === '#e91e63' && 
-                       conn.options.label === 'N2 (NGAP)' &&
-                       conn.sourceId === gNB?.id && 
-                       conn.targetId === AMF?.id;
-            });
-
-            // Check N2 label
-            for (const conn of n2Connections) {
-                if (this.isClickOnConnectionLabel(x, y, conn)) {
-                    console.log('✅ Click detected on N2 label');
-                    return { interface: 'N2', connection: conn };
-                }
-            }
-        }
-    }
-
-// Check N3 Interface 
-if (window.interfaceManager && window.interfaceManager.isInterfaceDeployed('N3')) {
-    const n3Config = window.interfaceManager.getN3Configuration();
-    if (n3Config && n3Config.nfs) {
-        const { gNB, UPF } = n3Config.nfs;
-        
-        const connections = window.dataStore?.getAllConnections() || [];
-        
-        // Find N3-related connection (orange line with "N3 Tunnel" label)
-        const n3Connections = connections.filter(conn => {
-            return conn.options && 
-                   conn.options.color === '#f39c12' && 
-                   conn.options.label === 'N3 Tunnel' &&
-                   conn.sourceId === gNB?.id && 
-                   conn.targetId === UPF?.id;
-        });
-
-        // Check N3 label
-        for (const conn of n3Connections) {
-            if (this.isClickOnConnectionLabel(x, y, conn)) {
-                console.log('✅ Click detected on N3 Tunnel label');
-                return { interface: 'N3', connection: conn };
-            }
-        }
-    }
-}
-
-// Check N4 Interface
-if (window.interfaceManager && window.interfaceManager.isInterfaceDeployed('N4')) {
-    const n4Config = window.interfaceManager.getN4Configuration();
-    if (n4Config && n4Config.nfs) {
-        const { SMF, UPF } = n4Config.nfs;
-        
-        const connections = window.dataStore?.getAllConnections() || [];
-        
-        // Find N4-related connection (red line with "N4 (PFCP)" label)
-        const n4Connections = connections.filter(conn => {
-            return conn.options && 
-                   conn.options.color === '#e74c3c' && 
-                   conn.options.label === 'N4 (PFCP)' &&
-                   conn.sourceId === SMF?.id && 
-                   conn.targetId === UPF?.id;
-        });
-
-        // Check N4 label
-        for (const conn of n4Connections) {
-            if (this.isClickOnConnectionLabel(x, y, conn)) {
-                console.log('✅ Click detected on N4 (PFCP) label');
-                return { interface: 'N4', connection: conn };
-            }
-        }
-    }
-}
-// Check N6 Interface 
-if (window.interfaceManager && window.interfaceManager.isInterfaceDeployed('N6')) {
-    const n6Config = window.interfaceManager.getN6Configuration();
-    if (n6Config && n6Config.nfs) {
-        const { UPF, DataNetwork } = n6Config.nfs;
-        
-        const connections = window.dataStore?.getAllConnections() || [];
-        
-        // Find N6-related connection (teal line with "N6" label)
-        const n6Connections = connections.filter(conn => {
-            return conn.options && 
-                   conn.options.color === '#16a085' && 
-                   conn.options.label === 'N6' &&
-                   conn.sourceId === UPF?.id && 
-                   conn.targetId === DataNetwork?.id;
-        });
-
-        // Check N6 label
-        for (const conn of n6Connections) {
-            if (this.isClickOnConnectionLabel(x, y, conn)) {
-                console.log('✅ Click detected on N6 label');
-                return { interface: 'N6', connection: conn };
-            }
-        }
-    }
-}
-
-// Check N5 Interface (AF-PCF direct connection)
-    if (window.interfaceManager && window.interfaceManager.isInterfaceDeployed('N5')) {
-        const n5Config = window.interfaceManager.getN5Configuration();
-        if (n5Config && n5Config.nfs) {
-            const { AF, PCF } = n5Config.nfs;
-            
-            const connections = window.dataStore?.getAllConnections() || [];
-            
-            // Find N5 direct connection (green dashed line)
-            const n5Connections = connections.filter(conn => {
-                return conn.options && 
-                       conn.options.color === '#2ecc71' && 
-                       conn.options.label === 'N5' &&
-                       conn.sourceId === AF?.id && 
-                       conn.targetId === PCF?.id;
-            });
-
-            // Check N5 label click
-            for (const conn of n5Connections) {
-                if (this.isClickOnConnectionLabel(x, y, conn)) {
-                    console.log('✅ Click detected on N5 label');
-                    return { interface: 'N5', connection: conn };
-                }
-            }
-        }
-    }
-
-// Check N7 Interface (SMF-PCF direct connection)
-    if (window.interfaceManager && window.interfaceManager.isInterfaceDeployed('N7')) {
-        const n7Config = window.interfaceManager.getN7Configuration();
-        if (n7Config && n7Config.nfs) {
-            const { SMF, PCF } = n7Config.nfs;
-            
-            const connections = window.dataStore?.getAllConnections() || [];
-            
-            // Find N7 direct connection (green dashed line)
-            const n7Connections = connections.filter(conn => {
-                return conn.options && 
-                       conn.options.color === '#2ecc71' && 
-                       conn.options.label === 'N7' &&
-                       conn.sourceId === SMF?.id && 
-                       conn.targetId === PCF?.id;
-            });
-
-            // Check N7 label click
-            for (const conn of n7Connections) {
-                if (this.isClickOnConnectionLabel(x, y, conn)) {
-                    console.log('✅ Click detected on N7 label');
-                    return { interface: 'N7', connection: conn };
-                }
-            }
-        }
-    }
-
-// Check N8 Interface (AMF-UDM direct connection)
-    if (window.interfaceManager && window.interfaceManager.isInterfaceDeployed('N8')) {
-        const n8Config = window.interfaceManager.getN8Configuration();
-        if (n8Config && n8Config.nfs) {
-            const { AMF, UDM } = n8Config.nfs;
-            
-            const connections = window.dataStore?.getAllConnections() || [];
-            
-            // Find N8 direct connection (green dashed line)
-const n8Connections = connections.filter(conn => {
-    return conn.options && 
-           conn.options.color === '#2ecc71' && 
-           conn.options.label === 'N8' &&
-           conn.sourceId === AMF?.id && 
-           conn.targetId === UDM?.id;
-});
-
-            // Check N8 label click
-            for (const conn of n8Connections) {
-                if (this.isClickOnConnectionLabel(x, y, conn)) {
-                    console.log('✅ Click detected on N8 label');
-                    return { interface: 'N8', connection: conn };
-                }
-            }
-        }
-    }
-
-// Check N10 Interface (SMF-UDM direct connection)
-    if (window.interfaceManager && window.interfaceManager.isInterfaceDeployed('N10')) {
-        console.log('✅ N10 is deployed, checking connections...');
-        const n10Config = window.interfaceManager.getN10Configuration();
-        if (n10Config && n10Config.nfs) {
-            const { SMF, UDM } = n10Config.nfs;
-            console.log('🔍 N10 Config:', { SMF: SMF?.name, UDM: UDM?.name });
-            
-            const connections = window.dataStore?.getAllConnections() || [];
-            
-            // Find N10 direct connection (green dashed line)
-            const n10Connections = connections.filter(conn => {
-                return conn.options && 
-                       conn.options.color === '#2ecc71' && 
-                       conn.options.label === 'N10' &&
-                       conn.sourceId === SMF?.id && 
-                       conn.targetId === UDM?.id;
-            });
-            
-            console.log('🎯 N10 connections found:', n10Connections.length);
-
-            // Check N10 label click
-            for (const conn of n10Connections) {
-                if (this.isClickOnConnectionLabel(x, y, conn)) {
-                    console.log('✅ Click detected on N10 label');
-                    return { interface: 'N10', connection: conn };
-                }
-            }
-        }
-    }
-
-// Check N11 Interface (AMF-SMF direct connection)  
-if (window.interfaceManager && window.interfaceManager.isInterfaceDeployed('N11')) {
-    const n11Config = window.interfaceManager.getN11Configuration();
-    if (n11Config && n11Config.nfs) {
-        const { AMF, SMF } = n11Config.nfs;
-        
-        const connections = window.dataStore?.getAllConnections() || [];
-        
-        // Find N11 direct connection (green dashed line)
-        const n11Connections = connections.filter(conn => {
-            return conn.options && 
-                   conn.options.color === '#2ecc71' && 
-                   conn.options.label === 'N11' &&
-                   conn.sourceId === AMF?.id && 
-                   conn.targetId === SMF?.id;
-        });
-
-        // Check N11 label click
-        for (const conn of n11Connections) {
-            if (this.isClickOnConnectionLabel(x, y, conn)) {
-                console.log('✅ Click detected on N11 label');
-                return { interface: 'N11', connection: conn };
-            }
-        }
-    }
-}
-
-// Check N12 Interface (AMF-AUSF direct connection)  
-if (window.interfaceManager && window.interfaceManager.isInterfaceDeployed('N12')) {
-    const n12Config = window.interfaceManager.getN12Configuration();
-    if (n12Config && n12Config.nfs) {
-        const { AMF, AUSF } = n12Config.nfs;
-        
-        const connections = window.dataStore?.getAllConnections() || [];
-        
-        // Find N12 direct connection (green dashed line)
-        const n12Connections = connections.filter(conn => {
-            return conn.options && 
-                   conn.options.color === '#2ecc71' && 
-                   conn.options.label === 'N12' &&
-                   conn.sourceId === AMF?.id && 
-                   conn.targetId === AUSF?.id;
-        });
-
-        // Check N12 label click
-        for (const conn of n12Connections) {
-            if (this.isClickOnConnectionLabel(x, y, conn)) {
-                console.log('✅ Click detected on N12 label');
-                return { interface: 'N12', connection: conn };
-            }
-        }
-    }
-}
-
-// Check N13 Interface (AMF-NRF direct connection)  
-if (window.interfaceManager && window.interfaceManager.isInterfaceDeployed('N13')) {
-    const n13Config = window.interfaceManager.getN13Configuration();
-    if (n13Config && n13Config.nfs) {
-        const { AMF, NRF } = n13Config.nfs;
-        
-        const connections = window.dataStore?.getAllConnections() || [];
-        
-        // Find N13 direct connection (green dashed line)
-        const n13Connections = connections.filter(conn => {
-            return conn.options && 
-                   conn.options.color === '#2ecc71' && 
-                   conn.options.label === 'N13' &&
-                   conn.sourceId === AMF?.id && 
-                   conn.targetId === NRF?.id;
-        });
-
-        // Check N13 label click
-        for (const conn of n13Connections) {
-            if (this.isClickOnConnectionLabel(x, y, conn)) {
-                console.log('✅ Click detected on N13 label');
-                return { interface: 'N13', connection: conn };
-            }
-        }
-    }
-}
-
-// Check N9 Interface (UPF loopback)
-if (window.interfaceManager && window.interfaceManager.isInterfaceDeployed('N9')) {
-    const n9Config = window.interfaceManager.getN9Configuration();
-    if (n9Config && n9Config.nfs) {
-        const { UPF } = n9Config.nfs;
-        if (UPF) {
-            // N9 label is at: x = UPF.x + width (40) + 18, y = UPF.y + height (40)/2
-            const labelX = UPF.position.x + 40 + 18;
-            const labelY = UPF.position.y + 20;
-            const labelWidth = 20;
-            const labelHeight = 12;
-            
-            if (x >= labelX - labelWidth/2 && 
-                x <= labelX + labelWidth/2 &&
-                y >= labelY - labelHeight/2 && 
-                y <= labelY + labelHeight/2) {
-                console.log('✅ Click detected on N9 label');
-                return { interface: 'N9' };
-            }
-        }
-    }
-}
-
-return null;
-}
-
-/**
- * Helper method to check if click is on a connection label
- */
-isClickOnConnectionLabel(x, y, conn) {
-    const sourceNF = window.dataStore.getNFById(conn.sourceId);
-    const targetNF = window.dataStore.getNFById(conn.targetId);
-    
-    if (!sourceNF || !targetNF) return false;
-
-    // Connection line coordinates
-    const x1 = sourceNF.position.x + 20;
-    const y1 = sourceNF.position.y + 20;
-    const x2 = targetNF.position.x + 20;
-    const y2 = targetNF.position.y + 20;
-
-    // Calculate label position
-    let labelX = (x1 + x2) / 2;
-    let labelY = (y1 + y2) / 2;
-    
-    if (conn.options.lineOffset) {
-        const angle = Math.atan2(y2 - y1, x2 - x1);
-        const perpAngle = angle + Math.PI / 2;
-        const offset = conn.options.lineOffset;
-        
-        labelX += offset * Math.cos(perpAngle);
-        labelY += offset * Math.sin(perpAngle);
-    }
-
-    // Check if click is in label area
-    const labelWidth = 80;  // Wider for "N2 (NGAP)"
-    const labelHeight = 20;
-    
-    return (x >= labelX - labelWidth/2 && 
-            x <= labelX + labelWidth/2 &&
-            y >= labelY - labelHeight/2 && 
-            y <= labelY + labelHeight/2);
-}
-
-/**
- * Calculate distance from point to line segment
- * @param {number} px - Point X
- * @param {number} py - Point Y
- * @param {number} x1 - Line start X
- * @param {number} y1 - Line start Y
- * @param {number} x2 - Line end X
- * @param {number} y2 - Line end Y
- * @returns {number} Distance in pixels
- */
-distanceToLineSegment(px, py, x1, y1, x2, y2) {
-    const A = px - x1;
-    const B = py - y1;
-    const C = x2 - x1;
-    const D = y2 - y1;
-
-    const dot = A * C + B * D;
-    const lenSq = C * C + D * D;
-    let param = -1;
-
-    if (lenSq != 0) {
-        param = dot / lenSq;
-    }
-
-    let xx, yy;
-
-    if (param < 0) {
-        xx = x1;
-        yy = y1;
-    } else if (param > 1) {
-        xx = x2;
-        yy = y2;
-    } else {
-        xx = x1 + param * C;
-        yy = y1 + param * D;
-    }
-
-    const dx = px - xx;
-    const dy = py - yy;
-
-    return Math.sqrt(dx * dx + dy * dy);
-}
 
     /**
-     * Update NFs from 5g.json topology after interface deployment
+     * Get PDU session status HTML for UE config panel
+     * @param {Object} nf - UE Network Function
+     * @returns {string} HTML string for session status
      */
-    async updateNFsFromTopology(interfaceId) {
-        try {
-            // Load 5g.json topology
-            const topologyPaths = ['../5g.json', './5g.json', '/5g.json', '5g.json'];
-            let topology = null;
-            
-            for (const path of topologyPaths) {
-                try {
-                    const response = await fetch(path);
-                    if (response.ok) {
-                        topology = await response.json();
-                        break;
-                    }
-                } catch (e) {
-                    console.warn(`Failed to load topology from ${path}:`, e);
-                }
+    getSessionStatusHTML(nf) {
+        const state = nf.config?.pduSessionState || 'IDLE';
+        const statusIcons = {
+            'IDLE': '⚪',
+            'ESTABLISHING': '🔄',
+            'ACTIVE': '🟢',
+            'RELEASING': '🔄',
+            'RELEASED': '🔴'
+        };
+        const statusLabels = {
+            'IDLE': 'No Session',
+            'ESTABLISHING': 'Establishing...',
+            'ACTIVE': 'Session Active',
+            'RELEASING': 'Releasing...',
+            'RELEASED': 'Session Released'
+        };
+        return `${statusIcons[state] || '⚪'} ${statusLabels[state] || 'Unknown'}`;
+    }
+
+    // ==========================================
+    // CONNECTION MANAGEMENT MODE
+    // ==========================================
+
+    /**
+     * Setup Connection Management Mode UI handlers
+     */
+    setupPDUSessionMode() {
+        // Main toggle button
+        const btnPDU = document.getElementById('btn-pdu-session');
+        if (btnPDU) {
+            btnPDU.addEventListener('click', () => this.togglePDUMode());
+        }
+
+        // Close buttons
+        document.getElementById('btn-close-pdu-messages')?.addEventListener('click', () => this.togglePDUMode(false));
+        document.getElementById('btn-close-pdu-process')?.addEventListener('click', () => this.togglePDUMode(false));
+
+        // Step buttons
+        for (let i = 1; i <= 13; i++) {
+            const btn = document.getElementById(`btn-step-${i}`);
+            if (btn) {
+                btn.addEventListener('click', () => this.executePDUStep(i));
             }
-            
-            if (!topology) {
-                console.warn('⚠️ Could not load 5g.json, skipping topology update');
+        }
+
+        // Reset button
+        document.getElementById('btn-reset-pdu-steps')?.addEventListener('click', () => this.resetPDUSteps());
+
+        console.log('📡 Connection Management Mode handlers initialized');
+    }
+
+    /**
+     * Toggle Connection Management Mode
+     * @param {boolean|null} forceState - Optional force state
+     */
+    togglePDUMode(forceState = null) {
+        this.pduSessionMode = forceState !== null ? forceState : !this.pduSessionMode;
+
+        const btnPDU = document.getElementById('btn-pdu-session');
+        const normalLeftSidebar = document.getElementById('nf-sidebar');
+        const normalRightSidebar = document.getElementById('config-sidebar');
+        const pduMessagesPanel = document.getElementById('pdu-messages-panel');
+        const pduProcessPanel = document.getElementById('pdu-process-panel');
+
+        if (this.pduSessionMode) {
+            // Enter CM mode
+            btnPDU?.classList.add('active');
+            normalLeftSidebar?.classList.add('hidden');
+            normalRightSidebar?.classList.add('hidden');
+            pduMessagesPanel?.classList.remove('hidden');
+            pduProcessPanel?.classList.remove('hidden');
+
+            // Validate and prepare
+            this.preparePDUSession();
+
+            console.log('📡 Entered Connection Management Mode');
+        } else {
+            // Exit CM mode
+            btnPDU?.classList.remove('active');
+            normalLeftSidebar?.classList.remove('hidden');
+            normalRightSidebar?.classList.remove('hidden');
+            pduMessagesPanel?.classList.add('hidden');
+            pduProcessPanel?.classList.add('hidden');
+
+            console.log('📡 Exited Connection Management Mode');
+        }
+    }
+
+    /**
+     * Prepare Connection Management by validating topology
+     */
+    preparePDUSession() {
+        // Find UE
+        const allNFs = window.dataStore?.getAllNFs() || [];
+        const ue = allNFs.find(nf => nf.type === 'UE' && nf.status === 'stable');
+
+        if (!ue) {
+            this.showPDUError('No registered UE found. Please add and register a UE first.');
+            return;
+        }
+
+        // Find gNB connected to UE
+        const ueConnections = window.dataStore?.getConnectionsForNF(ue.id) || [];
+        let gnb = null;
+        for (const conn of ueConnections) {
+            const otherId = conn.sourceId === ue.id ? conn.targetId : conn.sourceId;
+            const otherNF = window.dataStore?.getNFById(otherId);
+            if (otherNF?.type === 'gNB' && otherNF.status === 'stable') {
+                gnb = otherNF;
+                break;
+            }
+        }
+
+        if (!gnb) {
+            this.showPDUError('No gNB found connected to UE. Please connect UE to gNB first.');
+            return;
+        }
+
+        // Validate using session manager
+        if (window.sessionManager) {
+            const validation = window.sessionManager.validatePrerequisites(ue.id);
+            if (!validation.valid) {
+                this.showPDUError(`Validation failed: ${validation.error}`);
                 return;
             }
-            
-            // Get interface configuration
-            const interfaceConfig = window.interfaceManager?.deployedInterfaces.get(interfaceId);
-            if (!interfaceConfig || !interfaceConfig.nfs) {
-                return;
-            }
-            
-            // Update each NF to match 5g.json
-            Object.entries(interfaceConfig.nfs).forEach(([type, nf]) => {
-                if (nf && nf.type !== 'DataNetwork') {
-                    // Find matching NF in topology
-                    const jsonNF = topology.nfs.find(n => n.type === type);
-                    if (jsonNF) {
-                        // Update position, IP, port, and name from 5g.json
-                        nf.position = jsonNF.position;
-                        nf.config.ipAddress = jsonNF.config.ipAddress;
-                        nf.config.port = jsonNF.config.port;
-                        nf.name = jsonNF.name;
-                        nf.status = jsonNF.status || 'stable';
-                        
-                        // Update in dataStore
-                        if (window.dataStore) {
-                            window.dataStore.updateNF(nf.id, {
-                                position: nf.position,
-                                config: nf.config,
-                                name: nf.name,
-                                status: nf.status
-                            });
-                        }
-                        
-                        console.log(`✅ Updated ${nf.name} from 5g.json topology`);
-                    }
-                } else if (nf && nf.type === 'DataNetwork') {
-                    // Handle DataNetwork separately
-                    const jsonDataNetwork = topology.nfs.find(n => n.type === 'DataNetwork');
-                    if (jsonDataNetwork) {
-                        nf.position = jsonDataNetwork.position;
-                        nf.config = jsonDataNetwork.config;
-                        nf.name = jsonDataNetwork.name;
-                        
-                        if (window.dataStore) {
-                            window.dataStore.updateNF(nf.id, {
-                                position: nf.position,
-                                config: nf.config,
-                                name: nf.name
-                            });
-                        }
-                        
-                        console.log(`✅ Updated ${nf.name} from 5g.json topology`);
-                    }
-                }
-            });
-            
-            // Render canvas after updates
-            if (window.canvasRenderer) {
-                window.canvasRenderer.render();
-            }
-        } catch (error) {
-            console.error('❌ Error updating NFs from topology:', error);
+
+            // Store NF references for step execution
+            this.pduSessionData = {
+                ueId: ue.id,
+                ue: validation.nfs.ue,
+                amf: validation.nfs.amf,
+                smf: validation.nfs.smf,
+                upf: validation.nfs.upf,
+                gnb: gnb,
+                pduSessionId: Math.floor(Math.random() * 255) + 1,
+                assignedIP: null,
+                tunnelId: null
+            };
+
+            // Reset steps and enable step 1
+            this.resetPDUSteps();
+            document.getElementById('btn-step-1')?.removeAttribute('disabled');
+
+            console.log('✅ Connection Management topology validated:', this.pduSessionData);
         }
     }
 
     /**
-     * Deploy Network Interface (with 5g.json topology support)
+     * Show error in PDU messages panel
      */
-    async deployNetworkInterface(interfaceId) {
-    console.log('🚀 Deploying interface:', interfaceId);
-
-    if (this.isInterfaceDeploying) {
-        alert('Please wait — an interface deployment is already in progress.');
-        return;
-    }
-
-    // Check if already deployed
-    if (window.interfaceManager && window.interfaceManager.isInterfaceDeployed(interfaceId)) {
-        alert(`ℹ️ ${interfaceId} Interface Already Deployed!\n\nThis interface is already active in your network.`);
-        return;
-    }
-
-    const blockedBy = this.getBlockingInterface(interfaceId);
-    if (blockedBy) {
-        alert(
-            `Deploy interfaces in order.\n\n` +
-            `Please deploy ${blockedBy} before ${interfaceId}.`
-        );
-        return;
-    }
-
-    if (window.dockerTerminal) {
-        window.dockerTerminal.ensureOaiWorkshopNetwork();
-    }
-
-    this.isInterfaceDeploying = true;
-    this.updateInterfacePaletteState();
-
-    try {
-    if (interfaceId === 'N1') {
-        if (window.interfaceManager) {
-            await window.interfaceManager.deployN1Interface();
-            await this.updateNFsFromTopology(interfaceId);
-            this.showN1InterfaceConfiguration();
-        } else {
-            console.error('❌ InterfaceManager not available');
-            alert('Interface Manager not initialized. Please refresh the page.');
-        }
-    } else if (interfaceId === 'N2') {
-        if (window.interfaceManager) {
-            await window.interfaceManager.deployN2Interface();
-            await this.updateNFsFromTopology(interfaceId);
-            this.showN2InterfaceConfiguration();
-        } else {
-            console.error('❌ InterfaceManager not available');
-            alert('Interface Manager not initialized. Please refresh the page.');
-        }
-    } else if (interfaceId === 'N3') {
-    if (window.interfaceManager) {
-        await window.interfaceManager.deployN3Interface();
-        await this.updateNFsFromTopology(interfaceId);
-        this.showN3InterfaceConfiguration();
-    } else {
-        console.error('❌ InterfaceManager not available');
-        alert('Interface Manager not initialized. Please refresh the page.');
-    }
-} else if (interfaceId === 'N4') {
-    if (window.interfaceManager) {
-        await window.interfaceManager.deployN4Interface();
-        await this.updateNFsFromTopology(interfaceId);
-        this.showN4InterfaceConfiguration();
-    } else {
-        console.error('❌ InterfaceManager not available');
-        alert('Interface Manager not initialized. Please refresh the page.');
-    }
-} else if (interfaceId === 'N5') {
-    if (window.interfaceManager) {
-        await window.interfaceManager.deployN5Interface();
-        await this.updateNFsFromTopology(interfaceId);
-        this.showN5InterfaceConfiguration();
-    } else {
-        console.error('❌ InterfaceManager not available');
-        alert('Interface Manager not initialized. Please refresh the page.');
-    }
-} else if (interfaceId === 'N6') {
-    if (window.interfaceManager) {
-        await window.interfaceManager.deployN6Interface();
-        await this.updateNFsFromTopology(interfaceId);
-        this.showN6InterfaceConfiguration();
-    } else {
-        console.error('❌ InterfaceManager not available');
-        alert('Interface Manager not initialized. Please refresh the page.');
-    }
-} else if (interfaceId === 'N7') {
-        if (window.interfaceManager) {
-            await window.interfaceManager.deployN7Interface();
-            await this.updateNFsFromTopology(interfaceId);
-            this.showN7InterfaceConfiguration();
-        } else {
-            console.error('❌ InterfaceManager not available');
-            alert('Interface Manager not initialized. Please refresh the page.');
-        }
-    } else if (interfaceId === 'N8') {
-    if (window.interfaceManager) {
-        await window.interfaceManager.deployN8Interface();
-        await this.updateNFsFromTopology(interfaceId);
-        this.showN8InterfaceConfiguration();
-    } else {
-        console.error('❌ InterfaceManager not available');
-        alert('Interface Manager not initialized. Please refresh the page.');
-    }
-} else if (interfaceId === 'N9') {
-    if (window.interfaceManager) {
-        await window.interfaceManager.deployN9Interface();
-        await this.updateNFsFromTopology(interfaceId);
-        this.showN9InterfaceConfiguration();
-    } else {
-        console.error('❌ InterfaceManager not available');
-        alert('Interface Manager not initialized. Please refresh the page.');
-    }
-} else if (interfaceId === 'N10') {
-    if (window.interfaceManager) {
-        await window.interfaceManager.deployN10Interface();
-        await this.updateNFsFromTopology(interfaceId);
-        this.showN10InterfaceConfiguration();
-    } else {
-        console.error('❌ InterfaceManager not available');
-        alert('Interface Manager not initialized. Please refresh the page.');
-    }
-} else if (interfaceId === 'N11') {  
-    if (window.interfaceManager) {
-        await window.interfaceManager.deployN11Interface();
-        await this.updateNFsFromTopology(interfaceId);
-        this.showN11InterfaceConfiguration();
-    } else {
-        console.error('❌ InterfaceManager not available');
-        alert('Interface Manager not initialized. Please refresh the page.');
-    }
-} else if (interfaceId === 'N12') {  
-    if (window.interfaceManager) {
-        await window.interfaceManager.deployN12Interface();
-        await this.updateNFsFromTopology(interfaceId);
-        this.showN12InterfaceConfiguration();
-    } else {
-        console.error('❌ InterfaceManager not available');
-        alert('Interface Manager not initialized. Please refresh the page.');
-    }
-} else if (interfaceId === 'N13') {  
-    if (window.interfaceManager) {
-        await window.interfaceManager.deployN13Interface();
-        await this.updateNFsFromTopology(interfaceId);
-        this.showN13InterfaceConfiguration();
-    } else {
-        console.error('❌ InterfaceManager not available');
-        alert('Interface Manager not initialized. Please refresh the page.');
-    }
-}   else {
-        alert(`ℹ️ ${interfaceId} Interface\n\nThis interface will be implemented in the next phase.\n\nCurrently N1 and N2 interfaces are available.`);
-    }
-
-    if (window.canvasRenderer) {
-        window.canvasRenderer.render();
-    }
-    } finally {
-        this.isInterfaceDeploying = false;
-        this.updateInterfacePaletteState();
-    }
-}
-
-
-    /**
- * Show N1 Interface Configuration Panel
- */
-showN1InterfaceConfiguration() {
-    const configForm = document.getElementById('config-form');
-    if (!configForm) return;
-
-    if (!window.interfaceManager) {
-        console.error('❌ InterfaceManager not available');
-        return;
-    }
-
-    const n1Config = window.interfaceManager.getN1Configuration();
-    const interfaceData = n1Config.interface;
-    const { UE, gNB, AMF } = n1Config.nfs;
-
-    configForm.innerHTML = `
-        <h4>📱 ${interfaceData.name} Configuration</h4>
-        
-        <div style="background: rgba(52, 152, 219, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #3498db;">
-            <h5 style="color: #3498db; margin-bottom: 10px;">Interface Details</h5>
-            <div style="font-size: 12px; line-height: 1.8;">
-                <strong>Name:</strong> ${interfaceData.name}<br>
-                <strong>From:</strong> ${interfaceData.from}<br>
-                <strong>To:</strong> ${interfaceData.to}<br>
-                <strong>Protocol:</strong> ${interfaceData.protocol}<br>
-                <strong>Type:</strong> ${interfaceData.type}<br>
-                <strong>Status:</strong> <span style="color: #2ecc71;">●</span> Active
-            </div>
-        </div>
-
-        <div style="background: rgba(46, 204, 113, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #2ecc71;">
-            <h5 style="color: #2ecc71; margin-bottom: 10px;">Message Flow</h5>
-            <div style="font-size: 11px; line-height: 2;">
-                ${interfaceData.flow.map(step => `<div>✓ ${step}</div>`).join('')}
-            </div>
-        </div>
-
-        ${this.generateCleanNFConfigHTML(UE, 'UE')}
-        ${this.generateCleanNFConfigHTML(gNB, 'gNB')}
-        ${this.generateCleanNFConfigHTML(AMF, 'AMF')}
-
-        <button class="btn btn-secondary btn-block" id="btn-close-config" style="margin-top: 20px;">Close Configuration</button>
-    `;
-
-    const closeBtn = document.getElementById('btn-close-config');
-    if (closeBtn) {
-        closeBtn.addEventListener('click', () => {
-            this.hideNFConfigPanel();
-        });
-    }
-}
-
-/**
- * Show N2 Interface Configuration Panel
- */
-showN2InterfaceConfiguration() {
-    const configForm = document.getElementById('config-form');
-    if (!configForm) return;
-
-    if (!window.interfaceManager) {
-        console.error('❌ InterfaceManager not available');
-        return;
-    }
-
-    const n2Config = window.interfaceManager.getN2Configuration();
-    if (!n2Config) {
-        alert('N2 Interface not deployed yet. Please deploy N2 first.');
-        return;
-    }
-
-    const interfaceData = n2Config.interface;
-    const { gNB, AMF } = n2Config.nfs;
-
-    configForm.innerHTML = `
-        <h4>📡 ${interfaceData.name} Configuration</h4>
-        
-        <div style="background: rgba(233, 30, 99, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #e91e63;">
-            <h5 style="color: #e91e63; margin-bottom: 10px;">Interface Details</h5>
-            <div style="font-size: 12px; line-height: 1.8;">
-                <strong>Name:</strong> ${interfaceData.name}<br>
-                <strong>From:</strong> ${interfaceData.from}<br>
-                <strong>To:</strong> ${interfaceData.to}<br>
-                <strong>Protocol:</strong> ${interfaceData.protocol}<br>
-                <strong>Type:</strong> ${interfaceData.type}<br>
-                <strong>Status:</strong> <span style="color: #2ecc71;">●</span> Active
-            </div>
-        </div>
-
-        ${this.generateCleanNFConfigHTML(gNB, 'gNB')}
-        ${this.generateCleanNFConfigHTML(AMF, 'AMF')}
-
-        <button class="btn btn-secondary btn-block" id="btn-close-config" style="margin-top: 20px;">Close Configuration</button>
-    `;
-
-    const closeBtn = document.getElementById('btn-close-config');
-    if (closeBtn) {
-        closeBtn.addEventListener('click', () => {
-            this.hideNFConfigPanel();
-        });
-    }
-}
-
-/**
- * Show N3 Interface Configuration Panel
- */
-showN3InterfaceConfiguration() {
-    const configForm = document.getElementById('config-form');
-    if (!configForm) return;
-
-    if (!window.interfaceManager) {
-        console.error('❌ InterfaceManager not available');
-        return;
-    }
-
-    const n3Config = window.interfaceManager.getN3Configuration();
-    if (!n3Config) {
-        alert('N3 Interface not deployed yet. Please deploy N3 first.');
-        return;
-    }
-
-    const interfaceData = n3Config.interface;
-    const { UE, gNB, UPF, DataNetwork } = n3Config.nfs;
-
-    configForm.innerHTML = `
-        <h4>📡 ${interfaceData.name} Configuration</h4>
-        
-        <div style="background: rgba(243, 156, 18, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #f39c12;">
-            <h5 style="color: #f39c12; margin-bottom: 10px;">Interface Details</h5>
-            <div style="font-size: 12px; line-height: 1.8;">
-                <strong>Name:</strong> ${interfaceData.name}<br>
-                <strong>From:</strong> ${interfaceData.from}<br>
-                <strong>To:</strong> ${interfaceData.to}<br>
-                <strong>Protocol:</strong> ${interfaceData.protocol}<br>
-                <strong>Type:</strong> ${interfaceData.type}<br>
-                <strong>Status:</strong> <span style="color: #2ecc71;">●</span> Active
-            </div>
-        </div>
-
-        <div style="background: rgba(52, 152, 219, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #3498db;">
-            <h5 style="color: #3498db; margin-bottom: 10px;">Data Path Flow</h5>
-            <div style="font-size: 11px; line-height: 2;">
-                <div>✓ UE generates user data (browsing, streaming)</div>
-                <div>✓ gNB encapsulates data in GTP-U tunnel</div>
-                <div>✓ Data flows through N3 tunnel to UPF</div>
-                <div>✓ UPF decapsulates and routes to Internet (N6)</div>
-                <div>✓ Return path: Internet → UPF → gNB → UE</div>
-            </div>
-        </div>
-
-        <div style="background: rgba(46, 204, 113, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #2ecc71;">
-            <h5 style="color: #2ecc71; margin-bottom: 10px;">N3 Tunnel Details</h5>
-            <div style="font-size: 11px; line-height: 1.8;">
-                <strong>Tunnel Protocol:</strong> GTP-U (GPRS Tunneling Protocol - User Plane)<br>
-                <strong>Encapsulation:</strong> User IP packets in GTP-U headers<br>
-                <strong>QoS Support:</strong> Per-flow QoS marking via 5QI<br>
-                <strong>Tunnel Endpoint:</strong> gNB ↔ UPF<br>
-                <strong>Purpose:</strong> Transparent user data transport<br>
-                <strong>Security:</strong> IPsec optional for N3 protection
-            </div>
-        </div>
-
-        ${this.generateCleanNFConfigHTML(UE, 'UE')}
-        ${this.generateCleanNFConfigHTML(gNB, 'gNB')}
-        ${this.generateCleanNFConfigHTML(UPF, 'UPF')}
-        ${this.generateDataNetworkConfigHTML(DataNetwork)}
-
-        <button class="btn btn-secondary btn-block" id="btn-close-config" style="margin-top: 20px;">Close Configuration</button>
-    `;
-
-    const closeBtn = document.getElementById('btn-close-config');
-    if (closeBtn) {
-        closeBtn.addEventListener('click', () => {
-            this.hideNFConfigPanel();
-        });
-    }
-}
-
-/**
- * Show N4 Interface Configuration Panel
- */
-showN4InterfaceConfiguration() {
-    const configForm = document.getElementById('config-form');
-    if (!configForm) return;
-
-    if (!window.interfaceManager) {
-        console.error('❌ InterfaceManager not available');
-        return;
-    }
-
-    const n4Config = window.interfaceManager.getN4Configuration();
-    if (!n4Config) {
-        alert('N4 Interface not deployed yet. Please deploy N4 first.');
-        return;
-    }
-
-    const interfaceData = n4Config.interface;
-    const { UE, gNB, AMF, SMF, UPF } = n4Config.nfs;
-
-    configForm.innerHTML = `
-        <h4>⚙️ ${interfaceData.name} Configuration</h4>
-        
-        <div style="background: rgba(231, 76, 60, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #e74c3c;">
-            <h5 style="color: #e74c3c; margin-bottom: 10px;">Interface Details</h5>
-            <div style="font-size: 12px; line-height: 1.8;">
-                <strong>Name:</strong> ${interfaceData.name}<br>
-                <strong>From:</strong> ${interfaceData.from}<br>
-                <strong>To:</strong> ${interfaceData.to}<br>
-                <strong>Protocol:</strong> ${interfaceData.protocol}<br>
-                <strong>Type:</strong> ${interfaceData.type}<br>
-                <strong>Status:</strong> <span style="color: #2ecc71;">●</span> Active
-            </div>
-        </div>
-
-        <div style="background: rgba(52, 152, 219, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #3498db;">
-            <h5 style="color: #3498db; margin-bottom: 10px;">Control Path Flow</h5>
-            <div style="font-size: 11px; line-height: 2;">
-                <div>✓ UE initiates PDU Session Request</div>
-                <div>✓ Request flows: UE → gNB (N1) → AMF (N2)</div>
-                <div>✓ AMF forwards to SMF via Service Bus (Namf SBI)</div>
-                <div>✓ SMF programs UPF via N4 (PFCP)</div>
-                <div>✓ UPF installs packet forwarding rules</div>
-            </div>
-        </div>
-
-        <div style="background: rgba(231, 76, 60, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #e74c3c;">
-            <h5 style="color: #e74c3c; margin-bottom: 10px;">N4 (PFCP) Details</h5>
-            <div style="font-size: 11px; line-height: 1.8;">
-                <strong>Protocol:</strong> PFCP (Packet Forwarding Control Protocol)<br>
-                <strong>Purpose:</strong> SMF controls UPF packet processing<br>
-                <strong>What SMF sends:</strong> PDR (Packet Detection Rules), FAR (Forwarding Action Rules)<br>
-                <strong>What UPF reports:</strong> Usage statistics, error reports<br>
-                <strong>Session Management:</strong> Create/Modify/Delete PDU sessions<br>
-                <strong>QoS Control:</strong> Per-flow QoS enforcement
-            </div>
-        </div>
-
-        ${this.generateCleanNFConfigHTML(UE, 'UE')}
-        ${this.generateCleanNFConfigHTML(gNB, 'gNB')}
-        ${this.generateCleanNFConfigHTML(AMF, 'AMF')}
-        ${this.generateCleanNFConfigHTML(SMF, 'SMF')}
-        ${this.generateCleanNFConfigHTML(UPF, 'UPF')}
-
-        <button class="btn btn-secondary btn-block" id="btn-close-config" style="margin-top: 20px;">Close Configuration</button>
-    `;
-
-    const closeBtn = document.getElementById('btn-close-config');
-    if (closeBtn) {
-        closeBtn.addEventListener('click', () => {
-            this.hideNFConfigPanel();
-        });
-    }
-}
-
-/**
- * Show N5 Interface Configuration Panel
- */
-showN5InterfaceConfiguration() {
-    const configForm = document.getElementById('config-form');
-    if (!configForm) return;
-
-    if (!window.interfaceManager) {
-        console.error('❌ InterfaceManager not available');
-        return;
-    }
-
-    const n5Config = window.interfaceManager.getN5Configuration();
-    if (!n5Config) {
-        alert('N5 Interface not deployed yet. Please deploy N5 first.');
-        return;
-    }
-
-    const interfaceData = n5Config.interface;
-    const { AF, PCF } = n5Config.nfs;
-
-    configForm.innerHTML = `
-        <h4>💚 ${interfaceData.name} Configuration</h4>
-        
-        <div style="background: rgba(46, 204, 113, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #2ecc71;">
-            <h5 style="color: #2ecc71; margin-bottom: 10px;">Interface Details</h5>
-            <div style="font-size: 12px; line-height: 1.8;">
-                <strong>Name:</strong> ${interfaceData.name}<br>
-                <strong>From:</strong> ${interfaceData.from}<br>
-                <strong>To:</strong> ${interfaceData.to}<br>
-                <strong>Protocol:</strong> ${interfaceData.protocol}<br>
-                <strong>Type:</strong> ${interfaceData.type}<br>
-                <strong>Connection:</strong> Direct (Green Dashed Line)<br>
-                <strong>Status:</strong> <span style="color: #2ecc71;">●</span> Active
-            </div>
-        </div>
-
-        <div style="background: rgba(52, 152, 219, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #3498db;">
-            <h5 style="color: #3498db; margin-bottom: 10px;">Communication Flow</h5>
-            <div style="font-size: 11px; line-height: 2;">
-                <div>✓ Application requests policy from AF</div>
-                <div>✓ AF sends policy authorization request to PCF via N5</div>
-                <div>✓ Direct connection for low-latency policy decisions</div>
-                <div>✓ PCF evaluates policy rules</div>
-                <div>✓ PCF responds with policy decision</div>
-                <div>✓ AF enforces policy at application layer</div>
-            </div>
-        </div>
-
-        <div style="background: rgba(46, 204, 113, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #2ecc71;">
-            <h5 style="color: #2ecc71; margin-bottom: 10px;">N5 Interface Details</h5>
-            <div style="font-size: 11px; line-height: 1.8;">
-                <strong>Service:</strong> Npcf_PolicyAuthorization<br>
-                <strong>Purpose:</strong> Application-triggered policy control<br>
-                <strong>What AF requests:</strong> QoS changes, traffic steering, charging rules<br>
-                <strong>What PCF provides:</strong> Policy decisions, QoS parameters, charging control<br>
-                <strong>Use Cases:</strong> Video optimization, gaming prioritization, enterprise policies<br>
-                <strong>Connection Type:</strong> Direct point-to-point (no bus)
-            </div>
-        </div>
-
-        ${this.generateCleanNFConfigHTML(AF, 'AF')}
-        ${this.generateCleanNFConfigHTML(PCF, 'PCF')}
-
-        <button class="btn btn-secondary btn-block" id="btn-close-config" style="margin-top: 20px;">Close Configuration</button>
-    `;
-
-    const closeBtn = document.getElementById('btn-close-config');
-    if (closeBtn) {
-        closeBtn.addEventListener('click', () => {
-            this.hideNFConfigPanel();
-        });
-    }
-}
-
-/**
- * Show N6 Interface Configuration Panel (EXACT COPY OF N3)
- */
-showN6InterfaceConfiguration() {
-    const configForm = document.getElementById('config-form');
-    if (!configForm) return;
-
-    if (!window.interfaceManager) {
-        console.error('❌ InterfaceManager not available');
-        return;
-    }
-
-    const n6Config = window.interfaceManager.getN6Configuration();
-    if (!n6Config) {
-        alert('N6 Interface not deployed yet. Please deploy N6 first.');
-        return;
-    }
-
-    const interfaceData = n6Config.interface;
-    const { UE, gNB, UPF, DataNetwork } = n6Config.nfs;
-
-    configForm.innerHTML = `
-        <h4>🌐 ${interfaceData.name} Configuration</h4>
-        
-        <div style="background: rgba(22, 160, 133, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #16a085;">
-            <h5 style="color: #16a085; margin-bottom: 10px;">Interface Details</h5>
-            <div style="font-size: 12px; line-height: 1.8;">
-                <strong>Name:</strong> ${interfaceData.name}<br>
-                <strong>From:</strong> ${interfaceData.from}<br>
-                <strong>To:</strong> ${interfaceData.to}<br>
-                <strong>Protocol:</strong> ${interfaceData.protocol}<br>
-                <strong>Type:</strong> ${interfaceData.type}<br>
-                <strong>Status:</strong> <span style="color: #2ecc71;">●</span> Active
-            </div>
-        </div>
-
-        <div style="background: rgba(52, 152, 219, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #3498db;">
-            <h5 style="color: #3498db; margin-bottom: 10px;">Data Path Flow</h5>
-            <div style="font-size: 11px; line-height: 2;">
-                <div>✓ UE generates user data (browsing, streaming)</div>
-                <div>✓ gNB encapsulates data in GTP-U tunnel</div>
-                <div>✓ Data flows through N3 tunnel to UPF</div>
-                <div>✓ UPF decapsulates and routes to Internet (N6)</div>
-                <div>✓ Return path: Internet → UPF → gNB → UE</div>
-            </div>
-        </div>
-
-        <div style="background: rgba(22, 160, 133, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #16a085;">
-            <h5 style="color: #16a085; margin-bottom: 10px;">N6 Interface Details</h5>
-            <div style="font-size: 11px; line-height: 1.8;">
-                <strong>Purpose:</strong> Connect 5G network to external data networks<br>
-                <strong>Protocol:</strong> Standard IP routing<br>
-                <strong>Supported Networks:</strong> Internet, IMS, Enterprise networks<br>
-                <strong>Data Translation:</strong> UPF performs NAT/PAT<br>
-                <strong>Security:</strong> Firewall and DPI at UPF<br>
-                <strong>QoS:</strong> Per-flow traffic shaping and prioritization
-            </div>
-        </div>
-
-        ${this.generateCleanNFConfigHTML(UE, 'UE')}
-        ${this.generateCleanNFConfigHTML(gNB, 'gNB')}
-        ${this.generateCleanNFConfigHTML(UPF, 'UPF')}
-        ${this.generateDataNetworkConfigHTML(DataNetwork)}
-
-        <button class="btn btn-secondary btn-block" id="btn-close-config" style="margin-top: 20px;">Close Configuration</button>
-    `;
-
-    const closeBtn = document.getElementById('btn-close-config');
-    if (closeBtn) {
-        closeBtn.addEventListener('click', () => {
-            this.hideNFConfigPanel();
-        });
-    }
-}
-
-/**
- * Show N7 Interface Configuration Panel
- */
-showN7InterfaceConfiguration() {
-    const configForm = document.getElementById('config-form');
-    if (!configForm) return;
-
-    if (!window.interfaceManager) {
-        console.error('❌ InterfaceManager not available');
-        return;
-    }
-
-    const n7Config = window.interfaceManager.getN7Configuration();
-    if (!n7Config) {
-        alert('N7 Interface not deployed yet. Please deploy N7 first.');
-        return;
-    }
-
-    const interfaceData = n7Config.interface;
-    const { SMF, PCF } = n7Config.nfs;
-
-    configForm.innerHTML = `
-        <h4>🧡 ${interfaceData.name} Configuration</h4>
-        
-        <div style="background: rgba(230, 126, 34, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #e67e22;">
-            <h5 style="color: #e67e22; margin-bottom: 10px;">Interface Details</h5>
-            <div style="font-size: 12px; line-height: 1.8;">
-                <strong>Name:</strong> ${interfaceData.name}<br>
-                <strong>From:</strong> ${interfaceData.from}<br>
-                <strong>To:</strong> ${interfaceData.to}<br>
-                <strong>Protocol:</strong> ${interfaceData.protocol}<br>
-                <strong>Type:</strong> ${interfaceData.type}<br>
-                <strong>Connection:</strong> Direct (Orange Dashed Line)<br>
-                <strong>Status:</strong> <span style="color: #2ecc71;">●</span> Active
-            </div>
-        </div>
-
-        <div style="background: rgba(52, 152, 219, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #3498db;">
-            <h5 style="color: #3498db; margin-bottom: 10px;">Communication Flow</h5>
-            <div style="font-size: 11px; line-height: 2;">
-                <div>✓ UE requests PDU Session establishment</div>
-                <div>✓ SMF needs policy rules for the session</div>
-                <div>✓ SMF sends policy request to PCF via N7</div>
-                <div>✓ Direct connection for session policy decisions</div>
-                <div>✓ PCF evaluates subscriber policies</div>
-                <div>✓ PCF returns PCC rules (QoS, charging, etc.)</div>
-                <div>✓ SMF applies policies to PDU session</div>
-            </div>
-        </div>
-
-        <div style="background: rgba(230, 126, 34, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #e67e22;">
-            <h5 style="color: #e67e22; margin-bottom: 10px;">N7 Interface Details</h5>
-            <div style="font-size: 11px; line-height: 1.8;">
-                <strong>Service:</strong> Npcf_SMPolicyControl<br>
-                <strong>Purpose:</strong> Session management policy control<br>
-                <strong>What SMF requests:</strong> PCC rules, QoS parameters, charging policies<br>
-                <strong>What PCF provides:</strong> Policy and Charging Control rules for sessions<br>
-                <strong>Use Cases:</strong> PDU session QoS, traffic differentiation, charging control<br>
-                <strong>Connection Type:</strong> Direct point-to-point (with bus for discovery)
-            </div>
-        </div>
-
-        ${this.generateCleanNFConfigHTML(SMF, 'SMF')}
-        ${this.generateCleanNFConfigHTML(PCF, 'PCF')}
-
-        <button class="btn btn-secondary btn-block" id="btn-close-config" style="margin-top: 20px;">Close Configuration</button>
-    `;
-
-    const closeBtn = document.getElementById('btn-close-config');
-    if (closeBtn) {
-        closeBtn.addEventListener('click', () => {
-            this.hideNFConfigPanel();
-        });
-    }
-}
-
-/**
- * Show N8 Interface Configuration Panel
- */
-showN8InterfaceConfiguration() {
-    const configForm = document.getElementById('config-form');
-    if (!configForm) return;
-
-    if (!window.interfaceManager) {
-        console.error('❌ InterfaceManager not available');
-        return;
-    }
-
-    const n8Config = window.interfaceManager.getN8Configuration();
-    if (!n8Config) {
-        alert('N8 Interface not deployed yet. Please deploy N8 first.');
-        return;
-    }
-
-    const interfaceData = n8Config.interface;
-    const { UE, gNB, AMF, UDM } = n8Config.nfs;
-
-    configForm.innerHTML = `
-        <h4>👤 ${interfaceData.name} Configuration</h4>
-        
-        <div style="background: rgba(52, 152, 219, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #3498db;">
-            <h5 style="color: #3498db; margin-bottom: 10px;">Interface Details</h5>
-            <div style="font-size: 12px; line-height: 1.8;">
-                <strong>Name:</strong> ${interfaceData.name}<br>
-                <strong>From:</strong> ${interfaceData.from}<br>
-                <strong>To:</strong> ${interfaceData.to}<br>
-                <strong>Protocol:</strong> ${interfaceData.protocol}<br>
-                <strong>Type:</strong> ${interfaceData.type}<br>
-                <strong>Connection:</strong> Direct (White Solid Line)<br>
-                <strong>Status:</strong> <span style="color: #2ecc71;">●</span> Active
-            </div>
-        </div>
-
-        <div style="background: rgba(46, 204, 113, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #2ecc71;">
-            <h5 style="color: #2ecc71; margin-bottom: 10px;">Communication Flow</h5>
-            <div style="font-size: 11px; line-height: 2;">
-                <div>✓ UE attaches to network via gNB</div>
-                <div>✓ gNB forwards registration to AMF (N2)</div>
-                <div>✓ AMF needs subscriber data from UDM</div>
-                <div>✓ AMF sends request to UDM via N8</div>
-                <div>✓ Direct connection for subscriber context</div>
-                <div>✓ UDM returns subscription profile</div>
-                <div>✓ AMF completes registration with subscriber data</div>
-            </div>
-        </div>
-
-        <div style="background: rgba(52, 152, 219, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #3498db;">
-            <h5 style="color: #3498db; margin-bottom: 10px;">N8 Interface Details</h5>
-            <div style="font-size: 11px; line-height: 1.8;">
-                <strong>Service:</strong> Nudm_UECM (UE Context Management)<br>
-                <strong>Purpose:</strong> AMF retrieves subscriber data from UDM<br>
-                <strong>What AMF requests:</strong> SUPI, subscription data, authentication vectors<br>
-                <strong>What UDM provides:</strong> Subscriber profile, authentication credentials, slice info<br>
-                <strong>Use Cases:</strong> Registration, authentication, mobility management<br>
-                <strong>Connection Type:</strong> Direct point-to-point (with bus for discovery)
-            </div>
-        </div>
-
-        ${this.generateCleanNFConfigHTML(UE, 'UE')}
-        ${this.generateCleanNFConfigHTML(gNB, 'gNB')}
-        ${this.generateCleanNFConfigHTML(AMF, 'AMF')}
-        ${this.generateCleanNFConfigHTML(UDM, 'UDM')}
-
-        <button class="btn btn-secondary btn-block" id="btn-close-config" style="margin-top: 20px;">Close Configuration</button>
-    `;
-
-    const closeBtn = document.getElementById('btn-close-config');
-    if (closeBtn) {
-        closeBtn.addEventListener('click', () => {
-            this.hideNFConfigPanel();
-        });
-    }
-}
-
-/**
- * Show N9 Interface Configuration Panel
- */
-showN9InterfaceConfiguration() {
-    const configForm = document.getElementById('config-form');
-    if (!configForm) return;
-
-    if (!window.interfaceManager) {
-        console.error('❌ InterfaceManager not available');
-        return;
-    }
-
-    const n9Config = window.interfaceManager.getN9Configuration();
-    if (!n9Config) {
-        alert('N9 Interface not deployed yet. Please deploy N9 first.');
-        return;
-    }
-
-    const interfaceData = n9Config.interface;
-    const { UPF } = n9Config.nfs;
-
-    configForm.innerHTML = `
-        <h4>🔄 ${interfaceData.name} Configuration</h4>
-        
-        <div style="background: rgba(149, 165, 166, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #95a5a6;">
-            <h5 style="color: #95a5a6; margin-bottom: 10px;">Interface Details</h5>
-            <div style="font-size: 12px; line-height: 1.8;">
-                <strong>Name:</strong> ${interfaceData.name}<br>
-                <strong>From:</strong> ${interfaceData.from}<br>
-                <strong>To:</strong> ${interfaceData.to}<br>
-                <strong>Protocol:</strong> ${interfaceData.protocol}<br>
-                <strong>Type:</strong> ${interfaceData.type}<br>
-                <strong>Status:</strong> <span style="color: #2ecc71;">●</span> Active
-            </div>
-        </div>
-
-        <div style="background: rgba(46, 204, 113, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #2ecc71;">
-            <h5 style="color: #2ecc71; margin-bottom: 10px;">Interface Purpose</h5>
-            <div style="font-size: 11px; line-height: 2;">
-                <div>✓ UPF internal loopback interface</div>
-                <div>✓ Used for internal data processing</div>
-                <div>✓ Enables UPF to route traffic internally</div>
-            </div>
-        </div>
-
-        ${this.generateCleanNFConfigHTML(UPF, 'UPF')}
-
-        <button class="btn btn-secondary btn-block" id="btn-close-config" style="margin-top: 20px;">Close Configuration</button>
-    `;
-
-    const closeBtn = document.getElementById('btn-close-config');
-    if (closeBtn) {
-        closeBtn.addEventListener('click', () => {
-            this.hideNFConfigPanel();
-        });
-    }
-}
-
-/**
- * Show N10 Interface Configuration Panel
- */
-showN10InterfaceConfiguration() {
-    const configForm = document.getElementById('config-form');
-    if (!configForm) return;
-
-    if (!window.interfaceManager) {
-        console.error('❌ InterfaceManager not available');
-        return;
-    }
-
-    const n10Config = window.interfaceManager.getN10Configuration();
-    if (!n10Config) {
-        alert('N10 Interface not deployed yet. Please deploy N10 first.');
-        return;
-    }
-
-    const interfaceData = n10Config.interface;
-    const { SMF, UDM } = n10Config.nfs;
-
-    configForm.innerHTML = `
-        <h4>📊 ${interfaceData.name} Configuration</h4>
-        
-        <div style="background: rgba(241, 196, 15, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #f1c40f;">
-            <h5 style="color: #f1c40f; margin-bottom: 10px;">Interface Details</h5>
-            <div style="font-size: 12px; line-height: 1.8;">
-                <strong>Name:</strong> ${interfaceData.name}<br>
-                <strong>From:</strong> ${interfaceData.from}<br>
-                <strong>To:</strong> ${interfaceData.to}<br>
-                <strong>Protocol:</strong> ${interfaceData.protocol}<br>
-                <strong>Type:</strong> ${interfaceData.type}<br>
-                <strong>Connection:</strong> Direct (Yellow Solid Line)<br>
-                <strong>Status:</strong> <span style="color: #2ecc71;">●</span> Active
-            </div>
-        </div>
-
-        <div style="background: rgba(52, 152, 219, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #3498db;">
-            <h5 style="color: #3498db; margin-bottom: 10px;">Communication Flow</h5>
-            <div style="font-size: 11px; line-height: 2;">
-                <div>✓ UE requests PDU Session establishment</div>
-                <div>✓ AMF selects SMF for the session</div>
-                <div>✓ SMF needs subscriber session data from UDM</div>
-                <div>✓ SMF sends request to UDM via N10</div>
-                <div>✓ Direct connection for session subscription data</div>
-                <div>✓ UDM returns session management subscription</div>
-                <div>✓ SMF establishes PDU session with subscription data</div>
-            </div>
-        </div>
-
-        <div style="background: rgba(241, 196, 15, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #f1c40f;">
-            <h5 style="color: #f1c40f; margin-bottom: 10px;">N10 Interface Details</h5>
-            <div style="font-size: 11px; line-height: 1.8;">
-                <strong>Service:</strong> Nudm_SDM (Subscriber Data Management)<br>
-                <strong>Purpose:</strong> SMF retrieves session management subscription data<br>
-                <strong>What SMF requests:</strong> DNN authorization, S-NSSAI info, session AMBR<br>
-                <strong>What UDM provides:</strong> Session subscription data, QoS profiles, allowed DNNs<br>
-                <strong>Use Cases:</strong> PDU session establishment, session modification, DNN authorization<br>
-                <strong>Connection Type:</strong> Direct point-to-point (with bus for discovery)
-            </div>
-        </div>
-
-        ${this.generateCleanNFConfigHTML(SMF, 'SMF')}
-        ${this.generateCleanNFConfigHTML(UDM, 'UDM')}
-
-        <button class="btn btn-secondary btn-block" id="btn-close-config" style="margin-top: 20px;">Close Configuration</button>
-    `;
-
-    const closeBtn = document.getElementById('btn-close-config');
-    if (closeBtn) {
-        closeBtn.addEventListener('click', () => {
-            this.hideNFConfigPanel();
-        });
-    }
-}
-
-/**
- * Show N11 Interface Configuration Panel
- */
-showN11InterfaceConfiguration() {
-    const configForm = document.getElementById('config-form');
-    if (!configForm) return;
-
-    if (!window.interfaceManager) {
-        console.error('❌ InterfaceManager not available');
-        return;
-    }
-
-    const n11Config = window.interfaceManager.getN11Configuration();
-    if (!n11Config) {
-        alert('N11 Interface not deployed yet. Please deploy N11 first.');
-        return;
-    }
-
-    const interfaceData = n11Config.interface;
-    const { AMF, SMF } = n11Config.nfs;
-
-    configForm.innerHTML = `
-        <h4>🔗 ${interfaceData.name} Configuration</h4>
-        
-        <div style="background: rgba(46, 204, 113, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #2ecc71;">
-            <h5 style="color: #2ecc71; margin-bottom: 10px;">Interface Details</h5>
-            <div style="font-size: 12px; line-height: 1.8;">
-                <strong>Name:</strong> ${interfaceData.name}<br>
-                <strong>From:</strong> ${interfaceData.from}<br>
-                <strong>To:</strong> ${interfaceData.to}<br>
-                <strong>Protocol:</strong> ${interfaceData.protocol}<br>
-                <strong>Type:</strong> ${interfaceData.type}<br>
-                <strong>Connection:</strong> Direct (Green Dashed Line)<br>
-                <strong>Status:</strong> <span style="color: #2ecc71;">●</span> Active
-            </div>
-        </div>
-
-        <div style="background: rgba(52, 152, 219, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #3498db;">
-            <h5 style="color: #3498db; margin-bottom: 10px;">Communication Flow</h5>
-            <div style="font-size: 11px; line-height: 2;">
-                <div>✓ UE requests PDU Session establishment</div>
-                <div>✓ AMF receives request from UE via N1/N2</div>
-                <div>✓ AMF selects appropriate SMF</div>
-                <div>✓ AMF sends session request to SMF via N11</div>
-                <div>✓ Direct connection for session control</div>
-                <div>✓ SMF establishes PDU session</div>
-                <div>✓ SMF responds to AMF with session details</div>
-            </div>
-        </div>
-
-        <div style="background: rgba(46, 204, 113, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #2ecc71;">
-            <h5 style="color: #2ecc71; margin-bottom: 10px;">N11 Interface Details</h5>
-            <div style="font-size: 11px; line-height: 1.8;">
-                <strong>Service:</strong> Namf_Communication<br>
-                <strong>Purpose:</strong> AMF triggers SMF for PDU session management<br>
-                <strong>What AMF sends:</strong> PDU session requests, UE context, DNN, S-NSSAI<br>
-                <strong>What SMF provides:</strong> PDU session IDs, QoS parameters, session status<br>
-                <strong>Use Cases:</strong> PDU session create/modify/release, handover management<br>
-                <strong>Connection Type:</strong> Direct point-to-point (with bus for discovery)
-            </div>
-        </div>
-
-        ${this.generateCleanNFConfigHTML(AMF, 'AMF')}
-        ${this.generateCleanNFConfigHTML(SMF, 'SMF')}
-
-        <button class="btn btn-secondary btn-block" id="btn-close-config" style="margin-top: 20px;">Close Configuration</button>
-    `;
-
-    const closeBtn = document.getElementById('btn-close-config');
-    if (closeBtn) {
-        closeBtn.addEventListener('click', () => {
-            this.hideNFConfigPanel();
-        });
-    }
-}
-
-/**
- * Show N12 Interface Configuration Panel
- */
-showN12InterfaceConfiguration() {
-    const configForm = document.getElementById('config-form');
-    if (!configForm) return;
-
-    if (!window.interfaceManager) {
-        console.error('❌ InterfaceManager not available');
-        return;
-    }
-
-    const n12Config = window.interfaceManager.getN12Configuration();
-    if (!n12Config) {
-        alert('N12 Interface not deployed yet. Please deploy N12 first.');
-        return;
-    }
-
-    const interfaceData = n12Config.interface;
-    const { AMF, AUSF } = n12Config.nfs;
-
-    configForm.innerHTML = `
-        <h4>🔐 ${interfaceData.name} Configuration</h4>
-        
-        <div style="background: rgba(46, 204, 113, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #2ecc71;">
-            <h5 style="color: #2ecc71; margin-bottom: 10px;">Interface Details</h5>
-            <div style="font-size: 12px; line-height: 1.8;">
-                <strong>Name:</strong> ${interfaceData.name}<br>
-                <strong>From:</strong> ${interfaceData.from}<br>
-                <strong>To:</strong> ${interfaceData.to}<br>
-                <strong>Protocol:</strong> ${interfaceData.protocol}<br>
-                <strong>Type:</strong> ${interfaceData.type}<br>
-                <strong>Connection:</strong> Direct (Green Dashed Line)<br>
-                <strong>Status:</strong> <span style="color: #2ecc71;">●</span> Active
-            </div>
-        </div>
-
-        <div style="background: rgba(52, 152, 219, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #3498db;">
-            <h5 style="color: #3498db; margin-bottom: 10px;">Authentication Flow</h5>
-            <div style="font-size: 11px; line-height: 2;">
-                <div>✓ UE sends Registration Request to AMF</div>
-                <div>✓ AMF extracts SUCI (Subscription Concealed Identifier)</div>
-                <div>✓ AMF sends Authentication Request to AUSF via N12</div>
-                <div>✓ Direct connection for authentication service</div>
-                <div>✓ AUSF generates authentication vectors</div>
-                <div>✓ AUSF responds with authentication challenge</div>
-                <div>✓ AMF completes 5G-AKA authentication with UE</div>
-            </div>
-        </div>
-
-        <div style="background: rgba(46, 204, 113, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #2ecc71;">
-            <h5 style="color: #2ecc71; margin-bottom: 10px;">N12 Interface Details</h5>
-            <div style="font-size: 11px; line-height: 1.8;">
-                <strong>Service:</strong> Nausf_UEAuthentication<br>
-                <strong>Purpose:</strong> AMF requests UE authentication from AUSF<br>
-                <strong>What AMF sends:</strong> SUCI, serving network name, authentication type<br>
-                <strong>What AUSF provides:</strong> Authentication vectors, SUPI, KAUSF key<br>
-                <strong>Authentication Method:</strong> 5G-AKA (Authentication and Key Agreement)<br>
-                <strong>Use Cases:</strong> Initial registration, re-authentication, key refresh<br>
-                <strong>Connection Type:</strong> Direct point-to-point (with bus for discovery)
-            </div>
-        </div>
-
-        ${this.generateCleanNFConfigHTML(AMF, 'AMF')}
-        ${this.generateCleanNFConfigHTML(AUSF, 'AUSF')}
-
-        <button class="btn btn-secondary btn-block" id="btn-close-config" style="margin-top: 20px;">Close Configuration</button>
-    `;
-
-    const closeBtn = document.getElementById('btn-close-config');
-    if (closeBtn) {
-        closeBtn.addEventListener('click', () => {
-            this.hideNFConfigPanel();
-        });
-    }
-}
-
-/**
- * Show N13 Interface Configuration Panel
- */
-showN13InterfaceConfiguration() {
-    const configForm = document.getElementById('config-form');
-    if (!configForm) return;
-
-    if (!window.interfaceManager) {
-        console.error('❌ InterfaceManager not available');
-        return;
-    }
-
-    const n13Config = window.interfaceManager.getN13Configuration();
-    if (!n13Config) {
-        alert('N13 Interface not deployed yet. Please deploy N13 first.');
-        return;
-    }
-
-    const interfaceData = n13Config.interface;
-    const { AMF, NRF } = n13Config.nfs;
-
-    configForm.innerHTML = `
-        <h4>🔍 ${interfaceData.name} Configuration</h4>
-        
-        <div style="background: rgba(46, 204, 113, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #2ecc71;">
-            <h5 style="color: #2ecc71; margin-bottom: 10px;">Interface Details</h5>
-            <div style="font-size: 12px; line-height: 1.8;">
-                <strong>Name:</strong> ${interfaceData.name}<br>
-                <strong>From:</strong> ${interfaceData.from}<br>
-                <strong>To:</strong> ${interfaceData.to}<br>
-                <strong>Protocol:</strong> ${interfaceData.protocol}<br>
-                <strong>Type:</strong> ${interfaceData.type}<br>
-                <strong>Connection:</strong> Direct (Green Dashed Line)<br>
-                <strong>Status:</strong> <span style="color: #2ecc71;">●</span> Active
-            </div>
-        </div>
-
-        <div style="background: rgba(52, 152, 219, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #3498db;">
-            <h5 style="color: #3498db; margin-bottom: 10px;">Service Discovery Flow</h5>
-            <div style="font-size: 11px; line-height: 2;">
-                <div>✓ AMF starts up and needs to find other NFs</div>
-                <div>✓ AMF registers itself with NRF via N13</div>
-                <div>✓ AMF sends discovery request to NRF</div>
-                <div>✓ Direct connection for NF management</div>
-                <div>✓ NRF returns list of available NFs (SMF, UDM, AUSF, etc.)</div>
-                <div>✓ AMF stores NF profiles for future communication</div>
-                <div>✓ AMF subscribes to NRF for NF status updates</div>
-            </div>
-        </div>
-
-        <div style="background: rgba(46, 204, 113, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #2ecc71;">
-            <h5 style="color: #2ecc71; margin-bottom: 10px;">N13 Interface Details</h5>
-            <div style="font-size: 11px; line-height: 1.8;">
-                <strong>Services:</strong> Nnrf_NFDiscovery, Nnrf_NFManagement<br>
-                <strong>Purpose:</strong> AMF discovers and registers with NRF<br>
-                <strong>What AMF sends:</strong> NF profile, NF status, discovery queries<br>
-                <strong>What NRF provides:</strong> Available NF list, NF profiles, endpoint URLs<br>
-                <strong>Discovery Types:</strong> Find SMF, UDM, AUSF, PCF, UDR by type/slice<br>
-                <strong>Use Cases:</strong> NF registration, NF discovery, heartbeat, status updates<br>
-                <strong>Connection Type:</strong> Direct point-to-point (with bus for discovery)
-            </div>
-        </div>
-
-        ${this.generateCleanNFConfigHTML(AMF, 'AMF')}
-        ${this.generateCleanNFConfigHTML(NRF, 'NRF')}
-
-        <button class="btn btn-secondary btn-block" id="btn-close-config" style="margin-top: 20px;">Close Configuration</button>
-    `;
-
-    const closeBtn = document.getElementById('btn-close-config');
-    if (closeBtn) {
-        closeBtn.addEventListener('click', () => {
-            this.hideNFConfigPanel();
-        });
-    }
-}
-
-    /**
-     * Generate NF Configuration HTML
-     */
-    generateNFConfigHTML(nf, nfType) {
-        if (!nf) {
-            return `
-                <div style="background: rgba(231, 76, 60, 0.1); padding: 12px; border-radius: 6px; margin-bottom: 10px; border-left: 3px solid #e74c3c;">
-                    <strong style="color: #e74c3c;">${nfType}:</strong> Not deployed
+    showPDUError(message) {
+        const content = document.getElementById('pdu-messages-content');
+        if (content) {
+            content.innerHTML = `
+                <div class="pdu-message-card" style="border-left-color: #e74c3c;">
+                    <div class="pdu-message-header" style="background: rgba(231, 76, 60, 0.15);">
+                        <span class="pdu-message-step" style="color: #e74c3c;">❌ Error</span>
+                    </div>
+                    <div class="pdu-message-body">
+                        <p style="color: #e74c3c;">${message}</p>
+                    </div>
                 </div>
             `;
         }
-
-        const details = this.getNFSpecificDetails(nf);
-
-        return `
-            <div style="background: rgba(52, 73, 94, 0.3); padding: 12px; border-radius: 6px; margin-bottom: 10px; border-left: 3px solid ${nf.color};">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                    <strong style="color: ${nf.color};">${nf.name}</strong>
-                    <span style="font-size: 10px; color: #2ecc71;">● ${nf.status.toUpperCase()}</span>
-                </div>
-                <div style="font-size: 11px; line-height: 1.6; color: #bdc3c7;">
-                    <strong>📍 Network:</strong> ${nf.config.ipAddress}:${nf.config.port}<br>
-                    <strong>🔧 Protocol:</strong> ${nf.config.httpProtocol}<br>
-                    <strong>📊 What it has:</strong> ${details.has}<br>
-                    <strong>📤 What it shares:</strong> ${details.shares}<br>
-                    <strong>📥 What it receives:</strong> ${details.receives}<br>
-                    <strong>🔗 From/To:</strong> ${details.connections}
-                </div>
-            </div>
-        `;
     }
 
-/**
- * Generate clean NF Configuration HTML (without emojis and From/To line)
- */
-generateCleanNFConfigHTML(nf, nfType) {
-    if (!nf) {
-        return `
-            <div style="background: rgba(231, 76, 60, 0.1); padding: 12px; border-radius: 6px; margin-bottom: 10px; border-left: 3px solid #e74c3c;">
-                <strong style="color: #e74c3c;">${nfType}:</strong> Not deployed
-            </div>
-        `;
-    }
-
-    const details = this.getNFSpecificDetails(nf);
-
-    return `
-        <div style="background: rgba(52, 73, 94, 0.3); padding: 12px; border-radius: 6px; margin-bottom: 10px; border-left: 3px solid ${nf.color};">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                <strong style="color: ${nf.color};">${nf.name}</strong>
-                <span style="font-size: 10px; color: #2ecc71;">● ${nf.status.toUpperCase()}</span>
-            </div>
-            <div style="font-size: 11px; line-height: 1.6; color: #bdc3c7;">
-                <strong>Network:</strong> ${nf.config.ipAddress}:${nf.config.port}<br>
-                <strong>Protocol:</strong> ${nf.config.httpProtocol}<br>
-                <strong>What it has:</strong> ${details.has}<br>
-                <strong>What it shares:</strong> ${details.shares}<br>
-                <strong>What it receives:</strong> ${details.receives}
-            </div>
-        </div>
-    `;
-}
-
-/**
- * Generate Data Network (Internet) Configuration HTML
- */
-generateDataNetworkConfigHTML(dataNetwork) {
-    if (!dataNetwork) {
-        return '';
-    }
-
-    return `
-        <div style="background: rgba(22, 160, 133, 0.2); padding: 12px; border-radius: 6px; margin-bottom: 10px; border-left: 3px solid #16a085;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                <strong style="color: #16a085;">🌐 ${dataNetwork.name}</strong>
-                <span style="font-size: 10px; color: #2ecc71;">● ACTIVE</span>
-            </div>
-            <div style="font-size: 11px; line-height: 1.6; color: #bdc3c7;">
-                <strong>Network:</strong> ${dataNetwork.config.ipAddress}:${dataNetwork.config.port}<br>
-                <strong>Protocol:</strong> ${dataNetwork.config.httpProtocol}<br>
-                <strong>Type:</strong> External Data Network<br>
-                <strong>Gateway:</strong> Public Internet Gateway<br>
-                <strong>What it provides:</strong> Internet connectivity, DNS, Content delivery<br>
-                <strong>What it receives:</strong> User data from UPF via N6
-            </div>
-        </div>
-    `;
-}
     /**
-     * Get NF-specific configuration details
+     * Execute a Connection Management step
+     * @param {number} stepNum - Step number (1-7)
      */
-    getNFSpecificDetails(nf) {
-        const connections = window.dataStore?.getConnectionsForNF(nf.id) || [];
-        const connectedNFs = connections.map(conn => {
-            const otherNfId = conn.sourceId === nf.id ? conn.targetId : conn.sourceId;
-            const otherNf = window.dataStore?.getNFById(otherNfId);
-            return otherNf ? otherNf.name : 'Unknown';
-        }).join(', ') || 'None';
+    async executePDUStep(stepNum) {
+        if (!this.pduSessionData) {
+            this.showPDUError('No valid Connection Management data. Please reset and try again.');
+            return;
+        }
 
-        const details = {
-    'UE': {
-        has: 'IMSI (15-digit), SUPI, IP address',
-        shares: 'Registration Request, NAS messages',
-        receives: 'Registration Accept, Configuration',
-        connections: connectedNFs
-    },
-    'gNB': {
-        has: 'Cell ID, Radio resources, RRC',
-        shares: 'NGAP messages, User data',
-        receives: 'NAS from UE, Control from AMF',
-        connections: connectedNFs
-    },
-    'AMF': {
-        has: 'GUAMI, Tracking Area, UE context',
-        shares: 'Registration Accept, Mobility updates',
-        receives: 'NAS messages from UE/gNB',
-        connections: connectedNFs
-    },
-    'SMF': {
-        has: 'PDU Session ID, QoS parameters',
-        shares: 'Session establishment, N4 rules',
-        receives: 'Session requests from AMF',
-        connections: connectedNFs
-    },
-    'UPF': {
-        has: 'Data plane stats, Throughput info',
-        shares: 'User traffic, Statistics',
-        receives: 'PFCP rules from SMF, User data',
-        connections: connectedNFs
-    },
-    'AF': {
-        has: 'Application requirements, Traffic descriptors',
-        shares: 'Policy requests, QoS requirements',
-        receives: 'Policy decisions from PCF',
-        connections: connectedNFs
-    },
-    'PCF': {
-        has: 'Policy rules, QoS profiles, Charging rules',
-        shares: 'Policy decisions, PCC rules',
-        receives: 'Policy requests from AF/AMF/SMF',
-        connections: connectedNFs
-    },
-'UDM': {
-    has: 'Subscriber profiles, Authentication credentials, SUPI/SUCI mappings',
-    shares: 'Subscriber data, Authentication vectors, Slice selection info',
-    receives: 'Subscriber data requests from AMF/SMF/AUSF',
-    connections: connectedNFs
-}
-};
+        const btn = document.getElementById(`btn-step-${stepNum}`);
+        if (!btn || btn.disabled || btn.classList.contains('completed')) return;
 
-        return details[nf.type] || {
-            has: 'Network configuration',
-            shares: 'Service data',
-            receives: 'Control messages',
-            connections: connectedNFs
+        // Mark as active
+        btn.classList.add('active');
+
+        try {
+            // Execute the step
+            await this.executeStep(stepNum);
+
+            // Mark as completed
+            btn.classList.remove('active');
+            btn.classList.add('completed');
+            btn.querySelector('.step-check').textContent = '✓';
+
+            // Enable next step
+            if (stepNum < 13) {
+                const nextBtn = document.getElementById(`btn-step-${stepNum + 1}`);
+                nextBtn?.removeAttribute('disabled');
+            }
+
+            this.pduCurrentStep = stepNum;
+
+        } catch (error) {
+            btn.classList.remove('active');
+            console.error(`Step ${stepNum} failed:`, error);
+            this.addPDUMessage(stepNum, 'Error', 'Error', { error: error.message }, true);
+        }
+    }
+
+    /**
+     * Execute the actual step logic
+     * @param {number} stepNum - Step number (1-12)
+     */
+    async executeStep(stepNum) {
+        const { ue, amf, smf, upf, gnb, pduSessionId } = this.pduSessionData;
+
+        switch (stepNum) {
+            case 1: // UE → gNB: RRC Connection Request
+                const payload1 = {
+                    rrcMessage: "RRCConnectionRequest",
+                    ueIdentity: "randomValue",
+                    establishmentCause: "mo-data"
+                };
+                this.addPDUMessage(1, ue.name, gnb.name, payload1, false);
+                await window.packetAnimator?.sendPacket({
+                    sourceId: ue.id, targetId: gnb.id,
+                    interface: 'RRC', direction: 'request', payload: payload1
+                });
+                break;
+
+            case 2: // gNB → UE: RRC Connection Setup
+                const payload2 = {
+                    rrcMessage: "RRCConnectionSetup",
+                    srbConfig: {
+                        SRB1: "enabled"
+                    },
+                    physicalConfig: "default"
+                };
+                this.addPDUMessage(2, gnb.name, ue.name, payload2, false);
+                await window.packetAnimator?.sendPacket({
+                    sourceId: gnb.id, targetId: ue.id,
+                    interface: 'RRC', direction: 'response', payload: payload2
+                });
+                break;
+
+            case 3: // UE → gNB: RRC Connection Setup Complete
+                const payload3 = {
+                    rrcMessage: "RRCConnectionSetupComplete",
+                    selectedPLMN: "00101",
+                    nasPdu: {
+                        nasMessage: "ServiceRequest"
+                    }
+                };
+                this.addPDUMessage(3, ue.name, gnb.name, payload3, false);
+                await window.packetAnimator?.sendPacket({
+                    sourceId: ue.id, targetId: gnb.id,
+                    interface: 'RRC', direction: 'request', payload: payload3
+                });
+                break;
+
+            case 4: // UE → AMF: NAS Service Request
+                const payload4 = {
+                    nasMessage: "ServiceRequest",
+                    ngKSI: "0x01",
+                    "5gGUTI": "guti-0xA1B2",
+                    serviceType: "mobileData",
+                    uplinkDataStatus: true,
+                    pduSessionStatus: {
+                        "1": "inactive"
+                    }
+                };
+                this.addPDUMessage(4, ue.name, amf.name, payload4, false);
+                await window.packetAnimator?.sendPacket({
+                    sourceId: ue.id, targetId: amf.id,
+                    interface: 'N1', direction: 'request', payload: payload4
+                });
+                break;
+
+            case 5: // AMF Internal: Validates UE Context
+                const payload5 = {
+                    validation: "AMF Internal Checks",
+                    checks: [
+                        "Validate 5G-GUTI",
+                        "Fetch UE context",
+                        "Verify registration state",
+                        "Check access rights",
+                        "Confirm allowed services"
+                    ],
+                    status: "validated"
+                };
+                this.addPDUMessage(5, amf.name, amf.name, payload5, false);
+                // No packet animation for internal processing
+                await this.delay(500);
+                break;
+
+            case 6: // AMF → SMF: Update SM Context Request
+                const payload6 = {
+                    nsmfMessage: "UpdateSMContextRequest",
+                    ueId: "guti-0xA1B2",
+                    pduSessionId: 1,
+                    cause: "serviceRequest",
+                    upActivation: true,
+                    ratType: "NR"
+                };
+                this.addPDUMessage(6, amf.name, smf.name, payload6, false);
+                await window.packetAnimator?.sendPacket({
+                    sourceId: amf.id, targetId: smf.id,
+                    interface: 'Nsmf', direction: 'request', payload: payload6
+                });
+                break;
+
+            case 7: // SMF Internal Processing
+                const payload7 = {
+                    processing: "SMF Internal Processing",
+                    actions: [
+                        "Select UPF",
+                        "Allocate N3 tunnel TEIDs",
+                        "Prepare QoS rules",
+                        "Build PFCP rules"
+                    ],
+                    status: "completed"
+                };
+                // Initialize TEIDs with fixed values from spec
+                this.pduSessionData.upfTeid = "0x1001";
+                this.pduSessionData.gnbTeid = "0x2001";
+                this.addPDUMessage(7, smf.name, smf.name, payload7, false);
+                // No packet animation for internal processing
+                await this.delay(500);
+                break;
+
+            case 8: // SMF → UPF: PFCP Session Establishment Request
+                // Allocate IP if not already done
+                if (!this.pduSessionData.assignedIP) {
+                    this.pduSessionData.assignedIP = window.sessionManager?.allocateUEIP(upf, ue) || '10.0.0.2';
+                }
+                if (!this.pduSessionData.tunnelId) {
+                    this.pduSessionData.tunnelId = `gtp-${1000 + Math.floor(Math.random() * 9000)}`;
+                }
+                // Use fixed TEIDs from spec
+                if (!this.pduSessionData.upfTeid) {
+                    this.pduSessionData.upfTeid = "0x1001";
+                }
+                if (!this.pduSessionData.gnbTeid) {
+                    this.pduSessionData.gnbTeid = "0x2001";
+                }
+                
+                const payload8 = {
+                    pfcpMessage: "SessionEstablishmentRequest",
+                    pduSessionId: 1,
+                    fteid: {
+                        upfTeid: this.pduSessionData.upfTeid,
+                        gnbTeid: this.pduSessionData.gnbTeid
+                    },
+                    qer: {
+                        qfi: 9,
+                        "5qi": 9
+                    },
+                    far: {
+                        action: "forward"
+                    }
+                };
+                this.addPDUMessage(8, smf.name, upf.name, payload8, false);
+                await window.packetAnimator?.sendPacket({
+                    sourceId: smf.id, targetId: upf.id,
+                    interface: 'N4', direction: 'request', payload: payload8
+                });
+                break;
+
+            case 9: // UPF → SMF: PFCP Response
+                const payload9 = {
+                    pfcpMessage: "SessionEstablishmentResponse",
+                    status: "success"
+                };
+                this.addPDUMessage(9, upf.name, smf.name, payload9, true);
+                await window.packetAnimator?.sendPacket({
+                    sourceId: upf.id, targetId: smf.id,
+                    interface: 'N4', direction: 'response', payload: payload9
+                });
+                break;
+
+            case 10: // SMF → AMF: Update SM Context Response
+                const payload10 = {
+                    nsmfMessage: "UpdateSMContextResponse",
+                    pduSessionId: 1,
+                    status: "activated",
+                    n3Tunnel: {
+                        upfTeid: this.pduSessionData.upfTeid,
+                        gnbTeid: this.pduSessionData.gnbTeid
+                    }
+                };
+                this.addPDUMessage(10, smf.name, amf.name, payload10, true);
+                await window.packetAnimator?.sendPacket({
+                    sourceId: smf.id, targetId: amf.id,
+                    interface: 'Nsmf', direction: 'response', payload: payload10
+                });
+                break;
+
+            case 11: // AMF → gNB: PDU Session Resource Setup Request
+                const payload11 = {
+                    n2Message: "PduSessionResourceSetupRequest",
+                    ueId: "guti-0xA1B2",
+                    pduSessionId: 1,
+                    qosFlows: [
+                        {
+                            qfi: 9,
+                            "5qi": 9,
+                            priority: 8
+                        }
+                    ],
+                    transportLayer: {
+                        upfTeid: this.pduSessionData.upfTeid
+                    }
+                };
+                this.addPDUMessage(11, amf.name, gnb.name, payload11, false);
+                await window.packetAnimator?.sendPacket({
+                    sourceId: amf.id, targetId: gnb.id,
+                    interface: 'N2', direction: 'request', payload: payload11
+                });
+                break;
+
+            case 12: // gNB → AMF: PDU Session Resource Setup Response
+                const payload12 = {
+                    n2Message: "PduSessionResourceSetupResponse",
+                    pduSessionId: 1,
+                    status: "success"
+                };
+                this.addPDUMessage(12, gnb.name, amf.name, payload12, true);
+                await window.packetAnimator?.sendPacket({
+                    sourceId: gnb.id, targetId: amf.id,
+                    interface: 'N2', direction: 'response', payload: payload12
+                });
+                break;
+
+            case 13: // AMF → UE: NAS Service Accept
+                const payload13 = {
+                    nasMessage: "ServiceAccept",
+                    cmState: "CONNECTED",
+                    allowedServices: [
+                        "mobileData",
+                        "signaling"
+                    ]
+                };
+                this.addPDUMessage(13, amf.name, ue.name, payload13, true);
+                await window.packetAnimator?.sendPacket({
+                    sourceId: amf.id, targetId: ue.id,
+                    interface: 'N1', direction: 'response', payload: payload13
+                });
+                
+                // Finalize session
+                this.finalizePDUSession();
+                break;
+        }
+    }
+
+    /**
+     * Finalize Connection Management after all steps complete
+     */
+    finalizePDUSession() {
+        const { ue, upf } = this.pduSessionData;
+
+        // Update UE config
+        ue.config.pduSession = {
+            sessionId: this.pduSessionData.pduSessionId,
+            upfId: upf.id,
+            assignedIP: this.pduSessionData.assignedIP,
+            status: 'established',
+            establishedAt: Date.now()
         };
+        ue.config.pduSessionState = 'ACTIVE';
+        ue.config.cmState = 'CONNECTED';
+
+        // Create tun interface
+        const ueNum = ue.name.match(/\d+/)?.[0] || '1';
+        ue.config.tunInterface = {
+            name: `tun_ue${ueNum}`,
+            ipAddress: this.pduSessionData.assignedIP,
+            netmask: '255.255.255.0',
+            gateway: upf.config.tun0Interface?.gatewayIP || '10.0.0.1'
+        };
+
+        window.dataStore?.updateNF(ue.id, ue);
+
+        // Add final success message
+        this.addPDUMessage('✅', 'Connection Management', 'CONNECTED', {
+            status: 'Connection Management Process Completed Successfully!',
+            cmState: 'CONNECTED',
+            assignedIP: this.pduSessionData.assignedIP,
+            tunnelId: this.pduSessionData.tunnelId,
+            rrcState: 'CONNECTED'
+        }, false);
+
+        // Re-render canvas to show IP
+        window.canvasRenderer?.render();
+
+        console.log('✅ Connection Management process completed!');
+    }
+
+    /**
+     * Add message to PDU messages panel
+     */
+    addPDUMessage(step, source, target, payload, isResponse) {
+        const content = document.getElementById('pdu-messages-content');
+        if (!content) return;
+
+        // Remove hint if present
+        const hint = content.querySelector('.pdu-hint');
+        if (hint) hint.remove();
+
+        const card = document.createElement('div');
+        card.className = `pdu-message-card ${isResponse ? 'response' : ''}`;
+        card.innerHTML = `
+            <div class="pdu-message-header">
+                <span class="pdu-message-step">Step ${step}</span>
+                <span class="pdu-message-flow">${source} → ${target}</span>
+            </div>
+            <div class="pdu-message-body">
+                <pre>${JSON.stringify(payload, null, 2)}</pre>
+            </div>
+        `;
+
+        content.appendChild(card);
+        content.scrollTop = content.scrollHeight;
+    }
+
+    /**
+     * Reset all PDU steps
+     */
+    resetPDUSteps() {
+        // Reset all step buttons
+        for (let i = 1; i <= 13; i++) {
+            const btn = document.getElementById(`btn-step-${i}`);
+            if (btn) {
+                btn.classList.remove('completed', 'active');
+                btn.querySelector('.step-check').textContent = '○';
+                if (i > 1) {
+                    btn.setAttribute('disabled', 'true');
+                }
+            }
+        }
+
+        // Clear messages
+        const content = document.getElementById('pdu-messages-content');
+        if (content) {
+            content.innerHTML = '<p class="pdu-hint">Click step buttons on the right to see message flows</p>';
+        }
+
+        this.pduCurrentStep = 0;
+
+        // Re-validate
+        if (this.pduSessionMode) {
+            this.preparePDUSession();
+        }
     }
 }
-
-// ==========================================
-// END OF UI CONTROLLER CLASS
-// ==========================================
-
-console.log('✅ UIController class definition complete');
