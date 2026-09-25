@@ -64,17 +64,20 @@ async function initializeApp() {
 
         // Ping Manager (NEW)
         window.pingManager = new PingManager();
+        
+        // Interface Manager (NEW)
+        window.interfaceManager = new InterfaceManager();
+
+        // Docker Terminal (must be initialized before UI Controller)
+        if (window.dockerTerminal) {
+            window.dockerTerminal.init();
+        }
 
         // Canvas Renderer
         window.canvasRenderer = new CanvasRenderer();
 
         // UI Controller
         window.uiController = new UIController();
-
-        // Docker Terminal (already initialized globally in docker.js, just call init)
-        if (window.dockerTerminal) {
-            window.dockerTerminal.init();
-        }
 
         console.log('✅ All managers initialized successfully');
 
@@ -84,24 +87,6 @@ async function initializeApp() {
         console.log('\n🎨 Step 4: Initializing user interface...');
         window.uiController.init();
         console.log('✅ UI initialized');
-
-        // ==========================================
-        // STEP 4.5: Initialize PDU Session Components
-        // ==========================================
-        console.log('\n📡 Step 4.5: Initializing PDU session components...');
-        
-        // Session Manager
-        window.sessionManager = new SessionManager();
-        
-        // Packet Animator
-        window.packetAnimator = new PacketAnimator();
-        window.packetAnimator.init();
-        
-        // Message Inspector
-        window.messageInspector = new MessageInspector();
-        window.messageInspector.init();
-        
-        console.log('✅ PDU session components initialized');
 
         // ==========================================
         // STEP 5: Initial Render

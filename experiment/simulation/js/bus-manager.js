@@ -96,10 +96,7 @@ class BusManager {
             return null;
         }
 
-        if (bus.connections.includes(nfId)) {
-            alert(`${nf.name} is already connected to ${bus.name}`);
-            return null;
-        }
+       
 
         console.log(`🔗 Connecting ${nf.name} to bus ${bus.name}`);
 
@@ -427,7 +424,7 @@ class BusManager {
                 // Add registration logs
                 setTimeout(() => {
                     window.logEngine.addLog(nfId, 'INFO', 
-                        `Discovered NRF - Initiating registration`, {
+                        `Discovered NRF via ${bus.name} - Initiating registration`, {
                         busId: busId,
                         nrfId: nrfOnBus,
                         discoveryMethod: 'Service Bus'
@@ -435,8 +432,9 @@ class BusManager {
                     
                     setTimeout(() => {
                         window.logEngine.addLog(nfId, 'SUCCESS', 
-                            `Successfully registered with NRF `, {
+                            `Successfully registered with NRF via ${bus.name}`, {
                             nrfId: nrfOnBus,
+                            profileId: `${nf.type.toLowerCase()}-profile-${Date.now()}`,
                             validity: '3600 seconds',
                             heartbeatInterval: '60 seconds'
                         });
@@ -463,7 +461,7 @@ class BusManager {
                                 
                                 setTimeout(() => {
                                     window.logEngine.addLog(existingNfId, 'SUCCESS', 
-                                        `Successfully registered with ${nf.name}`, {
+                                        `Successfully registered with ${nf.name} via ${bus.name}`, {
                                         nrfId: nfId,
                                         profileId: `${existingNF.type.toLowerCase()}-profile-${Date.now()}`,
                                         validity: '3600 seconds',
@@ -495,8 +493,7 @@ class BusManager {
             'AMF': ['AUSF', 'UDM', 'PCF', 'NSSF'], // AMF auto-discovers these
             'SMF': ['UPF', 'PCF', 'UDM'],          // SMF auto-discovers these
             'AUSF': ['UDM'],                       // AUSF needs UDM
-            'UDM': ['UDR'],                        // UDM connects to UDR for subscriber profiles
-            'UDR': ['MySQL'],                      // UDR connects to MySQL database
+            'UDM': ['MySQL'],                      // UDM connects to database
         };
 
         if (smartRules[nf.type]) {

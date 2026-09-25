@@ -141,68 +141,20 @@ button:disabled {
    Left Sidebar (NF Palette)
    ============================================ */
 .sidebar-left {
-    width: 320px;
+    width: 250px;
     background: var(--bg-secondary);
     border-right: 2px solid var(--border-color);
     padding: 20px;
     overflow-y: auto;
-    transition: width 0.3s ease, padding 0.3s ease;
 }
 
-.sidebar-left.collapsed {
-    width: 50px;
-    padding: 20px 8px;
-}
-
-.sidebar-left.collapsed .nf-panel-header h3 {
-    display: none;
-}
-
-.sidebar-left.collapsed .nf-palette,
-.sidebar-left.collapsed .connection-controls {
-    display: none;
-}
-
-.nf-panel-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-    padding-bottom: 8px;
-    border-bottom: 2px solid var(--border-color);
-}
-
-.nf-panel-header h3 {
+.sidebar-left h3 {
     font-size: 16px;
-    margin: 0;
+    margin-bottom: 15px;
     color: var(--text-primary);
-    border-bottom: none;
-    padding-bottom: 0;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 8px;
 }
-
-.btn-toggle-nf {
-    background: none;
-    border: none;
-    color: var(--text-secondary);
-    cursor: pointer;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 14px;
-    transition: all 0.2s ease;
-    min-width: 24px;
-    text-align: center;
-}
-
-.btn-toggle-nf:hover {
-    background: var(--bg-primary);
-    color: var(--text-primary);
-}
-
-.sidebar-left.collapsed .btn-toggle-nf {
-    transform: rotate(180deg);
-}
-
-/* .sidebar-left h3 removed, replaced by .nf-panel-header h3 */
 
 .nf-palette {
     display: flex;
@@ -301,22 +253,15 @@ button:disabled {
 }
 
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateX(-50%) translateY(-10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateX(-50%) translateY(0);
-    }
+    from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 
 /* ============================================
    Right Sidebar (Configuration Panel)
    ============================================ */
 .sidebar-right {
-    width: 280px;
+    width: 320px;
     background: var(--bg-secondary);
     border-left: 2px solid var(--border-color);
     padding: 20px;
@@ -532,7 +477,6 @@ button:disabled {
         opacity: 0;
         transform: translateX(-20px);
     }
-
     to {
         opacity: 1;
         transform: translateX(0);
@@ -707,7 +651,7 @@ button:disabled {
     .sidebar-left {
         width: 200px;
     }
-
+    
     .sidebar-right {
         width: 280px;
     }
@@ -717,18 +661,17 @@ button:disabled {
     .main-content {
         flex-direction: column;
     }
-
+    
     .sidebar-left,
     .sidebar-right {
         width: 100%;
         height: 200px;
     }
-
+    
     .log-panel {
         height: 150px;
     }
 }
-
 /* =======
 =====================================
    HTTP Protocol Dropdown Special Styling
@@ -767,9 +710,7 @@ button:disabled {
 .form-group:has(#config-http-protocol) label {
     color: #3498db;
     font-weight: 600;
-}
-
-/* ====
+}/* ====
 ========================================
    Help Modal Styling
    ============================================ */
@@ -876,6 +817,50 @@ button:disabled {
     color: #9b59b6;
 }
 
+.procedures-link-section {
+    border-left-color: var(--accent-green);
+    text-align: center;
+}
+
+.procedures-link {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 16px 40px;
+    background: #4AAFDB;
+    color: white;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.procedures-link:hover {
+    background: #3A9FCB;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.help-section code {
+    background: rgba(0,0,0,0.3);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-family: monospace;
+    font-size: 12px;
+    color: #e67e22;
+}
+
+.help-section kbd {
+    background: #34495e;
+    border: 1px solid #4a6278;
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-size: 12px;
+    font-family: monospace;
+}
+
 /* Help button styling */
 #btn-help {
     background: var(--bg-tertiary);
@@ -886,6 +871,104 @@ button:disabled {
 #btn-help:hover {
     background: var(--accent-blue);
     color: white;
+}
+
+/* Help Modal (popup) */
+.help-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.help-modal-box {
+    background: #1e2a3a;
+    border-radius: 10px;
+    width: 850px;
+    max-width: 92vw;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+}
+
+.help-modal-title {
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    color: #ecf0f1;
+    padding: 20px 24px 12px;
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.help-modal-steps {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px 28px 4px 44px;
+    margin: 0;
+}
+
+.help-modal-steps li {
+    color: #bdc3c7;
+    font-size: 13px;
+    line-height: 1.55;
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.help-modal-steps li:last-child {
+    border-bottom: none;
+}
+
+.help-modal-steps li b {
+    color: #ecf0f1;
+}
+
+.help-modal-steps li code {
+    background: rgba(0,0,0,0.35);
+    color: #e67e22;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-family: monospace;
+}
+
+.help-modal-proc {
+    font-size: 12px;
+    color: #7f8c8d;
+    text-align: center;
+    padding: 10px 24px 4px;
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.help-modal-proc a {
+    color: #3498db;
+    text-decoration: underline;
+}
+
+.help-modal-close-btn {
+    display: block;
+    width: calc(100% - 48px);
+    margin: 12px 24px 20px;
+    padding: 10px;
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.help-modal-close-btn:hover {
+    background: #2980b9;
 }
 
 /* ==
@@ -951,14 +1034,13 @@ button:disabled {
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
     transition: left 0.5s;
 }
 
 .btn-success:hover::before {
     left: 100%;
 }
-
 /* =
 ===========================================
    Ping Troubleshooting Section Styles
@@ -987,13 +1069,8 @@ button:disabled {
 }
 
 @keyframes troubleshootGlow {
-    0% {
-        opacity: 0.2;
-    }
-
-    100% {
-        opacity: 0.4;
-    }
+    0% { opacity: 0.2; }
+    100% { opacity: 0.4; }
 }
 
 .troubleshoot-section h4 {
@@ -1107,13 +1184,8 @@ button:disabled {
 }
 
 @keyframes buttonSpin {
-    0% {
-        transform: rotate(0deg);
-    }
-
-    100% {
-        transform: rotate(360deg);
-    }
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 /* Ping Input Field Enhancement */
@@ -1139,14 +1211,12 @@ button:disabled {
         margin-top: 15px;
         padding: 15px;
     }
-
+    
     .troubleshoot-section .btn {
         font-size: 13px;
         padding: 10px 12px;
     }
-}
-
-/* 
+}/* 
 ============================================
    Command Input Terminal Styles
    ============================================ */
@@ -1163,7 +1233,6 @@ button:disabled {
         opacity: 0;
         transform: translateY(20px);
     }
-
     to {
         opacity: 1;
         transform: translateY(0);
@@ -1297,9 +1366,7 @@ button:disabled {
 
 .log-panel.terminal-active .log-panel-header {
     background: linear-gradient(135deg, var(--bg-tertiary), rgba(52, 152, 219, 0.1));
-}
-
-/* ==
+}/* ==
 ==========================================
    Windows Terminal Styles
    ============================================ */
@@ -1309,10 +1376,7 @@ button:disabled {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.0);
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    background: rgba(0, 0, 0, 0.7);
     z-index: 2000;
     opacity: 0;
     transition: opacity 0.3s ease;
@@ -1321,6 +1385,7 @@ button:disabled {
 
 .windows-terminal-modal.show {
     opacity: 1;
+    pointer-events: all;
 }
 
 .windows-terminal-window {
@@ -1333,13 +1398,12 @@ button:disabled {
     display: flex;
     flex-direction: column;
     font-family: 'Consolas', 'Courier New', monospace;
-    transform: scale(0.9);
-    transition: transform 0.3s ease;
-    pointer-events: auto;
+    position: fixed;
+    user-select: none;
 }
 
 .windows-terminal-modal.show .windows-terminal-window {
-    transform: scale(1);
+    transform: none;
 }
 
 .windows-terminal-titlebar {
@@ -1351,7 +1415,6 @@ button:disabled {
     padding: 0 10px;
     border-radius: 6px 6px 0 0;
     border-bottom: 1px solid #1a1a1a;
-    cursor: default;
 }
 
 .terminal-title {
@@ -1415,13 +1478,18 @@ button:disabled {
 .windows-terminal-content {
     flex: 1;
     background: #000000;
-    color: #ffffff;
+    color: #00ff00;
     padding: 10px;
     overflow-y: auto;
     font-size: 14px;
     line-height: 1.2;
     display: flex;
     flex-direction: column;
+    outline: none;
+}
+
+.windows-terminal-content:focus {
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
 }
 
 .terminal-header {
@@ -1433,7 +1501,6 @@ button:disabled {
 .terminal-output {
     flex: 1;
     overflow-y: auto;
-    margin-bottom: 10px;
 }
 
 .terminal-line {
@@ -1463,56 +1530,30 @@ button:disabled {
     height: 14px;
 }
 
-.terminal-input-line {
+/* Inline input line styles for Windows terminal */
+.terminal-input-active {
     display: flex;
     align-items: center;
-    background: transparent;
-    padding: 2px 0;
-    font-family: 'Consolas', 'Courier New', monospace;
-    font-size: 13px;
-    line-height: 1.4;
+    margin: 2px 0;
 }
 
 .terminal-prompt {
     color: #ffffff;
-    margin-right: 8px;
-    font-weight: 600;
+    margin-right: 5px;
+    font-weight: bold;
     white-space: nowrap;
     flex-shrink: 0;
 }
 
-.terminal-input-before,
-.terminal-input-after {
+.terminal-command-text {
     color: #ffffff;
     white-space: pre-wrap;
-    word-break: break-all;
+    word-wrap: break-word;
 }
 
 .terminal-cursor {
-    color: #00ff00;
-    background: #00ff00;
-    animation: cursor-blink 1s step-end infinite;
-    font-weight: normal;
-    width: 8px;
-    display: inline-block;
-    text-align: center;
-}
-
-/* Legacy input style - kept for compatibility */
-.terminal-input {
-    flex: 1;
-    background: transparent;
-    border: none;
     color: #ffffff;
-    font-family: 'Consolas', 'Courier New', monospace;
-    font-size: 14px;
-    outline: none;
-    caret-color: #ffffff;
-}
-
-.terminal-input::selection {
-    background: #0078d4;
-    color: #ffffff;
+    font-weight: bold;
 }
 
 /* Terminal scrollbar */
@@ -1532,7 +1573,6 @@ button:disabled {
 .terminal-output::-webkit-scrollbar-thumb:hover {
     background: #505050;
 }
-
 
 /* Terminal button styling */
 .btn-terminal {
@@ -1581,16 +1621,11 @@ button:disabled {
         height: 100vh;
         border-radius: 0;
     }
-
+    
     .windows-terminal-content {
         font-size: 12px;
     }
-
-    .terminal-input {
-        font-size: 12px;
-    }
 }
-
 /* ============================================
    Auto-Assignment Indicators
    ============================================ */
@@ -1606,17 +1641,9 @@ button:disabled {
 }
 
 @keyframes pulse {
-    0% {
-        opacity: 0.7;
-    }
-
-    50% {
-        opacity: 1;
-    }
-
-    100% {
-        opacity: 0.7;
-    }
+    0% { opacity: 0.7; }
+    50% { opacity: 1; }
+    100% { opacity: 0.7; }
 }
 
 /* Enhanced form group styling for auto-assigned fields */
@@ -1636,591 +1663,6 @@ button:disabled {
 .form-group:has(.auto-assigned) input:focus {
     border-color: #2ecc71;
     box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.2);
-}
-
-/* ============================================
-   Message Inspector Panel Styles
-   ============================================ */
-.message-inspector-panel {
-    position: fixed;
-    bottom: 0;
-    right: 0;
-    width: 420px;
-    max-height: 60vh;
-    background: var(--bg-secondary);
-    border: 2px solid var(--accent-blue);
-    border-radius: 12px 12px 0 0;
-    box-shadow: 0 -4px 20px rgba(52, 152, 219, 0.3);
-    z-index: 1500;
-    transform: translateY(100%);
-    transition: transform 0.3s ease;
-    display: flex;
-    flex-direction: column;
-    font-family: 'Segoe UI', Tahoma, sans-serif;
-}
-
-.message-inspector-panel.visible {
-    transform: translateY(0);
-}
-
-.inspector-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 16px;
-    background: linear-gradient(135deg, var(--bg-tertiary), rgba(52, 152, 219, 0.1));
-    border-bottom: 1px solid var(--border-color);
-    border-radius: 10px 10px 0 0;
-}
-
-.inspector-header h3 {
-    margin: 0;
-    font-size: 14px;
-    color: var(--text-primary);
-}
-
-.inspector-controls {
-    display: flex;
-    gap: 6px;
-}
-
-.inspector-content {
-    flex: 1;
-    overflow-y: auto;
-    padding: 16px;
-    background: var(--bg-primary);
-}
-
-.inspector-placeholder {
-    text-align: center;
-    color: var(--text-secondary);
-    padding: 40px 20px;
-    font-style: italic;
-}
-
-.inspector-message {
-    animation: fadeInUp 0.3s ease;
-}
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.message-header {
-    padding: 12px;
-    border-radius: 8px;
-    margin-bottom: 12px;
-    font-size: 14px;
-}
-
-.message-header.direction-request {
-    background: rgba(52, 152, 219, 0.15);
-    border: 1px solid rgba(52, 152, 219, 0.3);
-}
-
-.message-header.direction-response {
-    background: rgba(243, 156, 18, 0.15);
-    border: 1px solid rgba(243, 156, 18, 0.3);
-}
-
-.message-flow {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    justify-content: center;
-}
-
-.direction-arrow {
-    font-size: 18px;
-    color: var(--accent-blue);
-}
-
-.direction-response .direction-arrow {
-    color: var(--accent-orange);
-}
-
-.message-meta {
-    background: var(--bg-tertiary);
-    border-radius: 6px;
-    padding: 10px;
-    margin-bottom: 12px;
-}
-
-.meta-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 4px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.meta-row:last-child {
-    border-bottom: none;
-}
-
-.meta-label {
-    color: var(--text-secondary);
-    font-size: 12px;
-}
-
-.meta-value {
-    color: var(--text-primary);
-    font-size: 12px;
-    font-weight: 500;
-}
-
-.meta-value.mono {
-    font-family: 'Courier New', monospace;
-    font-size: 11px;
-}
-
-.interface-badge {
-    background: rgba(52, 152, 219, 0.2);
-    color: var(--accent-blue);
-    padding: 2px 8px;
-    border-radius: 4px;
-}
-
-.direction-request {
-    color: var(--accent-blue);
-}
-
-.direction-response {
-    color: var(--accent-orange);
-}
-
-.message-payload h4 {
-    font-size: 13px;
-    color: var(--text-secondary);
-    margin-bottom: 8px;
-    padding-bottom: 6px;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.json-payload {
-    background: #1e1e1e;
-    border-radius: 6px;
-    padding: 12px;
-    font-family: 'Courier New', monospace;
-    font-size: 11px;
-    line-height: 1.5;
-    overflow-x: auto;
-    max-height: 200px;
-    color: #d4d4d4;
-    border: 1px solid #333;
-}
-
-.json-key {
-    color: #9cdcfe;
-}
-
-.json-string {
-    color: #ce9178;
-}
-
-.json-number {
-    color: #b5cea8;
-}
-
-.json-boolean {
-    color: #569cd6;
-}
-
-.json-null {
-    color: #569cd6;
-}
-
-.no-payload {
-    color: var(--text-secondary);
-    font-style: italic;
-    text-align: center;
-    padding: 20px;
-}
-
-/* ============================================
-   PDU Session Status Styles
-   ============================================ */
-.session-section {
-    margin-top: 20px;
-    padding: 16px;
-    background: linear-gradient(135deg, rgba(155, 89, 182, 0.1), rgba(52, 152, 219, 0.1));
-    border: 2px solid rgba(155, 89, 182, 0.3);
-    border-radius: 10px;
-}
-
-.session-section h4 {
-    color: #9b59b6;
-    font-size: 15px;
-    margin-bottom: 12px;
-    text-align: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
-
-.session-status {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-    padding: 10px;
-    border-radius: 6px;
-    margin-bottom: 12px;
-    font-weight: 600;
-}
-
-.session-status.idle {
-    background: rgba(149, 165, 166, 0.2);
-    color: #95a5a6;
-}
-
-.session-status.establishing {
-    background: rgba(52, 152, 219, 0.2);
-    color: #3498db;
-    animation: statusPulse 1.5s infinite;
-}
-
-.session-status.active {
-    background: rgba(46, 204, 113, 0.2);
-    color: #2ecc71;
-}
-
-.session-status.releasing {
-    background: rgba(243, 156, 18, 0.2);
-    color: #f39c12;
-    animation: statusPulse 1.5s infinite;
-}
-
-.session-status.released {
-    background: rgba(231, 76, 60, 0.2);
-    color: #e74c3c;
-}
-
-@keyframes statusPulse {
-
-    0%,
-    100% {
-        opacity: 1;
-    }
-
-    50% {
-        opacity: 0.6;
-    }
-}
-
-.session-info {
-    background: var(--bg-primary);
-    border-radius: 6px;
-    padding: 10px;
-    margin-bottom: 12px;
-    font-size: 12px;
-}
-
-.session-info-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 4px 0;
-}
-
-.session-info-label {
-    color: var(--text-secondary);
-}
-
-.session-info-value {
-    color: var(--text-primary);
-    font-family: 'Courier New', monospace;
-}
-
-.btn-session-establish {
-    background: linear-gradient(135deg, #2ecc71, #27ae60);
-    color: white;
-    border: none;
-}
-
-.btn-session-establish:hover:not(:disabled) {
-    background: linear-gradient(135deg, #27ae60, #1e8449);
-    box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
-}
-
-.btn-session-release {
-    background: linear-gradient(135deg, #e74c3c, #c0392b);
-    color: white;
-    border: none;
-}
-
-.btn-session-release:hover:not(:disabled) {
-    background: linear-gradient(135deg, #c0392b, #a93226);
-    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
-}
-
-/* Clickable log entries with message ID */
-.log-entry[data-message-id] {
-    cursor: pointer;
-    transition: background 0.2s ease;
-}
-
-.log-entry[data-message-id]:hover {
-    filter: brightness(1.1);
-}
-
-/* User plane path highlighting */
-.user-plane-active {
-    filter: drop-shadow(0 0 8px rgba(155, 89, 182, 0.6));
-}
-
-/* ============================================
-   PDU SESSION MODE STYLES
-   ============================================ */
-
-/* Toolbar PDU Button */
-.btn-pdu {
-    background: linear-gradient(135deg, #9b59b6, #8e44ad);
-    color: white;
-    border: none;
-    font-weight: 600;
-}
-
-.btn-pdu:hover {
-    background: linear-gradient(135deg, #8e44ad, #7d3c98);
-    box-shadow: 0 4px 15px rgba(155, 89, 182, 0.4);
-}
-
-.btn-pdu.active {
-    background: linear-gradient(135deg, #e74c3c, #c0392b);
-    box-shadow: 0 0 15px rgba(231, 76, 60, 0.5);
-}
-
-/* PDU Sidebar Panels */
-.pdu-sidebar {
-    transition: opacity 0.3s ease, transform 0.3s ease;
-}
-
-.pdu-sidebar.hidden {
-    display: none !important;
-}
-
-.pdu-panel-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px;
-    background: linear-gradient(135deg, rgba(155, 89, 182, 0.2), rgba(142, 68, 173, 0.1));
-    border-bottom: 1px solid rgba(155, 89, 182, 0.3);
-}
-
-.pdu-panel-header h3 {
-    margin: 0;
-    color: var(--text-primary);
-    font-size: 14px;
-}
-
-.btn-close-pdu {
-    background: rgba(231, 76, 60, 0.2);
-    border: 1px solid rgba(231, 76, 60, 0.4);
-    color: #e74c3c;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 16px;
-    line-height: 1;
-    transition: all 0.2s ease;
-}
-
-.btn-close-pdu:hover {
-    background: rgba(231, 76, 60, 0.4);
-    transform: scale(1.1);
-}
-
-/* PDU Messages Panel (Left) */
-.pdu-messages-content {
-    padding: 15px;
-    overflow-y: auto;
-    max-height: calc(100vh - 200px);
-}
-
-.pdu-hint {
-    color: var(--text-secondary);
-    font-style: italic;
-    text-align: center;
-    padding: 20px;
-}
-
-/* Message Card */
-.pdu-message-card {
-    background: rgba(30, 39, 46, 0.8);
-    border-radius: 8px;
-    margin-bottom: 12px;
-    overflow: hidden;
-    animation: slideInLeft 0.3s ease;
-    border-left: 3px solid var(--accent-blue);
-}
-
-.pdu-message-card.response {
-    border-left-color: var(--accent-orange);
-}
-
-@keyframes slideInLeft {
-    from {
-        opacity: 0;
-        transform: translateX(-20px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-.pdu-message-header {
-    padding: 10px 12px;
-    background: rgba(52, 152, 219, 0.15);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 12px;
-}
-
-.pdu-message-card.response .pdu-message-header {
-    background: rgba(243, 156, 18, 0.15);
-}
-
-.pdu-message-step {
-    font-weight: 600;
-    color: var(--accent-blue);
-}
-
-.pdu-message-card.response .pdu-message-step {
-    color: var(--accent-orange);
-}
-
-.pdu-message-flow {
-    color: var(--text-secondary);
-}
-
-.pdu-message-body {
-    padding: 12px;
-}
-
-.pdu-message-body pre {
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 4px;
-    padding: 10px;
-    margin: 0;
-    font-size: 11px;
-    color: #ff8c00;
-    overflow-x: auto;
-    white-space: pre-wrap;
-    word-break: break-all;
-}
-
-/* PDU Steps Container (Right) */
-.pdu-steps-container {
-    padding: 15px;
-}
-
-.pdu-step {
-    margin-bottom: 8px;
-}
-
-.btn-pdu-step {
-    width: 100%;
-    background: rgba(30, 39, 46, 0.8);
-    border: 1px solid rgba(155, 89, 182, 0.3);
-    border-radius: 8px;
-    padding: 12px 15px;
-    color: var(--text-primary);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    text-align: left;
-    transition: all 0.2s ease;
-}
-
-.btn-pdu-step:hover:not(:disabled) {
-    background: rgba(155, 89, 182, 0.2);
-    border-color: rgba(155, 89, 182, 0.5);
-    transform: translateX(4px);
-}
-
-.btn-pdu-step:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.btn-pdu-step.completed {
-    background: rgba(39, 174, 96, 0.15);
-    border-color: rgba(39, 174, 96, 0.4);
-}
-
-.btn-pdu-step.active {
-    background: rgba(52, 152, 219, 0.2);
-    border-color: rgba(52, 152, 219, 0.5);
-    animation: pulse 1.5s infinite;
-}
-
-@keyframes pulse {
-
-    0%,
-    100% {
-        box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.4);
-    }
-
-    50% {
-        box-shadow: 0 0 0 8px rgba(52, 152, 219, 0);
-    }
-}
-
-.step-check {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    color: var(--text-secondary);
-}
-
-.btn-pdu-step.completed .step-check {
-    background: var(--accent-green);
-    color: white;
-}
-
-.step-label {
-    font-weight: 600;
-    color: var(--accent-purple);
-}
-
-.step-flow {
-    color: var(--text-secondary);
-    font-size: 13px;
-}
-
-.step-desc {
-    margin: 4px 0 0 44px;
-    font-size: 11px;
-    color: var(--text-muted);
-}
-
-.pdu-actions {
-    margin-top: 20px;
-    padding-top: 15px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.hidden {
-    display: none !important;
 }
 
 
@@ -2250,8 +1692,8 @@ button:disabled {
 .docker-terminal-window {
     width: 900px;
     height: 700px;
-    background: #000000;
-    border: 1px solid #333333;
+    background: #0d1117;
+    border: 2px solid #30363d;
     border-radius: 8px 8px 0 0;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
     display: flex;
@@ -2267,14 +1709,14 @@ button:disabled {
 }
 
 .docker-terminal-titlebar {
-    background: linear-gradient(to bottom, #2d2d2d, #1a1a1a);
-    height: 30px;
+    background: linear-gradient(to bottom, #161b22, #0d1117);
+    height: 35px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 0 12px;
     border-radius: 6px 6px 0 0;
-    border-bottom: 1px solid #333333;
+    border-bottom: 1px solid #30363d;
 }
 
 .docker-terminal-title {
@@ -2296,59 +1738,65 @@ button:disabled {
 }
 
 .docker-terminal-btn {
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
     border: none;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: bold;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: background 0.2s ease;
-    border-radius: 2px;
+    border-radius: 3px;
 }
 
 .docker-terminal-btn.minimize {
-    background: #404040;
-    color: #ffffff;
+    background: #30363d;
+    color: #c9d1d9;
 }
 
 .docker-terminal-btn.minimize:hover {
-    background: #505050;
+    background: #484f58;
 }
 
 .docker-terminal-btn.maximize {
-    background: #404040;
-    color: #ffffff;
+    background: #30363d;
+    color: #c9d1d9;
 }
 
 .docker-terminal-btn.maximize:hover {
-    background: #505050;
+    background: #484f58;
 }
 
 .docker-terminal-btn.close {
-    background: #e74c3c;
+    background: #da3633;
     color: #ffffff;
 }
 
 .docker-terminal-btn.close:hover {
-    background: #c0392b;
+    background: #f85149;
 }
 
 .docker-terminal-content {
     flex: 1;
-    background: #000000;
-    color: #ffffff;
-    overflow: hidden;
+    background: #0d1117;
+    color: #c9d1d9;
+    padding: 12px;
+    overflow-y: auto;
     font-size: 13px;
     line-height: 1.4;
     display: flex;
     flex-direction: column;
+    outline: none;
+}
+
+.docker-terminal-content:focus {
+    box-shadow: inset 0 0 0 1px rgba(88, 166, 255, 0.3);
 }
 
 .docker-terminal-header {
-    color: #ffffff;
+    color: #7d8590;
     margin-bottom: 12px;
     font-size: 12px;
 }
@@ -2356,9 +1804,8 @@ button:disabled {
 .docker-terminal-output {
     flex: 1;
     overflow-y: auto;
-    padding: 12px;
-    margin-bottom: 0;
 }
+
 .docker-terminal-line {
     margin: 2px 0;
     white-space: pre-wrap;
@@ -2367,12 +1814,12 @@ button:disabled {
 }
 
 .docker-terminal-command {
-    color: #ffffff;
+    color: #58a6ff;
     font-weight: 500;
 }
 
 .docker-terminal-info {
-    color: #ffffff;
+    color: #c9d1d9;
 }
 
 .docker-terminal-success {
@@ -2391,62 +1838,39 @@ button:disabled {
     height: 14px;
 }
 
-/* Realistic inline terminal input styles */
-.docker-terminal-input-line {
+/* Inline input line styles */
+.docker-terminal-input-active {
     display: flex;
     align-items: center;
-    background: transparent;
-    padding: 2px 0;
-    font-family: 'Consolas', 'Courier New', monospace;
-    font-size: 13px;
-    line-height: 1.4;
+    margin: 2px 0;
 }
 
 .docker-terminal-prompt {
-    color: #ffffff;
+    color: #58a6ff;
     margin-right: 8px;
     font-weight: 600;
     white-space: nowrap;
     flex-shrink: 0;
 }
 
-.docker-terminal-input-before,
-.docker-terminal-input-after {
-    color: #ffffff;
+.docker-terminal-prompt-disabled {
+    color: #6c757d;
+    margin-right: 8px;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+    opacity: 0.5;
+}
+
+.docker-terminal-command-text {
+    color: #c9d1d9;
     white-space: pre-wrap;
-    word-break: break-all;
+    word-wrap: break-word;
 }
 
 .docker-terminal-cursor {
-    color: #00ff00;
-    background: #00ff00;
-    animation: cursor-blink 1s step-end infinite;
-    font-weight: normal;
-    width: 8px;
-    display: inline-block;
-    text-align: center;
-}
-
-@keyframes cursor-blink {
-    0%, 50% { opacity: 1; }
-    51%, 100% { opacity: 0; }
-}
-
-/* Legacy input style - kept for compatibility */
-.docker-terminal-input {
-    flex: 1;
-    background: transparent;
-    border: none;
-    color: #ffffff;
-    font-family: 'Consolas', 'Courier New', monospace;
-    font-size: 13px;
-    outline: none;
-    caret-color: #58a6ff;
-}
-
-.docker-terminal-input::selection {
-    background: #1f6feb;
-    color: #ffffff;
+    color: #58a6ff;
+    font-weight: bold;
 }
 
 .docker-terminal-resize-handle {
@@ -2456,35 +1880,25 @@ button:disabled {
     width: 20px;
     height: 20px;
     cursor: nwse-resize;
-    background: linear-gradient(135deg, transparent 50%, #333333 50%);
+    background: linear-gradient(135deg, transparent 50%, #30363d 50%);
 }
 
 /* Docker terminal scrollbar */
 .docker-terminal-output::-webkit-scrollbar {
-    width: 10px;
+    width: 12px;
 }
 
 .docker-terminal-output::-webkit-scrollbar-track {
-    background: #000000;
+    background: #0d1117;
 }
 
 .docker-terminal-output::-webkit-scrollbar-thumb {
-    background: #333333;
-    border-radius: 5px;
+    background: #30363d;
+    border-radius: 6px;
 }
 
 .docker-terminal-output::-webkit-scrollbar-thumb:hover {
-    background: #444444;
-}
-
-/* Tab completion suggestion line — plain text, directly below the input */
-.tab-suggestions {
-    display: none;
-    font-family: 'Consolas', 'Courier New', monospace;
-    font-size: 13px;
-    color: #ffffff;
-    padding: 2px 0;
-    white-space: pre;
+    background: #484f58;
 }
 
 /* Responsive Docker terminal */
@@ -2503,10 +1917,6 @@ button:disabled {
     }
 
     .docker-terminal-content {
-        font-size: 12px;
-    }
-
-    .docker-terminal-input {
         font-size: 12px;
     }
 }

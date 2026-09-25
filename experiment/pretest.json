@@ -5,63 +5,182 @@
   },
   "questions": [
     {
-      "question": "Q1. In 5G CM, which layer primarily governs CM-IDLE and CM-CONNECTED states?",
+      "question": "Q1. Which interface connects the User Equipment (UE) to the Access and Mobility Management Function (AMF)?",
       "answers": {
-        "a": "Radio Resource Control (RRC)",
-        "b": "NAS (Non-Access Stratum)",
-        "c": "SCTP Layer",
-        "d": "PHY Layer"
+        "a": "N2",
+        "b": "N3",
+        "c": "N1",
+        "d": "N4"
       },
-      "correctAnswer": "b",
-      "difficulty": "beginner",
       "explanations": {
-        "a": "Incorrect. RRC manages radio connection states.",
-        "b": "Correct. CM states are managed at NAS layer.",
-        "c": "Incorrect. SCTP is transport protocol.",
-        "d": "Incorrect. PHY handles physical transmission."
-      }
-    },
-    {
-      "question": "Q2. What is the primary purpose of the CM-IDLE state?",
-      "answers": {
-        "a": "Maintain RRC connection",
-        "b": "No MM context exists",
-        "c": "UE reachable without RRC connection",
-        "d": "UE detached"
+        "a": "Incorrect. N2 connects the gNB to the AMF.",
+        "b": "Incorrect. N3 carries user-plane data between gNB and UPF.",
+        "c": "Correct. N1 is the NAS signaling interface between UE and AMF.",
+        "d": "Incorrect. N4 connects SMF and UPF."
       },
       "correctAnswer": "c",
+      "difficulty": "beginner"
+    },
+    {
+      "question": "Q2. What protocol is used on the N2 interface between gNB and AMF?",
+      "answers": {
+        "a": "GTP-U",
+        "b": "PFCP",
+        "c": "NGAP",
+        "d": "NAS"
+      },
+      "explanations": {
+        "a": "Incorrect. GTP-U is used for user-plane data.",
+        "b": "Incorrect. PFCP is used on the N4 interface.",
+        "c": "Correct. NGAP is used for control signaling between gNB and AMF.",
+        "d": "Incorrect. NAS is exchanged end-to-end between UE and AMF."
+      },
+      "correctAnswer": "c",
+      "difficulty": "intermediate"
+    },
+    {
+      "question": "Q3. The N3 interface primarily carries:",
+      "answers": {
+        "a": "Control signaling messages",
+        "b": "User data traffic",
+        "c": "Policy rules",
+        "d": "Authentication information"
+      },
+      "explanations": {
+        "a": "Incorrect. Control signaling uses N2 and NAS.",
+        "b": "Correct. N3 carries user-plane traffic between gNB and UPF.",
+        "c": "Incorrect. Policy rules are handled by PCF.",
+        "d": "Incorrect. Authentication is handled via AUSF and AMF."
+      },
+      "correctAnswer": "b",
+      "difficulty": "intermediate"
+    },
+    {
+      "question": "Q4. Which protocol runs over the N3 interface?",
+      "answers": {
+        "a": "PFCP over UDP",
+        "b": "NGAP over SCTP",
+        "c": "GTP-U over UDP",
+        "d": "HTTP/2 over TCP"
+      },
+      "explanations": {
+        "a": "Incorrect. PFCP runs on N4.",
+        "b": "Incorrect. NGAP runs on N2.",
+        "c": "Correct. GTP-U over UDP is used for user-plane tunneling on N3.",
+        "d": "Incorrect. HTTP/2 is used for service-based interfaces."
+      },
+      "correctAnswer": "c",
+      "difficulty": "intermediate"
+    },
+    {
+      "question": "Q5. What is the primary purpose of the N4 interface?",
+      "answers": {
+        "a": "User authentication",
+        "b": "SMF controlling UPF forwarding rules",
+        "c": "Radio resource management",
+        "d": "External data network connection"
+      },
+      "explanations": {
+        "a": "Incorrect. Authentication is handled by AUSF.",
+        "b": "Correct. N4 allows SMF to control UPF via PFCP.",
+        "c": "Incorrect. Radio resource management is handled by gNB.",
+        "d": "Incorrect. External data network uses N6."
+      },
+      "correctAnswer": "b",
+      "difficulty": "intermediate"
+    },
+    {
+      "question": "Q6. The N5 interface connects which two network functions?",
+      "answers": {
+        "a": "SMF and UPF",
+        "b": "AMF and UDM",
+        "c": "PCF and AF",
+        "d": "gNB and AMF"
+      },
+      "explanations": {
+        "a": "Incorrect. SMF and UPF connect via N4.",
+        "b": "Incorrect. AMF and UDM connect via N8.",
+        "c": "Correct. N5 connects the PCF and the Application Function.",
+        "d": "Incorrect. gNB and AMF connect via N2."
+      },
+      "correctAnswer": "c",
+      "difficulty": "beginner"
+    },
+    {
+      "question": "Q7. Which transport protocol does NGAP use on the N2 interface?",
+      "answers": {
+        "a": "UDP",
+        "b": "TCP",
+        "c": "SCTP",
+        "d": "HTTP"
+      },
+      "explanations": {
+        "a": "Incorrect. UDP is used for GTP-U.",
+        "b": "Incorrect. TCP is not used for NGAP.",
+        "c": "Correct. NGAP uses SCTP for reliable signaling.",
+        "d": "Incorrect. HTTP is used for service-based interfaces."
+      },
+      "correctAnswer": "c",
+      "difficulty": "intermediate"
+    },
+    {
+      "question": "Q8. What does TEID stand for in the context of the N3 interface?",
+      "answers": {
+        "a": "Transmission Endpoint Identifier",
+        "b": "Tunnel Endpoint Identifier",
+        "c": "Transfer Encryption ID",
+        "d": "Traffic Endpoint Indicator"
+      },
+      "explanations": {
+        "a": "Incorrect.",
+        "b": "Correct. TEID identifies GTP-U tunnels.",
+        "c": "Incorrect.",
+        "d": "Incorrect."
+      },
+      "correctAnswer": "b",
+      "difficulty": "intermediate"
+    },
+    {
+      "question": "Q9. NAS messages on the N1 interface are:",
+      "answers": {
+        "a": "Read and processed by the gNB",
+        "b": "Transparently relayed by the gNB",
+        "c": "Modified by the gNB before forwarding",
+        "d": "Only used for data sessions"
+      },
+      "explanations": {
+        "a": "Incorrect.",
+        "b": "Correct. NAS messages are transparently relayed by the gNB.",
+        "c": "Incorrect.",
+        "d": "Incorrect."
+      },
+      "correctAnswer": "b",
+      "difficulty": "intermediate"
+    },
+    {
+      "question": "Q10. Which interface connects the UPF to the Data Network (Internet)?",
+      "answers": {
+        "a": "N3",
+        "b": "N4",
+        "c": "N5",
+        "d": "N6"
+      },
+      "correctAnswer": "d",
       "difficulty": "beginner",
       "explanations": {
         "a": "Incorrect.",
         "b": "Incorrect.",
-        "c": "Correct. UE is reachable via paging.",
-        "d": "Incorrect."
-      }
-    },
-    {
-      "question": "Q3. Which procedure triggers transition from CM-IDLE to CM-CONNECTED?",
-      "answers": {
-        "a": "Periodic Registration",
-        "b": "Service Request",
-        "c": "SIM Refresh",
-        "d": "Airplane Mode"
-      },
-      "correctAnswer": "b",
-      "difficulty": "beginner",
-      "explanations": {
-        "a": "Incorrect.",
-        "b": "Correct.",
         "c": "Incorrect.",
-        "d": "Incorrect."
+        "d": "Correct."
       }
     },
     {
-      "question": "Q4. Which message carries the NAS Service Request to AMF?",
+      "question": "Q11. The PFCP protocol on the N4 interface uses which port number?",
       "answers": {
-        "a": "RRC Setup Complete",
-        "b": "Initial UE Message",
-        "c": "NGAP Paging",
-        "d": "Path Switch Request"
+        "a": "8080",
+        "b": "8805",
+        "c": "2152",
+        "d": "443"
       },
       "correctAnswer": "b",
       "difficulty": "intermediate",
@@ -73,15 +192,32 @@
       }
     },
     {
-      "question": "Q5. Which NF restores UE access context during Service Request?",
+      "question": "Q12. What type of API is used on the N5 interface?",
       "answers": {
-        "a": "UPF",
-        "b": "SMF",
-        "c": "AMF",
-        "d": "PCF"
+        "a": "SOAP-based",
+        "b": "HTTP/2-based RESTful APIs",
+        "c": "FTP-based",
+        "d": "SNMP-based"
+      },
+      "correctAnswer": "b",
+      "difficulty": "intermediate",
+      "explanations": {
+        "a": "Incorrect.",
+        "b": "Correct.",
+        "c": "Incorrect.",
+        "d": "Incorrect."
+      }
+    },
+    {
+      "question": "Q13. During a handover, which interface is used to update the UPF's data forwarding path?",
+      "answers": {
+        "a": "N2",
+        "b": "N3",
+        "c": "N4",
+        "d": "N6"
       },
       "correctAnswer": "c",
-      "difficulty": "beginner",
+      "difficulty": "intermediate",
       "explanations": {
         "a": "Incorrect.",
         "b": "Incorrect.",
@@ -90,46 +226,12 @@
       }
     },
     {
-      "question": "Q6. After Service Request completion, UE state becomes:",
+      "question": "Q14. What does CUPS stand for in the context of the N4 interface?",
       "answers": {
-        "a": "Deregistered",
-        "b": "CM-IDLE",
-        "c": "CM-CONNECTED",
-        "d": "SM-INACTIVE"
-      },
-      "correctAnswer": "c",
-      "difficulty": "beginner",
-      "explanations": {
-        "a": "Incorrect.",
-        "b": "Incorrect.",
-        "c": "Correct.",
-        "d": "Incorrect."
-      }
-    },
-    {
-      "question": "Q7. What is preserved during UE Context Release?",
-      "answers": {
-        "a": "RRC connection",
-        "b": "NAS context",
-        "c": "Radio bearer",
-        "d": "PHY resources"
-      },
-      "correctAnswer": "b",
-      "difficulty": "intermediate",
-      "explanations": {
-        "a": "Incorrect.",
-        "b": "Correct.",
-        "c": "Incorrect.",
-        "d": "Incorrect."
-      }
-    },
-    {
-      "question": "Q8. Who initiates UE Context Release Command?",
-      "answers": {
-        "a": "UE",
-        "b": "AMF",
-        "c": "SMF",
-        "d": "gNB"
+        "a": "Core User Plane System",
+        "b": "Control and User Plane Separation",
+        "c": "Centralized UPF Processing System",
+        "d": "Connected User Plane Services"
       },
       "correctAnswer": "b",
       "difficulty": "beginner",
@@ -141,117 +243,15 @@
       }
     },
     {
-      "question": "Q9. Which message confirms UE Context Release completion?",
+      "question": "Q15. The N8 interface connects AMF to which network function?",
       "answers": {
-        "a": "Initial Context Setup Response",
-        "b": "UEContextReleaseComplete",
-        "c": "Service Accept",
-        "d": "NG Reset"
-      },
-      "correctAnswer": "b",
-      "difficulty": "beginner",
-      "explanations": {
-        "a": "Incorrect.",
-        "b": "Correct.",
-        "c": "Incorrect.",
-        "d": "Incorrect."
-      }
-    },
-    {
-      "question": "Q10. What happens to user-plane tunnels during context release?",
-      "answers": {
-        "a": "Deleted permanently",
-        "b": "Suspended",
-        "c": "Unaffected",
-        "d": "Moved to SMF"
-      },
-      "correctAnswer": "b",
-      "difficulty": "intermediate",
-      "explanations": {
-        "a": "Incorrect.",
-        "b": "Correct.",
-        "c": "Incorrect.",
-        "d": "Incorrect."
-      }
-    },
-    {
-      "question": "Q11. What triggers network-initiated context release?",
-      "answers": {
-        "a": "TAU",
-        "b": "Inactivity timer expiry",
-        "c": "Handover",
-        "d": "PFCP update"
-      },
-      "correctAnswer": "b",
-      "difficulty": "beginner",
-      "explanations": {
-        "a": "Incorrect.",
-        "b": "Correct.",
-        "c": "Incorrect.",
-        "d": "Incorrect."
-      }
-    },
-    {
-      "question": "Q12. Paging in CM-IDLE is managed by:",
-      "answers": {
-        "a": "UPF only",
-        "b": "AMF via registration area",
-        "c": "SMF",
-        "d": "SCTP"
-      },
-      "correctAnswer": "b",
-      "difficulty": "intermediate",
-      "explanations": {
-        "a": "Incorrect.",
-        "b": "Correct.",
-        "c": "Incorrect.",
-        "d": "Incorrect."
-      }
-    },
-    {
-      "question": "Q13. Which entity triggers paging on downlink data?",
-      "answers": {
-        "a": "UPF",
-        "b": "gNB",
+        "a": "SMF",
+        "b": "UDM",
         "c": "PCF",
-        "d": "AUSF"
-      },
-      "correctAnswer": "a",
-      "difficulty": "intermediate",
-      "explanations": {
-        "a": "Correct.",
-        "b": "Incorrect.",
-        "c": "Incorrect.",
-        "d": "Incorrect."
-      }
-    },
-    {
-      "question": "Q14. Which RRC state is required before sending Service Request?",
-      "answers": {
-        "a": "RRC-INACTIVE",
-        "b": "RRC-CONNECTED",
-        "c": "RRC-NULL",
-        "d": "RRC-IDLE"
+        "d": "UPF"
       },
       "correctAnswer": "b",
       "difficulty": "beginner",
-      "explanations": {
-        "a": "Incorrect.",
-        "b": "Correct.",
-        "c": "Incorrect.",
-        "d": "Incorrect."
-      }
-    },
-    {
-      "question": "Q15. CM-IDLE to CM-CONNECTED transition involves:",
-      "answers": {
-        "a": "Deregistration",
-        "b": "RRC re-establishment + context restore",
-        "c": "Session deletion",
-        "d": "Authentication restart"
-      },
-      "correctAnswer": "b",
-      "difficulty": "intermediate",
       "explanations": {
         "a": "Incorrect.",
         "b": "Correct.",

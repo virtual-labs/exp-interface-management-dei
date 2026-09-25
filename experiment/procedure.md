@@ -1,305 +1,349 @@
-**Video Walkthrough:** We have created a video demonstrating this experiment where we perform the procedure and explain the steps. [Click here to watch on YouTube]( https://youtu.be/7H8q9zXD26c)
+**Video Walkthrough:** We have created a video demonstrating this experiment where we perform the procedure and explain the steps. [Click here to watch on YouTube]( https://youtu.be/ANEiKD3O1Bw)
 
-## Step 1: Deploy Core Network
+## Deploy  Network Interface
 
-**Option A (Terminal):**
-Click on the **Terminal button** to open the terminal then from the project root directory, execute the following command:
+### 1. Deploy N1 Interface (UE ↔ AMF)
+-   **Action**: Click on **"N1"** in the left sidebar palette.
+-   **Observation**:
+    -   **Canvas**: UE, gNB, and AMF appear. A blue connection (N1/NAS) connects UE to gNB, and connected to AMF. AMF connects to the Service Bus.
+    -   **Right Panel**: Shows "N1 Interface Configuration" (UE → AMF).
+    -   **Logs**: `N1 Interface deployed successfully`.
 
-**Deploy Core Network Components:**
-This command starts all core network components (AMF, SMF, UPF, NRF, etc.) in detached mode using the main Docker Compose file. The `-d` flag runs containers in the background, allowing you to continue with other deployments.
+<img src="images/prd1.png" width="90%">
+
+*Fig: N1 Interface Deployment*
+
+### 2. Deploy N2 Interface (gNB ↔ AMF)
+-   **Action**: Click on **"N2"** in the left sidebar.
+-   **Observation**:
+    -   **Canvas**: Visually reinforces the gNB to AMF connection (NGAP).
+    -   **Right Panel**: Shows "N2 Interface Configuration" (gNB → AMF).
+    -   **Logs**: `N2 Interface configured successfully` (uses existing N1 topology).
+
+<img src="images/prd2.png" width="90%">
+
+*Fig: N2 Interface Deployment*
+
+### 3. Deploy N3 Interface (gNB ↔ UPF)
+-   **Action**: Click on **"N3"** in the left sidebar.
+-   **Observation**:
+    -   **Canvas**: A UPF appears. An orange line (N3 Tunnel) connects gNB to UPF. The Data Network (Internet) appears connected to UPF.
+    -   **Right Panel**: Shows "N3 Interface Configuration" (gNB → UPF).
+    -   **Logs**: `N3 Interface deployed successfully` (Data Path established).
+
+<img src="images/prd3.png" width="90%">
+
+*Fig: N3 Interface Deployment*
+
+### 4. Deploy N4 Interface (SMF ↔ UPF)
+-   **Action**: Click on **"N4"** in the left sidebar.
+-   **Observation**:
+    -   **Canvas**: An SMF appears. A red line (N4) connects SMF to UPF. SMF connects to the Service Bus.
+    -   **Right Panel**: Shows "N4 Interface Configuration" (SMF → UPF).
+    -   **Logs**: `N4 Interface deployed successfully`.
+
+<img src="images/prd4.png" width="90%">
+
+*Fig: N4 Interface Deployment*
+
+### 5. Deploy N5 Interface (AF ↔ PCF)
+-   **Action**: Click on **"N5"** in the left sidebar.
+-   **Observation**:
+    -   **Canvas**: An AF (Application Function) and PCF (Policy Control Function) appear. AF connects to PCF. Both connect to the Service Bus.
+    -   **Right Panel**: Shows "N5 Interface Configuration" (AF → PCF).
+    -   **Logs**: `N5 Interface deployed successfully`.
+
+<img src="images/prd5.png" width="90%">
+
+*Fig: N5 Interface Deployment*
+
+### 6. Deploy N6 Interface (UPF ↔ DN)
+-   **Action**: Click on **"N6"** in the left sidebar.
+-   **Observation**:
+    -   **Canvas**: Reinforces the connection between UPF and Data Network (Internet).
+    -   **Right Panel**: Shows "N6 Interface Configuration" (UPF → DN).
+    -   **Logs**: `N6 Interface deployed successfully`.
+
+<img src="images/prd6.png" width="90%">
+
+*Fig: N6 Interface Deployment*
+
+### 7. Deploy N7 Interface (SMF ↔ PCF)
+-   **Action**: Click on **"N7"** in the left sidebar.
+-   **Observation**:
+    -   **Canvas**: Updates connections between SMF and PCF (Logic).
+    -   **Right Panel**: Shows "N7 Interface Configuration" (SMF → PCF).
+    -   **Logs**: `N7 Interface deployed successfully`.
+
+<img src="images/prd7.png" width="90%">
+
+*Fig: N7 Interface Deployment*
+
+### 8. Deploy N8 Interface (AMF ↔ UDM)
+-   **Action**: Click on **"N8"** in the left sidebar.
+-   **Observation**:
+    -   **Canvas**: A UDM (Unified Data Management) appears and connects to the Service Bus.
+    -   **Right Panel**: Shows "N8 Interface Configuration" (AMF → UDM).
+    -   **Logs**: `N8 Interface deployed successfully`.
+
+<img src="images/prd8.png" width="90%">
+
+*Fig: N8 Interface Deployment*
+
+### 9. Deploy N9 Interface (UPF ↔ UPF)
+-   **Action**: Click on **"N9"** in the left sidebar.
+-   **Observation**:
+    -   **Canvas**: Updates logical connections between distributed UPFs, showing user-plane traffic forwarding paths between the Intermediate UPF (I-UPF) and the PSA UPF.
+    -   **Right Panel**: Shows "N9 Interface Configuration" (UPF → UPF).
+    -   **Logs**: `N9 Interface deployed successfully`.
+
+<img src="images/prd9.png" width="90%">
+
+### 10. Deploy N10 Interface (SMF ↔ UDM)
+-   **Action**: Click on **"N10"** in the left sidebar.
+-   **Observation**:
+    -   **Canvas**: Updates logical connections for SMF to access Subscription specific data.
+    -   **Right Panel**: Shows "N10 Interface Configuration" (SMF → UDM).
+    -   **Logs**: `N10 Interface deployed successfully`.
+
+<img src="images/prd10.png" width="90%">
+
+*Fig: N10 Interface Deployment*
+
+### 11. Deploy N11 Interface (AMF ↔ SMF)
+-   **Action**: Click on **"N11"** in the left sidebar.
+-   **Observation**:
+    -   **Canvas**: Creates a dashed green line between AMF and SMF (SBI).
+    -   **Right Panel**: Shows "N11 Interface Configuration" (AMF → SMF).
+    -   **Logs**: `N11 Interface deployed successfully`.
+
+<img src="images/prd11.png" width="90%">
+
+*Fig: N11 Interface Deployment*
+
+### 12. Deploy N12 Interface (AMF ↔ AUSF)
+-   **Action**: Click on **"N12"** in the left sidebar.
+-   **Observation**:
+    -   **Canvas**: An AUSF (Authentication Server Function) appears and connects to the Service Bus.
+    -   **Right Panel**: Shows "N12 Interface Configuration" (AMF → AUSF).
+    -   **Logs**: `N12 Interface deployed successfully`.
+
+<img src="images/prd12.png" width="90%">
+
+*Fig: N12 Interface Deployment*
+
+### 13. Deploy N13 Interface (AMF ↔ NRF)
+-   **Action**: Click on **"N13"** in the left sidebar.
+-   **Observation**:
+    -   **Canvas**: An NRF (Network Repository Function) appears and connects to the Service Bus.
+    -   **Right Panel**: Shows "N13 Interface Configuration" (AMF → NRF).
+    -   **Logs**: `N13 Interface deployed successfully` (AMF discovers SMF/UDM via NRF).
+
+<img src="images/prd13.png" width="90%">
+
+*Fig: N13 Interface Deployment*
+
+## Deploy  Network Interface (Automatic)
+
+Click the **"🚀 Deploy All Interfaces"** button on the top toolbar. 
+
+
+<img src="images/prd14.png" width="90%">
+
+*Fig:Core Network Deployment*
+
+Deploy All Interfaces button on the top toolbar initiating the automated sequential deployment of all N-interfaces.
+
+<img src="images/prd15.png" width="90%">
+
+*Fig: Core Network Deployed*
+
+All N-interfaces fully deployed with the complete 5G topology visible on the canvas, showing all network functions (AMF, SMF,UDR, NSSF,  UPF, UDM, AUSF, PCF, AF, NRF) connected via the Service Bus
+
+### Deploy 5G Network Functions (Docker-Terminal):
+
+Click on the **Terminal button** to open the terminal then from the project root directory, execute the deployment commands in the following sequence:
+
+#### Step 1: Deploy Core Network Functions
+
+Execute the following command to start all core network components (AMF, SMF, UPF, NRF, UDM, AUSF, PCF, AF, etc.) in detached mode:
 
 ```bash
 docker compose -f docker-compose.yml up -d
 ```
 
-**Command Parameters:**
-- `docker compose` - Docker Compose orchestration tool
-- `-f docker-compose.yml` - Specifies the compose file for core network services
-- `up` - Creates and starts containers
-- `-d` - Detached mode (runs in background)
+**Command Details:**
+- `-f docker-compose.yml`: Specifies the compose file containing the core network configuration
+- `up`: Creates and starts containers defined in the compose file
+- `-d`: Runs containers in detached mode (background), allowing you to continue using the terminal
 
-<img src="images/prd1.png" width="90%">
+**What Gets Deployed:**
+This command initializes the foundational service bus and launches all core 5G network functions:
+- **AMF** (Access and Mobility Management Function)
+- **SMF** (Session Management Function)
+- **UDR** (Unified Data Repository)
+- **NSSF** (Network Slice Selection Function)
+- **UPF** (User Plane Function)
+- **NRF** (Network Repository Function)
+- **UDM** (Unified Data Management)
+- **AUSF** (Authentication Server Function)
+- **PCF** (Policy Control Function)
+- **AF** (Application Function)
 
-*Fig: Terminal output showing core network deployment with docker compose*
 
-**Deploy gNB (Base Station) Services:**
-Once the core network is up and running, deploy the gNB services. This command initializes the gNB (Next Generation NodeB - 5G base station) and establishes connectivity with the core network components deployed in the previous step.
+**Verification:**
+Wait 10-15 seconds for all containers to initialize. You should see messages indicating successful creation and startup of each component.
+
+
+
+<img src="images/prd18.png" width="90%">
+
+*Fig: Terminal output showing core network deployment initialization*
+
+<img src="images/prd19.png" width="90%">
+
+*Fig: Successfully deployed core network with all service bus connections established*
+
+If you deploy the core using the terminal, it will also create two additional network interfaces:
+- **N22** between AMF and NSSF
+- **N35** between UDM and UDR
+
+---
+
+#### Step 2: Deploy gNB (Base Station)
+
+Once the core network is running and stable, deploy the gNB (base station) services:
 
 ```bash
 docker compose -f docker-compose-gnb.yml up -d
 ```
 
-**Command Parameters:**
-- `-f docker-compose-gnb.yml` - Specifies the compose file for gNB services
-- Establishes N2 interface connection to AMF for control plane
-- Establishes N3 interface connection to UPF for user plane
+**Command Details:**
+- `-f docker-compose-gnb.yml`: Specifies the gNB-specific compose file
+- Uses the same network created by the core network deployment
+- Automatically connects to the core network's service bus
 
-<img src="images/prd2.png" width="90%">
+**What Gets Deployed:**
+This command launches the RAN (Radio Access Network) layer:
+- **gNB** (5G Base Station) container
+- **RIC** (RAN Intelligent Controller) services
+- Radio interface handlers for N1, N2, and N3 connectivity
 
-*Fig: Terminal output showing gNB deployment and connection to core network*
+**Network Connections Established:**
+- **N1 Interface** (UE ↔ AMF): Via gNB to AMF communication
+- **N2 Interface** (gNB ↔ AMF): NGAP protocol for control plane
+- **N3 Interface** (gNB ↔ UPF): GTP-U tunnels for data plane traffic
+
+
+
+**Verification:**
+Wait 5-10 seconds for the gNB to establish connections with the AMF and UPF. Check that heartbeat messages are exchanged with the core network.
+
+<img src="images/prd20.png" width="90%">
+
+*Fig: Terminal output showing gNB deployment and network connections*
+
+<img src="images/prd21.png" width="90%">
+
+*Fig: gNB fully deployed with established N1, N2, N3 interface connections to core network*
 
 ---
 
-**Deploy UE (User Equipment) Services:**
-After the gNB deployment is complete, deploy the UE services. This command starts the UE containers (representing 5G mobile devices/endpoints) and attaches them to the gNB for communication.
+#### Step 3: Deploy UE (User Equipment)
+
+After the gNB deployment is complete and verified, deploy the UE (User Equipment) services:
 
 ```bash
 docker compose -f docker-compose-ue.yml up -d
 ```
 
-**Command Parameters:**
-- `-f docker-compose-ue.yml` - Specifies the compose file for UE services
-- UE containers connect to gNB via Uu interface (radio interface)
-- Enables establishment of PDU sessions and data transfer
+**Command Details:**
+- `-f docker-compose-ue.yml`: Specifies the UE-specific compose file
+- Configures one or more UE instances to connect to the gNB
+- Establishes end-to-end connectivity with the entire 5G network
 
-<img src="images/prd3.png" width="90%">
+**What Gets Deployed:**
+This command launches one or more user equipment instances:
+- **UE Container(s)** - Emulated user devices with 5G capabilities
+- **RRC** (Radio Resource Control) handlers
+- **NAS** (Non-Access Stratum) protocol stack for control messages
+- **IP Stack** for data packet routing
 
-*Fig: Terminal output showing UE deployment and attachment to gNB*
 
----
 
-<img src="images/prd4.png" width="90%">
+**Verification:**
+Wait 15-30 seconds for the complete registration and session establishment process to complete. The UE should successfully:
+1. Register with the AMF (N1 messaging)
+2. Establish a PDU session with the SMF (N11 messaging)
+3. Connect through the UPF to the data network (N6 path)
 
-*Fig: Complete 5G network topology with UE, gNB, and all core network functions running*
+This completes the end-to-end 5G network topology with all N-interfaces operational.
 
----
+<img src="images/prd22.png" width="90%">
 
-**Verify Container Status:**
-To verify that all containers are running successfully, execute the following command. This displays a real-time list of all running containers with their status, showing whether each service is up and healthy.
+*Fig: Terminal output showing UE deployment and registration process*
+
+<img src="images/prd23.png" width="90%">
+
+*Fig: Complete 5G network operational with UE successfully registered and connected to data network*
+
+
+## Verify and Monitor Deployed Services
+
+After completing all three deployment steps, verify that all containers are running correctly and monitor their status.
+
+### Step 1: List All Running Containers
+
+**To verify that all containers are running successfully, execute:**
 
 ```bash
 docker ps
 ```
 
-**Output Shows:**
-- Container ID, Image name, Status, and Port mappings
-- All core network functions, gNB, and UE containers
-- Confirms successful deployment of the entire 5G network topology
+**Expected Output:**
+This command displays a table with columns:
+- `CONTAINER ID`: Unique identifier for each container
+- `IMAGE`: The Docker image each container is running from
+- `COMMAND`: The entrypoint command
+- `CREATED`: When the container was created
+- `STATUS`: Current state (e.g., "Up 5 minutes")
+- `PORTS`: Published ports (if any)
+- `NAMES`: Human-readable container names
 
-<img src="images/prd5.png" width="90%">
 
-*Fig: Docker PS output listing all running 5G network containers with their status*
+<img src="images/prd16.png" width="90%">
+
+*Fig: Docker PS command output showing all deployed 5G network containers in running state*
 
 ---
 
-**Monitor Core Network Status Continuously:**
-To continuously monitor the status of the core network containers in real-time, use the `watch` command. This will refresh the display every 2 seconds by default, allowing you to observe the state changes of containers during the connection management process.
+### Step 2: Continuously Monitor Core Network Status
+
+**To continuously monitor the status of the core network containers and their health, use:**
 
 ```bash
 watch docker compose -f docker-compose.yml ps -a
 ```
 
-**Command Parameters:**
-- `watch` - Runs command repeatedly at 2-second intervals
-- `-a` - Shows all containers (running and stopped)
-- Useful for monitoring during connection establishment and troubleshooting
-
-<img src="images/prd6.png" width="90%">
-
-*Fig: Continuous real-time monitoring of core network container status*
-
----
-
-**Option B (Automatic):** Click the **🚀 Deploy Core** button on the top toolbar. This will automatically clear any existing topology and sequentially deploy the Service Bus, Network Functions (NRF, AMF, SMF, UPF, AUSF, UDM, PCF, NSSF, UDR, MySQL, gNB, UE), and establish the necessary connections.
-
-<img src="images/prd7.png" width="90%">
-
-*Fig: Automatic one-click core network deployment*
-
----
-
-**Option C (Manual):** Manually add each Network Function using the **➕ Add NF** button and connect them using the **Select Source** and **Select Destination** buttons in the left sidebar.
-
-<img src="images/prd24.png" width="90%">
-
-*Fig: Core Network Deployment*
-
-## Step 2: Enable Connection Management Mode
-
-Once the core network is successfully deployed and all NFs show a "Stable" status, click on the **📡 Connection Management** button in the top toolbar to switch the interface to the Connection Management experiment mode.
-
-<img src="images/prd8.png" width="90%">
-
-*Fig: Connection Management Mode*
-
----
-
-## Step 3: Observe Experiment Panels
-
-You will now see:
-
-- **Right Panel (Connection Management Process):** A step-by-step interactive flow with 13 steps for the complete connection management process.
-- **Left Panel (Connection Management Messages):** An inspector panel that displays the JSON content of every Request and Response message sent between NFs.
-
-<img src="images/prd9.png" width="90%">
-
-*Fig: Experiment Panels*
-
----
-
-## Step 4: RRC Connection Request
-
-Click **Step 1** in the right panel.
-
-- **Action:** UE sends an RRC Connection Request to the gNB to establish radio connection.
-- **Observation:** A packet travels from UE to gNB. The left panel shows the RRC message details including rrcMessage, ueIdentity, and establishmentCause.
-
-<img src="images/prd10.png" width="90%">
-
-*Fig: RRC Connection Request*
-
----
-
-## Step 5: RRC Connection Setup
-
-Click **Step 2** in the right panel.
-
-- **Action:** gNB responds with RRC Connection Setup, allocating radio resources.
-- **Observation:** A packet travels from gNB to UE. The left panel shows the RRC Connection Setup with SRB1 configuration.
-
-<img src="images/prd11.png" width="90%">
-
-*Fig: RRC Connection Setup*
-
----
-
-## Step 6: RRC Connection Setup Complete
-
-Click **Step 3** in the right panel.
-
-- **Action:** UE confirms RRC connection establishment and includes NAS Service Request.
-- **Observation:** A packet travels from UE to gNB. The message contains embedded NAS PDU with Service Request.
-
-<img src="images/prd12.png" width="90%">
-
-*Fig: RRC Connection Setup Complete*
-
----
-
-## Step 7: NAS Service Request
-
-Click **Step 4** in the right panel.
-
-- **Action:** UE sends NAS Service Request to AMF via N1 interface to request PDU session.
-- **Observation:** A packet travels from UE to AMF. The left panel displays the NAS message with 5G-GUTI, service type, and PDU session status.
-
-<img src="images/prd13.png" width="90%">
-
-*Fig: NAS Service Request*
-
----
-
-## Step 8: AMF Validates UE Context
-
-Click **Step 5** in the right panel.
-
-- **Action:** AMF performs internal validation of UE context and credentials.
-- **Observation:** The left panel shows AMF internal checks including validation of 5G-GUTI, UE context fetch, and access rights verification.
-
-<img src="images/prd14.png" width="90%">
-
-*Fig: AMF Validates UE Context*
-
----
-
-## Step 9: Update SM Context Request
-
-Click **Step 6** in the right panel.
-
-- **Action:** AMF forwards the service request to SMF via Nsmf_PDUSession interface.
-- **Observation:** A packet travels from AMF to SMF. The message includes ueId, pduSessionId, and upActivation flag.
-
-<img src="images/prd15.png" width="90%">
-
-*Fig: Update SM Context Request*
-
----
-
-## Step 10: SMF Internal Processing
-
-Click **Step 7** in the right panel.
-
-- **Action:** SMF performs internal processing to prepare for UPF session establishment.
-- **Observation:** The left panel shows SMF processing actions including UPF selection, TEID allocation, and PFCP rules preparation.
-
-<img src="images/prd16.png" width="90%">
-
-*Fig: SMF Internal Processing*
-
----
-
-## Step 11: PFCP Session Establishment Request
-
-Click **Step 8** in the right panel.
-
-- **Action:** SMF sends PFCP Session Establishment Request to UPF via N4 interface to create user plane session.
-- **Observation:** A packet travels from SMF to UPF. The response JSON contains the tunnel TEIDs (upfTeid: 0x1001, gnbTeid: 0x2001) and QoS parameters.
+**Command Details:**
+- `watch`: Refreshes the output every 2 seconds (use `-n 5` to change interval to 5 seconds)
+- `docker compose ps -a`: Shows status of all services in the compose file
+- Press `q` to exit the watch mode
+
+**What Each Column Shows:**
+- `NAME`: Service name from the compose file
+- `COMMAND`: Startup command for the service
+- `STATE`: Running, Dead, Exited, etc.
+- `PORTS`: Port mappings and protocols
+- `STATUS`: Health status and uptime
+
+
+**Exit Watch Mode:**
+Press `Ctrl+C` on Windows or Mac to stop the continuous monitoring.
 
 <img src="images/prd17.png" width="90%">
 
-*Fig: PFCP Session Establishment Request*
+*Fig: Continuous monitoring view of core network services with live status updates*
 
----
 
-## Step 12: PFCP Session Establishment Response
 
-Click **Step 9** in the right panel.
-
-- **Action:** UPF confirms session establishment and returns success response.
-- **Observation:** A packet travels from UPF to SMF. The response confirms successful PFCP session establishment.
-
-<img src="images/prd18.png" width="90%">
-
-*Fig: PFCP Session Establishment Response*
-
----
-
-## Step 13: Update SM Context Response
-
-Click **Step 10** in the right panel.
-
-- **Action:** SMF sends Update SM Context Response back to AMF with tunnel information.
-- **Observation:** A packet travels from SMF to AMF. The message includes session status as "activated" and N3 tunnel details.
-
-<img src="images/prd19.png" width="90%">
-
-*Fig: Update SM Context Response*
-
----
-
-## Step 14: PDU Session Resource Setup Request
-
-Click **Step 11** in the right panel.
-
-- **Action:** AMF instructs gNB to setup PDU session resources via N2 interface.
-- **Observation:** A packet travels from AMF to gNB. The message contains QoS flows with QFI 9, 5QI 9, and transport layer information.
-
-<img src="images/prd20.png" width="90%">
-
-*Fig: PDU Session Resource Setup Request*
-
----
-
-## Step 15: PDU Session Resource Setup Response
-
-Click **Step 12** in the right panel.
-
-- **Action:** gNB confirms PDU session resource setup and provides gNB tunnel endpoint.
-- **Observation:** A packet travels from gNB to AMF. The response includes the gNB TEID (0x2001) and success status.
-
-<img src="images/prd22.png" width="90%">
-
-*Fig: PDU Session Resource Setup Response*
-
----
-
-## Step 16: NAS Service Accept
-
-Click **Step 13** in the right panel.
-
-- **Action:** AMF sends final NAS Service Accept message to UE, confirming PDU session is established.
-- **Observation:** A packet travels from AMF to UE. The UE receives confirmation that the PDU Session is marked as Established. The connection management process is now complete.
-
-<img src="images/prd21.png" width="90%">
-
-*Fig: NAS Service Accept*

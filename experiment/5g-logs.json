@@ -1,2457 +1,1307 @@
 {
-  "exportTime": "2025-12-19T08:53:00.515Z",
+  "exportTime": "2025-12-24T11:16:55.517Z",
   "logs": [
     {
-      "id": "log-1766134019676-ucvw3",
+      "id": "log-1766574331984-0q1ug",
       "nfId": "system",
-      "timestamp": 1766134019676,
+      "timestamp": 1766574331984,
       "level": "SUCCESS",
       "message": "5G SBA Dashboard initialized and ready",
       "details": {
         "version": "1.0.0",
         "httpProtocol": "HTTP/2",
-        "timestamp": "2025-12-19T08:46:59.676Z"
+        "timestamp": "2025-12-24T11:05:31.984Z"
       }
     },
     {
-      "id": "log-1766134025471-ngbqb",
-      "nfId": "nrf-1766134025470-9j52u",
-      "timestamp": 1766134025471,
-      "level": "SUCCESS",
-      "message": "NRF-1 created successfully",
-      "details": {
-        "ipAddress": "192.168.1.10",
-        "port": 8080,
-        "subnet": "192.168.1.0/24",
-        "protocol": "HTTP/2",
-        "status": "starting",
-        "note": "Service will be stable in 5 seconds"
-      }
-    },
-    {
-      "id": "log-1766134025472-m0kfi",
-      "nfId": "nrf-1766134025470-9j52u",
-      "timestamp": 1766134025472,
-      "level": "SUCCESS",
-      "message": "Connected to Service Bus service bus",
-      "details": {
-        "busId": "bus-1766134019784-tlsqz",
-        "orientation": "horizontal",
-        "protocol": "HTTP/2"
-      }
-    },
-    {
-      "id": "log-1766134025473-lm7k0",
-      "nfId": "nrf-1766134025470-9j52u",
-      "timestamp": 1766134025473,
+      "id": "log-1766574334518-qno47",
+      "nfId": "ue-1766574334517-d3im3",
+      "timestamp": 1766574334518,
       "level": "INFO",
-      "message": "Auto-connected to Service Bus service bus",
-      "details": {
-        "busId": "bus-1766134019784-tlsqz",
-        "interfaceName": "Nnrf",
-        "autoConnect": true
-      }
+      "message": "UE instance created: UE-1",
+      "details": {}
     },
     {
-      "id": "log-1766134025480-4hk2a",
-      "nfId": "nrf-1766134025470-9j52u",
-      "timestamp": 1766134025480,
+      "id": "log-1766574334829-pqzvw",
+      "nfId": "ue-1766574334517-d3im3",
+      "timestamp": 1766574334829,
       "level": "INFO",
-      "message": "NRF-1 instance created: NRF-1",
-      "details": {
-        "type": "NRF",
-        "version": "R16",
-        "endpoint": "https://192.168.1.10:8080/nnrf-nfm/v1",
-        "interfaces": [
-          "Nnrf_NFManagement",
-          "Nnrf_NFDiscovery"
-        ]
-      }
+      "message": "Initializing UE services...",
+      "details": {}
     },
     {
-      "id": "log-1766134025781-xdfg6",
-      "nfId": "nrf-1766134025470-9j52u",
-      "timestamp": 1766134025781,
+      "id": "log-1766574335023-cbl07",
+      "nfId": "gnb-1766574335023-moncs",
+      "timestamp": 1766574335023,
       "level": "INFO",
-      "message": "Initializing NF repository...",
-      "details": {
-        "database": "In-memory store",
-        "capacity": "10000 NF profiles"
-      }
+      "message": "gNB instance created: gNB-1",
+      "details": {}
     },
     {
-      "id": "log-1766134026080-5v9p2",
-      "nfId": "nrf-1766134025470-9j52u",
-      "timestamp": 1766134026080,
-      "level": "SUCCESS",
-      "message": "NF repository initialized successfully",
-      "details": {
-        "profileCount": 0,
-        "status": "Ready to accept registrations"
-      }
-    },
-    {
-      "id": "log-1766134026379-uvm1j",
-      "nfId": "nrf-1766134025470-9j52u",
-      "timestamp": 1766134026379,
+      "id": "log-1766574335330-bx5lv",
+      "nfId": "gnb-1766574335023-moncs",
+      "timestamp": 1766574335330,
       "level": "INFO",
-      "message": "Starting HTTP/2 server...",
+      "message": "Initializing gNB services...",
+      "details": {}
+    },
+    {
+      "id": "log-1766574335332-9f9d9",
+      "nfId": "ue-1766574334517-d3im3",
+      "timestamp": 1766574335332,
+      "level": "ERROR",
+      "message": "gNB exists but not connected",
       "details": {
-        "port": 8080,
-        "protocol": "HTTP/2"
+        "suggestion": "Connect UE-1 to gNB"
       }
     },
     {
-      "id": "log-1766134026677-3wewv",
-      "nfId": "nrf-1766134025470-9j52u",
-      "timestamp": 1766134026677,
-      "level": "SUCCESS",
-      "message": "NRF HTTP/2 server started successfully",
-      "details": {
-        "address": "192.168.1.10:8080",
-        "endpoints": [
-          "/nnrf-nfm/v1/nf-instances",
-          "/nnrf-disc/v1/nf-instances"
-        ]
-      }
-    },
-    {
-      "id": "log-1766134026980-dss0a",
-      "nfId": "nrf-1766134025470-9j52u",
-      "timestamp": 1766134026980,
-      "level": "SUCCESS",
-      "message": "NRF is ready to accept NF registrations ✓",
-      "details": {
-        "status": "OPERATIONAL",
-        "mode": "FULL",
-        "services": [
-          "NFManagement",
-          "NFDiscovery"
-        ],
-        "ready": true
-      }
-    },
-    {
-      "id": "log-1766134029861-0eoep",
-      "nfId": "amf-1766134029860-ri9n5",
-      "timestamp": 1766134029861,
-      "level": "SUCCESS",
-      "message": "AMF-1 created successfully",
-      "details": {
-        "ipAddress": "192.168.1.11",
-        "port": 8081,
-        "subnet": "192.168.1.0/24",
-        "protocol": "HTTP/2",
-        "status": "starting",
-        "note": "Service will be stable in 5 seconds"
-      }
-    },
-    {
-      "id": "log-1766134029863-3mb7q",
-      "nfId": "amf-1766134029860-ri9n5",
-      "timestamp": 1766134029863,
-      "level": "SUCCESS",
-      "message": "Connected to Service Bus service bus",
-      "details": {
-        "busId": "bus-1766134019784-tlsqz",
-        "orientation": "horizontal",
-        "protocol": "HTTP/2"
-      }
-    },
-    {
-      "id": "log-1766134029864-fvdsb",
-      "nfId": "amf-1766134029860-ri9n5",
-      "timestamp": 1766134029864,
+      "id": "log-1766574335529-blrte",
+      "nfId": "amf-1766574335529-howor",
+      "timestamp": 1766574335529,
       "level": "INFO",
-      "message": "Auto-connected to Service Bus service bus",
-      "details": {
-        "busId": "bus-1766134019784-tlsqz",
-        "interfaceName": "Namf",
-        "autoConnect": true
-      }
+      "message": "AMF instance created: AMF-1",
+      "details": {}
     },
     {
-      "id": "log-1766134029868-dbst3",
-      "nfId": "amf-1766134029860-ri9n5",
-      "timestamp": 1766134029868,
-      "level": "INFO",
-      "message": "AMF-1 instance created: AMF-1",
-      "details": {
-        "type": "AMF",
-        "version": "R16",
-        "endpoint": "https://192.168.1.11:8081/namf-comm/v1",
-        "interfaces": [
-          "Namf_Communication",
-          "Namf_EventExposure"
-        ]
-      }
-    },
-    {
-      "id": "log-1766134030160-93xhv",
-      "nfId": "amf-1766134029860-ri9n5",
-      "timestamp": 1766134030160,
+      "id": "log-1766574335844-ht0l4",
+      "nfId": "amf-1766574335529-howor",
+      "timestamp": 1766574335844,
       "level": "INFO",
       "message": "Initializing AMF services...",
-      "details": {
-        "modules": [
-          "Registration",
-          "Mobility",
-          "Authentication"
-        ]
-      }
+      "details": {}
     },
     {
-      "id": "log-1766134030472-tr20g",
-      "nfId": "amf-1766134029860-ri9n5",
-      "timestamp": 1766134030472,
-      "level": "INFO",
-      "message": "Initializing N2 interface toward gNodeB...",
-      "details": {
-        "interface": "N2",
-        "protocol": "NGAP"
-      }
-    },
-    {
-      "id": "log-1766134030474-vy9ad",
-      "nfId": "nrf-1766134025470-9j52u",
-      "timestamp": 1766134030474,
-      "level": "SUCCESS",
-      "message": "NRF-1 is now STABLE and ready for connections",
-      "details": {
-        "Status": "stable",
-        "uptime": "5 seconds"
-      }
-    },
-    {
-      "id": "log-1766134030860-cfjk3",
-      "nfId": "amf-1766134029860-ri9n5",
-      "timestamp": 1766134030860,
+      "id": "log-1766574335849-9pc9w",
+      "nfId": "gnb-1766574335023-moncs",
+      "timestamp": 1766574335849,
       "level": "ERROR",
-      "message": "NRF found but not connected - Create SBI connection",
+      "message": "AMF exists but not connected",
       "details": {
-        "code": "AMF_ERR_002",
-        "suggestion": "Click 'Select Source' → AMF → 'Select Destination' → NRF → Connect"
+        "suggestion": "Connect gNB-1 to AMF"
       }
     },
     {
-      "id": "log-1766134030876-kuzla",
-      "nfId": "amf-1766134029860-ri9n5",
-      "timestamp": 1766134030876,
-      "level": "INFO",
-      "message": "Discovered NRF - Initiating registration",
+      "id": "log-1766574336032-dw2y1",
+      "nfId": "ue-1766574334517-d3im3",
+      "timestamp": 1766574336032,
+      "level": "ERROR",
+      "message": "UE startup failed - Cannot operate without required dependencies",
+      "details": {}
+    },
+    {
+      "id": "log-1766574336049-3bzx2",
+      "nfId": "gnb-1766574335023-moncs",
+      "timestamp": 1766574336049,
+      "level": "ERROR",
+      "message": "Cannot register with UPF - UPF not found in topology",
       "details": {
-        "busId": "bus-1766134019784-tlsqz",
-        "nrfId": "nrf-1766134025470-9j52u",
-        "discoveryMethod": "Service Bus"
+        "suggestion": "Add UPF to the topology first"
       }
     },
     {
-      "id": "log-1766134031060-ixgj1",
-      "nfId": "amf-1766134029860-ri9n5",
-      "timestamp": 1766134031060,
+      "id": "log-1766574336348-o7stt",
+      "nfId": "amf-1766574335529-howor",
+      "timestamp": 1766574336348,
+      "level": "ERROR",
+      "message": "Cannot register with NRF - NRF not found in topology",
+      "details": {
+        "suggestion": "Add NRF to the topology first"
+      }
+    },
+    {
+      "id": "log-1766574336560-mi3s6",
+      "nfId": "amf-1766574335529-howor",
+      "timestamp": 1766574336560,
       "level": "WARNING",
-      "message": "AUSF not available - UE authentication will fail",
-      "details": {
-        "code": "AMF_WARN_001",
-        "severity": "HIGH",
-        "impact": "Cannot authenticate UEs - Registration requests will be rejected",
-        "workaround": "AMF can run but authentication services disabled"
-      }
+      "message": "AUSF not available - Some features may not work",
+      "details": {}
     },
     {
-      "id": "log-1766134031260-t9gka",
-      "nfId": "amf-1766134029860-ri9n5",
-      "timestamp": 1766134031260,
-      "level": "WARNING",
-      "message": "UDM not available - Cannot retrieve subscription data",
-      "details": {
-        "code": "AMF_WARN_002",
-        "severity": "HIGH",
-        "impact": "Cannot fetch UE context - Registration will be incomplete"
-      }
-    },
-    {
-      "id": "log-1766134031867-uxrxx",
-      "nfId": "amf-1766134029860-ri9n5",
-      "timestamp": 1766134031867,
+      "id": "log-1766574336761-n2iio",
+      "nfId": "gnb-1766574335023-moncs",
+      "timestamp": 1766574336761,
       "level": "ERROR",
-      "message": "AMF startup failed - Cannot operate without required dependencies",
-      "details": {
-        "status": "NON-OPERATIONAL",
-        "action": "Add NRF and create connection to proceed"
-      }
-    },
-    {
-      "id": "log-1766134032388-99b65",
-      "nfId": "amf-1766134029860-ri9n5",
-      "timestamp": 1766134032388,
-      "level": "SUCCESS",
-      "message": "Successfully registered with NRF ",
-      "details": {
-        "nrfId": "nrf-1766134025470-9j52u",
-        "validity": "3600 seconds",
-        "heartbeatInterval": "60 seconds"
-      }
-    },
-    {
-      "id": "log-1766134034866-1fn1b",
-      "nfId": "amf-1766134029860-ri9n5",
-      "timestamp": 1766134034866,
-      "level": "SUCCESS",
-      "message": "AMF-1 is now STABLE and ready for connections",
-      "details": {
-        "Status": "stable",
-        "uptime": "5 seconds"
-      }
-    },
-    {
-      "id": "log-1766134043311-m6i6g",
-      "nfId": "smf-1766134043308-r467r",
-      "timestamp": 1766134043311,
-      "level": "SUCCESS",
-      "message": "SMF-1 created successfully",
-      "details": {
-        "ipAddress": "192.168.1.12",
-        "port": 8082,
-        "subnet": "192.168.1.0/24",
-        "protocol": "HTTP/2",
-        "status": "starting",
-        "note": "Service will be stable in 5 seconds"
-      }
-    },
-    {
-      "id": "log-1766134043313-ux2sz",
-      "nfId": "smf-1766134043308-r467r",
-      "timestamp": 1766134043313,
-      "level": "SUCCESS",
-      "message": "Connected to Service Bus service bus",
-      "details": {
-        "busId": "bus-1766134019784-tlsqz",
-        "orientation": "horizontal",
-        "protocol": "HTTP/2"
-      }
-    },
-    {
-      "id": "log-1766134043315-6b95w",
-      "nfId": "smf-1766134043308-r467r",
-      "timestamp": 1766134043315,
-      "level": "INFO",
-      "message": "Auto-connected to Service Bus service bus",
-      "details": {
-        "busId": "bus-1766134019784-tlsqz",
-        "interfaceName": "Nsmf",
-        "autoConnect": true
-      }
-    },
-    {
-      "id": "log-1766134043318-pg20v",
-      "nfId": "smf-1766134043308-r467r",
-      "timestamp": 1766134043318,
-      "level": "INFO",
-      "message": "SMF-1 instance created: SMF-1",
-      "details": {
-        "type": "SMF",
-        "version": "R16",
-        "endpoint": "https://192.168.1.12:8082/nsmf-pdusession/v1",
-        "interfaces": [
-          "Nsmf_PDUSession",
-          "Nsmf_EventExposure"
-        ]
-      }
-    },
-    {
-      "id": "log-1766134043614-jws4i",
-      "nfId": "smf-1766134043308-r467r",
-      "timestamp": 1766134043614,
-      "level": "INFO",
-      "message": "Initializing SMF services...",
+      "message": "gNB startup failed - Cannot operate without required dependencies",
       "details": {}
     },
     {
-      "id": "log-1766134043912-mmmus",
-      "nfId": "smf-1766134043308-r467r",
-      "timestamp": 1766134043912,
-      "level": "INFO",
-      "message": "Initializing N4 interface toward UPF...",
-      "details": {
-        "interface": "N4",
-        "protocol": "PFCP"
-      }
-    },
-    {
-      "id": "log-1766134044314-ue5s7",
-      "nfId": "smf-1766134043308-r467r",
-      "timestamp": 1766134044314,
-      "level": "INFO",
-      "message": "Discovered NRF - Initiating registration",
-      "details": {
-        "busId": "bus-1766134019784-tlsqz",
-        "nrfId": "nrf-1766134025470-9j52u",
-        "discoveryMethod": "Service Bus"
-      }
-    },
-    {
-      "id": "log-1766134045022-x5wnn",
-      "nfId": "smf-1766134043308-r467r",
-      "timestamp": 1766134045022,
-      "level": "ERROR",
-      "message": "No UPF instances discovered - Cannot establish PDU sessions",
-      "details": {
-        "code": "SMF_ERR_002",
-        "severity": "CRITICAL",
-        "impact": "Cannot create data sessions for UEs",
-        "suggestion": "Add UPF and connect to SMF via N4"
-      }
-    },
-    {
-      "id": "log-1766134045210-9wabp",
-      "nfId": "smf-1766134043308-r467r",
-      "timestamp": 1766134045210,
-      "level": "WARNING",
-      "message": "PCF not available - Using default policies",
-      "details": {
-        "code": "SMF_WARN_001",
-        "impact": "Cannot apply dynamic QoS policies"
-      }
-    },
-    {
-      "id": "log-1766134045510-an1mj",
-      "nfId": "smf-1766134043308-r467r",
-      "timestamp": 1766134045510,
-      "level": "ERROR",
-      "message": "SMF startup failed - Cannot operate without NRF and UPF",
-      "details": {}
-    },
-    {
-      "id": "log-1766134045828-d296v",
-      "nfId": "smf-1766134043308-r467r",
-      "timestamp": 1766134045828,
-      "level": "SUCCESS",
-      "message": "Successfully registered with NRF ",
-      "details": {
-        "nrfId": "nrf-1766134025470-9j52u",
-        "validity": "3600 seconds",
-        "heartbeatInterval": "60 seconds"
-      }
-    },
-    {
-      "id": "log-1766134048320-e8tl0",
-      "nfId": "smf-1766134043308-r467r",
-      "timestamp": 1766134048320,
-      "level": "SUCCESS",
-      "message": "SMF-1 is now STABLE and ready for connections",
-      "details": {
-        "Status": "stable",
-        "uptime": "5 seconds"
-      }
-    },
-    {
-      "id": "log-1766134264897-9bgny",
-      "nfId": "upf-1766134264895-kshnk",
-      "timestamp": 1766134264897,
-      "level": "INFO",
-      "message": "tun0 network interface created: 10.0.0.0/28",
-      "details": {
-        "interfaceName": "tun0",
-        "network": "10.0.0.0/28",
-        "gatewayIP": "10.0.0.1",
-        "availableIPs": "10.0.0.2 - 10.0.0.14 (13 IPs for UEs)",
-        "purpose": "User plane data network for UE PDU sessions"
-      }
-    },
-    {
-      "id": "log-1766134264899-j91mg",
-      "nfId": "upf-1766134264895-kshnk",
-      "timestamp": 1766134264899,
-      "level": "SUCCESS",
-      "message": "UPF-1 created successfully",
-      "details": {
-        "ipAddress": "192.168.1.13",
-        "port": 8083,
-        "subnet": "192.168.1.0/24",
-        "protocol": "HTTP/2",
-        "status": "starting",
-        "note": "Service will be stable in 5 seconds"
-      }
-    },
-    {
-      "id": "log-1766134264905-v4hl5",
-      "nfId": "upf-1766134264895-kshnk",
-      "timestamp": 1766134264905,
-      "level": "INFO",
-      "message": "UPF-1 instance created: UPF-1",
-      "details": {
-        "type": "UPF",
-        "version": "R16",
-        "endpoint": "https://192.168.1.13:8083/nupf-upf/v1",
-        "interfaces": [
-          "N3",
-          "N4",
-          "N6",
-          "N9"
-        ]
-      }
-    },
-    {
-      "id": "log-1766134265197-hjg3p",
-      "nfId": "upf-1766134264895-kshnk",
-      "timestamp": 1766134265197,
-      "level": "INFO",
-      "message": "Initializing UPF packet forwarding engine...",
-      "details": {}
-    },
-    {
-      "id": "log-1766134265499-2yym3",
-      "nfId": "upf-1766134264895-kshnk",
-      "timestamp": 1766134265499,
-      "level": "INFO",
-      "message": "Initializing network interfaces...",
-      "details": {
-        "N3": "Toward gNodeB",
-        "N4": "Toward SMF (PFCP)",
-        "N6": "Toward Data Network (Internet)"
-      }
-    },
-    {
-      "id": "log-1766134265810-kccc0",
-      "nfId": "upf-1766134264895-kshnk",
-      "timestamp": 1766134265810,
-      "level": "SUCCESS",
-      "message": "Packet forwarding resources allocated",
-      "details": {
-        "buffers": "10GB",
-        "throughput": "10Gbps"
-      }
-    },
-    {
-      "id": "log-1766134266411-rgcd8",
-      "nfId": "upf-1766134264895-kshnk",
-      "timestamp": 1766134266411,
-      "level": "ERROR",
-      "message": "UPF startup failed - Cannot operate without NRF",
-      "details": {}
-    },
-    {
-      "id": "log-1766134269909-325d3",
-      "nfId": "upf-1766134264895-kshnk",
-      "timestamp": 1766134269909,
-      "level": "SUCCESS",
-      "message": "UPF-1 is now STABLE and ready for connections",
-      "details": {
-        "Status": "stable",
-        "uptime": "5 seconds"
-      }
-    },
-    {
-      "id": "log-1766134269918-h0acb",
-      "nfId": "ausf-1766134269917-xidii",
-      "timestamp": 1766134269918,
-      "level": "SUCCESS",
-      "message": "AUSF-1 created successfully",
-      "details": {
-        "ipAddress": "192.168.1.14",
-        "port": 8084,
-        "subnet": "192.168.1.0/24",
-        "protocol": "HTTP/2",
-        "status": "starting",
-        "note": "Service will be stable in 5 seconds"
-      }
-    },
-    {
-      "id": "log-1766134269919-jzvry",
-      "nfId": "ausf-1766134269917-xidii",
-      "timestamp": 1766134269919,
-      "level": "SUCCESS",
-      "message": "Connected to Service Bus service bus",
-      "details": {
-        "busId": "bus-1766134019784-tlsqz",
-        "orientation": "horizontal",
-        "protocol": "HTTP/2"
-      }
-    },
-    {
-      "id": "log-1766134269920-rhjmf",
-      "nfId": "ausf-1766134269917-xidii",
-      "timestamp": 1766134269920,
-      "level": "INFO",
-      "message": "Auto-connected to Service Bus service bus",
-      "details": {
-        "busId": "bus-1766134019784-tlsqz",
-        "interfaceName": "Nausf",
-        "autoConnect": true
-      }
-    },
-    {
-      "id": "log-1766134269926-e3pi4",
-      "nfId": "ausf-1766134269917-xidii",
-      "timestamp": 1766134269926,
-      "level": "INFO",
-      "message": "AUSF-1 instance created: AUSF-1",
-      "details": {
-        "type": "AUSF",
-        "version": "R16",
-        "endpoint": "https://192.168.1.14:8084/nausf-auth/v1",
-        "interfaces": [
-          "Nausf_UEAuthentication",
-          "Nausf_SoRProtection"
-        ]
-      }
-    },
-    {
-      "id": "log-1766134270224-it28w",
-      "nfId": "ausf-1766134269917-xidii",
-      "timestamp": 1766134270224,
-      "level": "INFO",
-      "message": "Initializing AUSF authentication services...",
-      "details": {
-        "modules": [
-          "UE Authentication",
-          "EAP Authentication",
-          "Key Generation"
-        ]
-      }
-    },
-    {
-      "id": "log-1766134270923-yi2gu",
-      "nfId": "ausf-1766134269917-xidii",
-      "timestamp": 1766134270923,
-      "level": "INFO",
-      "message": "Discovered NRF - Initiating registration",
-      "details": {
-        "busId": "bus-1766134019784-tlsqz",
-        "nrfId": "nrf-1766134025470-9j52u",
-        "discoveryMethod": "Service Bus"
-      }
-    },
-    {
-      "id": "log-1766134271124-tn9nu",
-      "nfId": "ausf-1766134269917-xidii",
-      "timestamp": 1766134271124,
-      "level": "ERROR",
-      "message": "UDM not available - Cannot retrieve authentication vectors",
-      "details": {
-        "code": "AUSF_ERR_002",
-        "severity": "CRITICAL"
-      }
-    },
-    {
-      "id": "log-1766134271923-ewet8",
-      "nfId": "ausf-1766134269917-xidii",
-      "timestamp": 1766134271923,
-      "level": "ERROR",
-      "message": "AUSF startup failed - Cannot operate without NRF and UDM",
-      "details": {}
-    },
-    {
-      "id": "log-1766134272426-jv41d",
-      "nfId": "ausf-1766134269917-xidii",
-      "timestamp": 1766134272426,
-      "level": "SUCCESS",
-      "message": "Successfully registered with NRF ",
-      "details": {
-        "nrfId": "nrf-1766134025470-9j52u",
-        "validity": "3600 seconds",
-        "heartbeatInterval": "60 seconds"
-      }
-    },
-    {
-      "id": "log-1766134272917-jxyke",
-      "nfId": "ext-dn-1766134272916-zhua2",
-      "timestamp": 1766134272917,
-      "level": "INFO",
-      "message": "ext-dn instance created: ext-dn-1",
-      "details": {}
-    },
-    {
-      "id": "log-1766134272920-9efdm",
-      "nfId": "upf-1766134264895-kshnk",
-      "timestamp": 1766134272920,
-      "level": "INFO",
-      "message": "External data network (ext-dn) auto-started for UPF",
-      "details": {
-        "extDNName": "ext-dn-1",
-        "extDNId": "ext-dn-1766134272916-zhua2",
-        "extDNIP": "192.168.1.15",
-        "extDNPort": 80,
-        "subnet": "192.168.1.0/24",
-        "purpose": "Internet traffic flow through UPF",
-        "note": "ext-dn will auto-connect to UPF when stable (in ~5 seconds)",
-        "lifecycle": "ext-dn created → starting → stable (5s) → auto-connect to UPF"
-      }
-    },
-    {
-      "id": "log-1766134272983-23uae",
-      "nfId": "upf-1766134264895-kshnk",
-      "timestamp": 1766134272983,
-      "level": "INFO",
-      "message": "Initiating N4 connection to SMF-1",
-      "details": {
-        "protocol": "HTTP/2",
-        "targetIP": "192.168.1.12",
-        "targetPort": 8082
-      }
-    },
-    {
-      "id": "log-1766134272987-lceio",
-      "nfId": "smf-1766134043308-r467r",
-      "timestamp": 1766134272987,
-      "level": "INFO",
-      "message": "Incoming connection request from UPF-1",
-      "details": {
-        "interface": "N4",
-        "sourceIP": "192.168.1.13"
-      }
-    },
-    {
-      "id": "log-1766134272990-35np6",
-      "nfId": "upf-1766134264895-kshnk",
-      "timestamp": 1766134272990,
-      "level": "SUCCESS",
-      "message": "Auto-connected to SMF-1 (interface: N4)",
-      "details": {
-        "targetType": "SMF",
-        "interface": "N4",
-        "autoConnection": true,
-        "visualConnection": true,
-        "subnet": "192.168.1.0/24",
-        "sourceIP": "192.168.1.13",
-        "targetIP": "192.168.1.12",
-        "reason": "5G architecture requirement + subnet restriction",
-        "note": "Visual interface connection established and shown on canvas"
-      }
-    },
-    {
-      "id": "log-1766134273222-dfyw9",
-      "nfId": "ext-dn-1766134272916-zhua2",
-      "timestamp": 1766134273222,
-      "level": "INFO",
-      "message": "Initializing ext-dn services...",
-      "details": {}
-    },
-    {
-      "id": "log-1766134273290-85622",
-      "nfId": "upf-1766134264895-kshnk",
-      "timestamp": 1766134273290,
-      "level": "INFO",
-      "message": "TLS handshake in progress...",
-      "details": {}
-    },
-    {
-      "id": "log-1766134273292-qh3yb",
-      "nfId": "smf-1766134043308-r467r",
-      "timestamp": 1766134273292,
-      "level": "INFO",
-      "message": "Accepting TLS connection...",
-      "details": {}
-    },
-    {
-      "id": "log-1766134273372-wn16v",
-      "nfId": "amf-1766134029860-ri9n5",
-      "timestamp": 1766134273372,
-      "level": "SUCCESS",
-      "message": "Discovered new AUSF AUSF-1 via Service Bus",
-      "details": {
-        "busId": "bus-1766134019784-tlsqz",
-        "discoveredNfId": "ausf-1766134269917-xidii",
-        "discoveryMethod": "Service Bus",
-        "interface": "Nausf"
-      }
-    },
-    {
-      "id": "log-1766134273708-3ze6b",
-      "nfId": "upf-1766134264895-kshnk",
-      "timestamp": 1766134273708,
-      "level": "SUCCESS",
-      "message": "TLS handshake complete",
-      "details": {}
-    },
-    {
-      "id": "log-1766134273711-dsr43",
-      "nfId": "smf-1766134043308-r467r",
-      "timestamp": 1766134273711,
-      "level": "SUCCESS",
-      "message": "TLS session established",
-      "details": {}
-    },
-    {
-      "id": "log-1766134273994-odh7s",
-      "nfId": "upf-1766134264895-kshnk",
-      "timestamp": 1766134273994,
-      "level": "INFO",
-      "message": "HTTP/2 connection upgrade...",
-      "details": {}
-    },
-    {
-      "id": "log-1766134274497-mp6dj",
-      "nfId": "upf-1766134264895-kshnk",
-      "timestamp": 1766134274497,
-      "level": "SUCCESS",
-      "message": "N4 connection established with SMF-1",
-      "details": {
-        "endpoint": "https://192.168.1.13:8083/nupf-upf/v1",
-        "protocol": "HTTP/2",
-        "status": "ACTIVE"
-      }
-    },
-    {
-      "id": "log-1766134274499-8b6cq",
-      "nfId": "smf-1766134043308-r467r",
-      "timestamp": 1766134274499,
-      "level": "SUCCESS",
-      "message": "N4 connection active from UPF-1",
-      "details": {}
-    },
-    {
-      "id": "log-1766134274920-b2r6e",
-      "nfId": "ausf-1766134269917-xidii",
-      "timestamp": 1766134274920,
-      "level": "SUCCESS",
-      "message": "AUSF-1 is now STABLE and ready for connections",
-      "details": {
-        "Status": "stable",
-        "uptime": "5 seconds"
-      }
-    },
-    {
-      "id": "log-1766134275002-0n4xo",
-      "nfId": "smf-1766134043308-r467r",
-      "timestamp": 1766134275002,
-      "level": "SUCCESS",
-      "message": "All dependencies satisfied - SMF is now fully operational ✓",
-      "details": {
-        "status": "OPERATIONAL",
-        "mode": "FULL",
-        "timestamp": "2025-12-19T08:51:15.002Z"
-      }
-    },
-    {
-      "id": "log-1766134277923-idw8c",
-      "nfId": "ext-dn-1766134272916-zhua2",
-      "timestamp": 1766134277923,
-      "level": "SUCCESS",
-      "message": "ext-dn-1 is now STABLE and ready for connections",
-      "details": {
-        "Status": "stable",
-        "uptime": "5 seconds"
-      }
-    },
-    {
-      "id": "log-1766134281829-uc8p1",
-      "nfId": "ext-dn-1766134272916-zhua2",
-      "timestamp": 1766134281829,
-      "level": "INFO",
-      "message": "Initiating N6 connection to UPF-1",
-      "details": {
-        "protocol": "HTTP/2",
-        "targetIP": "192.168.1.13",
-        "targetPort": 8083
-      }
-    },
-    {
-      "id": "log-1766134281834-16bxc",
-      "nfId": "upf-1766134264895-kshnk",
-      "timestamp": 1766134281834,
-      "level": "INFO",
-      "message": "Incoming connection request from ext-dn-1",
-      "details": {
-        "interface": "N6",
-        "sourceIP": "192.168.1.15"
-      }
-    },
-    {
-      "id": "log-1766134281836-j81e7",
-      "nfId": "upf-1766134264895-kshnk",
-      "timestamp": 1766134281836,
-      "level": "SUCCESS",
-      "message": "Network interface tun0 created",
-      "details": {
-        "interface": "tun0",
-        "ipAddress": "10.0.0.1",
-        "netmask": "255.255.255.0",
-        "network": "10.0.0.0/24"
-      }
-    },
-    {
-      "id": "log-1766134281839-e991s",
-      "nfId": "ext-dn-1766134272916-zhua2",
-      "timestamp": 1766134281839,
-      "level": "SUCCESS",
-      "message": "External data network connected to UPF-1 (interface: N6)",
-      "details": {
-        "targetIP": "192.168.1.13",
-        "purpose": "Internet traffic flow through UPF"
-      }
-    },
-    {
-      "id": "log-1766134282151-wdl7l",
-      "nfId": "ext-dn-1766134272916-zhua2",
-      "timestamp": 1766134282151,
-      "level": "INFO",
-      "message": "TLS handshake in progress...",
-      "details": {}
-    },
-    {
-      "id": "log-1766134282154-gsnev",
-      "nfId": "upf-1766134264895-kshnk",
-      "timestamp": 1766134282154,
-      "level": "INFO",
-      "message": "Accepting TLS connection...",
-      "details": {}
-    },
-    {
-      "id": "log-1766134282547-1akxe",
-      "nfId": "ext-dn-1766134272916-zhua2",
-      "timestamp": 1766134282547,
-      "level": "SUCCESS",
-      "message": "TLS handshake complete",
-      "details": {}
-    },
-    {
-      "id": "log-1766134282551-r7jp5",
-      "nfId": "upf-1766134264895-kshnk",
-      "timestamp": 1766134282551,
-      "level": "SUCCESS",
-      "message": "TLS session established",
-      "details": {}
-    },
-    {
-      "id": "log-1766134282844-j9jx2",
-      "nfId": "ext-dn-1766134272916-zhua2",
-      "timestamp": 1766134282844,
-      "level": "INFO",
-      "message": "HTTP/2 connection upgrade...",
-      "details": {}
-    },
-    {
-      "id": "log-1766134283344-7wkny",
-      "nfId": "ext-dn-1766134272916-zhua2",
-      "timestamp": 1766134283344,
-      "level": "SUCCESS",
-      "message": "N6 connection established with UPF-1",
-      "details": {
-        "endpoint": "ext-dn://192.168.1.15/internet",
-        "protocol": "HTTP/2",
-        "status": "ACTIVE"
-      }
-    },
-    {
-      "id": "log-1766134283348-5zzp4",
-      "nfId": "upf-1766134264895-kshnk",
-      "timestamp": 1766134283348,
-      "level": "SUCCESS",
-      "message": "N6 connection active from ext-dn-1",
-      "details": {}
-    },
-    {
-      "id": "log-1766134314801-stz7c",
-      "nfId": "udm-1766134314799-3audk",
-      "timestamp": 1766134314801,
-      "level": "SUCCESS",
-      "message": "UDM-1 created successfully",
-      "details": {
-        "ipAddress": "192.168.1.16",
-        "port": 8085,
-        "subnet": "192.168.1.0/24",
-        "protocol": "HTTP/2",
-        "status": "starting",
-        "note": "Service will be stable in 5 seconds"
-      }
-    },
-    {
-      "id": "log-1766134314805-7jpdh",
-      "nfId": "udm-1766134314799-3audk",
-      "timestamp": 1766134314805,
-      "level": "SUCCESS",
-      "message": "Connected to Service Bus service bus",
-      "details": {
-        "busId": "bus-1766134019784-tlsqz",
-        "orientation": "horizontal",
-        "protocol": "HTTP/2"
-      }
-    },
-    {
-      "id": "log-1766134314807-r7u0c",
-      "nfId": "udm-1766134314799-3audk",
-      "timestamp": 1766134314807,
-      "level": "INFO",
-      "message": "Auto-connected to Service Bus service bus",
-      "details": {
-        "busId": "bus-1766134019784-tlsqz",
-        "interfaceName": "Nudm",
-        "autoConnect": true
-      }
-    },
-    {
-      "id": "log-1766134314816-hrs2e",
-      "nfId": "udm-1766134314799-3audk",
-      "timestamp": 1766134314816,
-      "level": "INFO",
-      "message": "UDM-1 instance created: UDM-1",
-      "details": {
-        "type": "UDM",
-        "version": "R16",
-        "endpoint": "https://192.168.1.16:8085/nudm-sdm/v1",
-        "interfaces": [
-          "Nudm_SDM",
-          "Nudm_UECM",
-          "Nudm_Authentication",
-          "Nudm_EventExposure"
-        ]
-      }
-    },
-    {
-      "id": "log-1766134315100-p2fs9",
-      "nfId": "udm-1766134314799-3audk",
-      "timestamp": 1766134315100,
-      "level": "INFO",
-      "message": "Initializing UDM subscription data management...",
-      "details": {
-        "modules": [
-          "Subscription Management",
-          "UE Context Management",
-          "Authentication Credentials"
-        ]
-      }
-    },
-    {
-      "id": "log-1766134315814-746bi",
-      "nfId": "udm-1766134314799-3audk",
-      "timestamp": 1766134315814,
-      "level": "INFO",
-      "message": "Discovered NRF - Initiating registration",
-      "details": {
-        "busId": "bus-1766134019784-tlsqz",
-        "nrfId": "nrf-1766134025470-9j52u",
-        "discoveryMethod": "Service Bus"
-      }
-    },
-    {
-      "id": "log-1766134316015-mvdnm",
-      "nfId": "udm-1766134314799-3audk",
-      "timestamp": 1766134316015,
-      "level": "WARNING",
-      "message": "MySQL database not available - Using in-memory storage",
-      "details": {
-        "code": "UDM_WARN_001",
-        "impact": "Data will not persist across restarts"
-      }
-    },
-    {
-      "id": "log-1766134316810-ditk8",
-      "nfId": "udm-1766134314799-3audk",
-      "timestamp": 1766134316810,
-      "level": "ERROR",
-      "message": "UDM startup failed - Cannot operate without NRF",
-      "details": {}
-    },
-    {
-      "id": "log-1766134317329-txdbe",
-      "nfId": "udm-1766134314799-3audk",
-      "timestamp": 1766134317329,
-      "level": "SUCCESS",
-      "message": "Successfully registered with NRF ",
-      "details": {
-        "nrfId": "nrf-1766134025470-9j52u",
-        "validity": "3600 seconds",
-        "heartbeatInterval": "60 seconds"
-      }
-    },
-    {
-      "id": "log-1766134317692-itm3j",
-      "nfId": "smf-1766134043308-r467r",
-      "timestamp": 1766134317692,
-      "level": "SUCCESS",
-      "message": "Discovered new UDM UDM-1 via Service Bus",
-      "details": {
-        "busId": "bus-1766134019784-tlsqz",
-        "discoveredNfId": "udm-1766134314799-3audk",
-        "discoveryMethod": "Service Bus",
-        "interface": "Nudm"
-      }
-    },
-    {
-      "id": "log-1766134317729-t4hpj",
-      "nfId": "amf-1766134029860-ri9n5",
-      "timestamp": 1766134317729,
-      "level": "SUCCESS",
-      "message": "Discovered new UDM UDM-1 via Service Bus",
-      "details": {
-        "busId": "bus-1766134019784-tlsqz",
-        "discoveredNfId": "udm-1766134314799-3audk",
-        "discoveryMethod": "Service Bus",
-        "interface": "Nudm"
-      }
-    },
-    {
-      "id": "log-1766134318115-fqbf6",
-      "nfId": "ausf-1766134269917-xidii",
-      "timestamp": 1766134318115,
-      "level": "SUCCESS",
-      "message": "Discovered new UDM UDM-1 via Service Bus",
-      "details": {
-        "busId": "bus-1766134019784-tlsqz",
-        "discoveredNfId": "udm-1766134314799-3audk",
-        "discoveryMethod": "Service Bus",
-        "interface": "Nudm"
-      }
-    },
-    {
-      "id": "log-1766134319120-mvfht",
-      "nfId": "pcf-1766134319118-r1m0f",
-      "timestamp": 1766134319120,
-      "level": "SUCCESS",
-      "message": "PCF-1 created successfully",
-      "details": {
-        "ipAddress": "192.168.1.17",
-        "port": 8086,
-        "subnet": "192.168.1.0/24",
-        "protocol": "HTTP/2",
-        "status": "starting",
-        "note": "Service will be stable in 5 seconds"
-      }
-    },
-    {
-      "id": "log-1766134319125-uyyi0",
-      "nfId": "pcf-1766134319118-r1m0f",
-      "timestamp": 1766134319125,
-      "level": "SUCCESS",
-      "message": "Connected to Service Bus service bus",
-      "details": {
-        "busId": "bus-1766134019784-tlsqz",
-        "orientation": "horizontal",
-        "protocol": "HTTP/2"
-      }
-    },
-    {
-      "id": "log-1766134319129-h91zc",
-      "nfId": "pcf-1766134319118-r1m0f",
-      "timestamp": 1766134319129,
-      "level": "INFO",
-      "message": "Auto-connected to Service Bus service bus",
-      "details": {
-        "busId": "bus-1766134019784-tlsqz",
-        "interfaceName": "Npcf",
-        "autoConnect": true
-      }
-    },
-    {
-      "id": "log-1766134319135-ulti5",
-      "nfId": "pcf-1766134319118-r1m0f",
-      "timestamp": 1766134319135,
-      "level": "INFO",
-      "message": "PCF-1 instance created: PCF-1",
-      "details": {
-        "type": "PCF",
-        "version": "R16",
-        "endpoint": "https://192.168.1.17:8086/npcf-am-policy/v1",
-        "interfaces": [
-          "Npcf_AMPolicyControl",
-          "Npcf_SMPolicyControl",
-          "Npcf_PolicyAuthorization"
-        ]
-      }
-    },
-    {
-      "id": "log-1766134319427-6g6jc",
-      "nfId": "pcf-1766134319118-r1m0f",
-      "timestamp": 1766134319427,
-      "level": "INFO",
-      "message": "Initializing PCF policy control services...",
-      "details": {
-        "modules": [
-          "Policy Authorization",
-          "QoS Policy Control",
-          "Charging Control"
-        ]
-      }
-    },
-    {
-      "id": "log-1766134319807-m8ukj",
-      "nfId": "udm-1766134314799-3audk",
-      "timestamp": 1766134319807,
-      "level": "SUCCESS",
-      "message": "UDM-1 is now STABLE and ready for connections",
-      "details": {
-        "Status": "stable",
-        "uptime": "5 seconds"
-      }
-    },
-    {
-      "id": "log-1766134320128-utvxd",
-      "nfId": "pcf-1766134319118-r1m0f",
-      "timestamp": 1766134320128,
-      "level": "INFO",
-      "message": "Discovered NRF - Initiating registration",
-      "details": {
-        "busId": "bus-1766134019784-tlsqz",
-        "nrfId": "nrf-1766134025470-9j52u",
-        "discoveryMethod": "Service Bus"
-      }
-    },
-    {
-      "id": "log-1766134321126-jly10",
-      "nfId": "pcf-1766134319118-r1m0f",
-      "timestamp": 1766134321126,
-      "level": "ERROR",
-      "message": "PCF startup failed - Cannot operate without NRF",
-      "details": {}
-    },
-    {
-      "id": "log-1766134321641-en679",
-      "nfId": "pcf-1766134319118-r1m0f",
-      "timestamp": 1766134321641,
-      "level": "SUCCESS",
-      "message": "Successfully registered with NRF ",
-      "details": {
-        "nrfId": "nrf-1766134025470-9j52u",
-        "validity": "3600 seconds",
-        "heartbeatInterval": "60 seconds"
-      }
-    },
-    {
-      "id": "log-1766134322060-7en5e",
-      "nfId": "amf-1766134029860-ri9n5",
-      "timestamp": 1766134322060,
-      "level": "SUCCESS",
-      "message": "Discovered new PCF PCF-1 via Service Bus",
-      "details": {
-        "busId": "bus-1766134019784-tlsqz",
-        "discoveredNfId": "pcf-1766134319118-r1m0f",
-        "discoveryMethod": "Service Bus",
-        "interface": "Npcf"
-      }
-    },
-    {
-      "id": "log-1766134322558-sgknw",
-      "nfId": "smf-1766134043308-r467r",
-      "timestamp": 1766134322558,
-      "level": "SUCCESS",
-      "message": "Discovered new PCF PCF-1 via Service Bus",
-      "details": {
-        "busId": "bus-1766134019784-tlsqz",
-        "discoveredNfId": "pcf-1766134319118-r1m0f",
-        "discoveryMethod": "Service Bus",
-        "interface": "Npcf"
-      }
-    },
-    {
-      "id": "log-1766134323961-3f6a5",
-      "nfId": "nssf-1766134323958-v6s88",
-      "timestamp": 1766134323961,
-      "level": "SUCCESS",
-      "message": "NSSF-1 created successfully",
-      "details": {
-        "ipAddress": "192.168.1.18",
-        "port": 8087,
-        "subnet": "192.168.1.0/24",
-        "protocol": "HTTP/2",
-        "status": "starting",
-        "note": "Service will be stable in 5 seconds"
-      }
-    },
-    {
-      "id": "log-1766134323964-g73jj",
-      "nfId": "nssf-1766134323958-v6s88",
-      "timestamp": 1766134323964,
-      "level": "SUCCESS",
-      "message": "Connected to Service Bus service bus",
-      "details": {
-        "busId": "bus-1766134019784-tlsqz",
-        "orientation": "horizontal",
-        "protocol": "HTTP/2"
-      }
-    },
-    {
-      "id": "log-1766134323966-h73ew",
-      "nfId": "nssf-1766134323958-v6s88",
-      "timestamp": 1766134323966,
-      "level": "INFO",
-      "message": "Auto-connected to Service Bus service bus",
-      "details": {
-        "busId": "bus-1766134019784-tlsqz",
-        "interfaceName": "Nnssf",
-        "autoConnect": true
-      }
-    },
-    {
-      "id": "log-1766134323973-xhr25",
-      "nfId": "nssf-1766134323958-v6s88",
-      "timestamp": 1766134323973,
-      "level": "INFO",
-      "message": "NSSF-1 instance created: NSSF-1",
-      "details": {
-        "type": "NSSF",
-        "version": "R16",
-        "endpoint": "https://192.168.1.18:8087/nnssf-nsselection/v1",
-        "interfaces": [
-          "Nnssf_NSSelection",
-          "Nnssf_NSSAIAvailability"
-        ]
-      }
-    },
-    {
-      "id": "log-1766134324122-7cd5l",
-      "nfId": "pcf-1766134319118-r1m0f",
-      "timestamp": 1766134324122,
-      "level": "SUCCESS",
-      "message": "PCF-1 is now STABLE and ready for connections",
-      "details": {
-        "Status": "stable",
-        "uptime": "5 seconds"
-      }
-    },
-    {
-      "id": "log-1766134324259-84x8o",
-      "nfId": "nssf-1766134323958-v6s88",
-      "timestamp": 1766134324259,
-      "level": "INFO",
-      "message": "Initializing NSSF network slice selection services...",
-      "details": {
-        "modules": [
-          "Network Slice Selection",
-          "NSSAI Management"
-        ]
-      }
-    },
-    {
-      "id": "log-1766134324413-xsngk",
-      "nfId": "udm-1766134314799-3audk",
-      "timestamp": 1766134324413,
-      "level": "SUCCESS",
-      "message": "Auto-connected to NRF-1 (interface: Nnrf_NFManagement)",
-      "details": {
-        "targetType": "NRF",
-        "interface": "Nnrf_NFManagement",
-        "autoConnection": true,
-        "visualConnection": true,
-        "subnet": "192.168.1.0/24",
-        "sourceIP": "192.168.1.16",
-        "targetIP": "192.168.1.10",
-        "reason": "5G architecture requirement + subnet restriction",
-        "note": "Visual interface connection established and shown on canvas"
-      }
-    },
-    {
-      "id": "log-1766134324921-4zfqu",
-      "nfId": "udm-1766134314799-3audk",
-      "timestamp": 1766134324921,
-      "level": "INFO",
-      "message": "Sending NF registration request to NRF...",
-      "details": {
-        "method": "PUT",
-        "endpoint": "https://192.168.1.16:8085/nudm-sdm/v1",
-        "payload": "NF Profile"
-      }
-    },
-    {
-      "id": "log-1766134324972-rj7k7",
-      "nfId": "nssf-1766134323958-v6s88",
-      "timestamp": 1766134324972,
-      "level": "INFO",
-      "message": "Discovered NRF - Initiating registration",
-      "details": {
-        "busId": "bus-1766134019784-tlsqz",
-        "nrfId": "nrf-1766134025470-9j52u",
-        "discoveryMethod": "Service Bus"
-      }
-    },
-    {
-      "id": "log-1766134325421-wmz63",
-      "nfId": "udm-1766134314799-3audk",
-      "timestamp": 1766134325421,
-      "level": "SUCCESS",
-      "message": "NRF connection established - Registering UDM...",
-      "details": {}
-    },
-    {
-      "id": "log-1766134325622-8yk0s",
-      "nfId": "nrf-1766134025470-9j52u",
-      "timestamp": 1766134325622,
-      "level": "INFO",
-      "message": "Processing registration from UDM-1",
-      "details": {
-        "nfType": "UDM",
-        "nfInstanceId": "udm-1766134314799-3audk"
-      }
-    },
-    {
-      "id": "log-1766134325625-6bgaf",
-      "nfId": "nrf-1766134025470-9j52u",
-      "timestamp": 1766134325625,
-      "level": "SUCCESS",
-      "message": "UDM-1 registered successfully",
-      "details": {
-        "profileId": "profile-c0t4v0j2y",
-        "validity": "3600 seconds",
-        "status": "REGISTERED"
-      }
-    },
-    {
-      "id": "log-1766134325626-y5zva",
-      "nfId": "udm-1766134314799-3audk",
-      "timestamp": 1766134325626,
-      "level": "SUCCESS",
-      "message": "Successfully registered with NRF",
-      "details": {
-        "profileId": "profile-c0t4v0j2y",
-        "nrfAddress": "192.168.1.10",
-        "heartbeatInterval": "60 seconds"
-      }
-    },
-    {
-      "id": "log-1766134325920-oy2t7",
-      "nfId": "udm-1766134314799-3audk",
-      "timestamp": 1766134325920,
-      "level": "SUCCESS",
-      "message": "Successfully registered with NRF",
-      "details": {
-        "profileId": "udm-profile-5opp0s"
-      }
-    },
-    {
-      "id": "log-1766134325970-3gryn",
-      "nfId": "nssf-1766134323958-v6s88",
-      "timestamp": 1766134325970,
-      "level": "ERROR",
-      "message": "NSSF startup failed - Cannot operate without NRF",
-      "details": {}
-    },
-    {
-      "id": "log-1766134326486-c83s0",
-      "nfId": "nssf-1766134323958-v6s88",
-      "timestamp": 1766134326486,
-      "level": "SUCCESS",
-      "message": "Successfully registered with NRF ",
-      "details": {
-        "nrfId": "nrf-1766134025470-9j52u",
-        "validity": "3600 seconds",
-        "heartbeatInterval": "60 seconds"
-      }
-    },
-    {
-      "id": "log-1766134327003-wnotm",
-      "nfId": "amf-1766134029860-ri9n5",
-      "timestamp": 1766134327003,
-      "level": "SUCCESS",
-      "message": "Discovered new NSSF NSSF-1 via Service Bus",
-      "details": {
-        "busId": "bus-1766134019784-tlsqz",
-        "discoveredNfId": "nssf-1766134323958-v6s88",
-        "discoveryMethod": "Service Bus",
-        "interface": "Nnssf"
-      }
-    },
-    {
-      "id": "log-1766134327113-ra26l",
-      "nfId": "udr-1766134327111-cpc0w",
-      "timestamp": 1766134327113,
-      "level": "SUCCESS",
-      "message": "UDR-1 created successfully",
-      "details": {
-        "ipAddress": "192.168.1.19",
-        "port": 8088,
-        "subnet": "192.168.1.0/24",
-        "protocol": "HTTP/2",
-        "status": "starting",
-        "note": "Service will be stable in 5 seconds"
-      }
-    },
-    {
-      "id": "log-1766134327117-1x6qu",
-      "nfId": "udr-1766134327111-cpc0w",
-      "timestamp": 1766134327117,
-      "level": "SUCCESS",
-      "message": "Connected to Service Bus service bus",
-      "details": {
-        "busId": "bus-1766134019784-tlsqz",
-        "orientation": "horizontal",
-        "protocol": "HTTP/2"
-      }
-    },
-    {
-      "id": "log-1766134327120-3uqjb",
-      "nfId": "udr-1766134327111-cpc0w",
-      "timestamp": 1766134327120,
-      "level": "INFO",
-      "message": "Auto-connected to Service Bus service bus",
-      "details": {
-        "busId": "bus-1766134019784-tlsqz",
-        "interfaceName": "Nudr",
-        "autoConnect": true
-      }
-    },
-    {
-      "id": "log-1766134327128-kz5f7",
-      "nfId": "udr-1766134327111-cpc0w",
-      "timestamp": 1766134327128,
-      "level": "INFO",
-      "message": "UDR-1 instance created: UDR-1",
-      "details": {
-        "type": "UDR",
-        "version": "R16",
-        "endpoint": "https://192.168.1.19:8088/nudr-dr/v1",
-        "interfaces": [
-          "Nudr_EventExposure",
-          "Nudr_TrafficInfluence",
-          "Nudr_ChargeableParty"
-        ]
-      }
-    },
-    {
-      "id": "log-1766134327419-l1iev",
-      "nfId": "udr-1766134327111-cpc0w",
-      "timestamp": 1766134327419,
-      "level": "INFO",
-      "message": "Initializing UDR data repository services...",
-      "details": {
-        "modules": [
-          "Data Repository",
-          "Event Exposure",
-          "Traffic Influence"
-        ]
-      }
-    },
-    {
-      "id": "log-1766134328119-u99a2",
-      "nfId": "mysql-1766134328118-y1qwg",
-      "timestamp": 1766134328119,
-      "level": "INFO",
-      "message": "MySQL instance created: MySQL-1",
-      "details": {}
-    },
-    {
-      "id": "log-1766134328122-hoaig",
-      "nfId": "udr-1766134327111-cpc0w",
-      "timestamp": 1766134328122,
-      "level": "INFO",
-      "message": "MySQL database auto-started for UDR data repository",
-      "details": {
-        "mysqlName": "MySQL-1",
-        "mysqlIP": "192.168.1.20",
-        "subnet": "192.168.1.0/24",
-        "purpose": "UDR data repository backend",
-        "note": "MySQL will auto-connect to UDR when stable"
-      }
-    },
-    {
-      "id": "log-1766134328124-gxlx6",
-      "nfId": "udr-1766134327111-cpc0w",
-      "timestamp": 1766134328124,
-      "level": "INFO",
-      "message": "Discovered NRF - Initiating registration",
-      "details": {
-        "busId": "bus-1766134019784-tlsqz",
-        "nrfId": "nrf-1766134025470-9j52u",
-        "discoveryMethod": "Service Bus"
-      }
-    },
-    {
-      "id": "log-1766134328435-2yn8i",
-      "nfId": "mysql-1766134328118-y1qwg",
-      "timestamp": 1766134328435,
-      "level": "INFO",
-      "message": "Initializing MySQL services...",
-      "details": {}
-    },
-    {
-      "id": "log-1766134328940-vucsg",
-      "nfId": "mysql-1766134328118-y1qwg",
-      "timestamp": 1766134328940,
+      "id": "log-1766574336764-z0dzo",
+      "nfId": "amf-1766574335529-howor",
+      "timestamp": 1766574336764,
       "level": "WARNING",
       "message": "UDM not available - Some features may not work",
       "details": {}
     },
     {
-      "id": "log-1766134328965-onnvl",
-      "nfId": "nssf-1766134323958-v6s88",
-      "timestamp": 1766134328965,
+      "id": "log-1766574336961-28v4v",
+      "nfId": "amf-1766574335529-howor",
+      "timestamp": 1766574336961,
       "level": "SUCCESS",
-      "message": "NSSF-1 is now STABLE and ready for connections",
+      "message": "Connected to Service Bus service bus",
       "details": {
-        "Status": "stable",
-        "uptime": "5 seconds"
+        "busId": "bus-1766574332091-0l6ou",
+        "orientation": "horizontal",
+        "protocol": "HTTP/2"
       }
     },
     {
-      "id": "log-1766134329119-nkqex",
-      "nfId": "udr-1766134327111-cpc0w",
-      "timestamp": 1766134329119,
+      "id": "log-1766574336963-hqi07",
+      "nfId": "system",
+      "timestamp": 1766574336963,
+      "level": "SUCCESS",
+      "message": "N1 Interface deployed successfully",
+      "details": {
+        "components": "UE, gNB, AMF",
+        "protocol": "NAS",
+        "type": "Control Plane",
+        "flow": "UE → gNB (N1/RRC) → AMF (N2/NGAP)",
+        "connectedToBus": true
+      }
+    },
+    {
+      "id": "log-1766574337454-ktlra",
+      "nfId": "amf-1766574335529-howor",
+      "timestamp": 1766574337454,
       "level": "ERROR",
-      "message": "UDR startup failed - Cannot operate without NRF",
+      "message": "AMF startup failed - Cannot operate without required dependencies",
       "details": {}
     },
     {
-      "id": "log-1766134329634-e1ddr",
-      "nfId": "udr-1766134327111-cpc0w",
-      "timestamp": 1766134329634,
+      "id": "log-1766574339521-buhru",
+      "nfId": "ue-1766574334517-d3im3",
+      "timestamp": 1766574339521,
       "level": "SUCCESS",
-      "message": "Successfully registered with NRF ",
+      "message": "UE-1 is now STABLE and ready for connections",
       "details": {
-        "nrfId": "nrf-1766134025470-9j52u",
+        "previousStatus": "starting",
+        "newStatus": "stable",
+        "uptime": "5 seconds",
+        "readyForConnections": true
+      }
+    },
+    {
+      "id": "log-1766574339878-dcgt4",
+      "nfId": "system",
+      "timestamp": 1766574339878,
+      "level": "SUCCESS",
+      "message": "N2 Interface configured successfully",
+      "details": {
+        "components": "gNB, AMF",
+        "protocol": "NGAP (NG Application Protocol)",
+        "type": "Control Plane",
+        "note": "Uses existing N1 topology",
+        "sharedTopology": true
+      }
+    },
+    {
+      "id": "log-1766574340026-07rs6",
+      "nfId": "gnb-1766574335023-moncs",
+      "timestamp": 1766574340026,
+      "level": "SUCCESS",
+      "message": "gNB-1 is now STABLE and ready for connections",
+      "details": {
+        "previousStatus": "starting",
+        "newStatus": "stable",
+        "uptime": "5 seconds",
+        "readyForConnections": true
+      }
+    },
+    {
+      "id": "log-1766574340538-9evp1",
+      "nfId": "amf-1766574335529-howor",
+      "timestamp": 1766574340538,
+      "level": "SUCCESS",
+      "message": "AMF-1 is now STABLE and ready for connections",
+      "details": {
+        "previousStatus": "starting",
+        "newStatus": "stable",
+        "uptime": "5 seconds",
+        "readyForConnections": true
+      }
+    },
+    {
+      "id": "log-1766574346678-0ojwf",
+      "nfId": "upf-1766574346677-yz3te",
+      "timestamp": 1766574346678,
+      "level": "INFO",
+      "message": "UPF instance created: UPF-1",
+      "details": {}
+    },
+    {
+      "id": "log-1766574346983-fmf2m",
+      "nfId": "upf-1766574346677-yz3te",
+      "timestamp": 1766574346983,
+      "level": "INFO",
+      "message": "Initializing UPF services...",
+      "details": {}
+    },
+    {
+      "id": "log-1766574347498-s8r77",
+      "nfId": "upf-1766574346677-yz3te",
+      "timestamp": 1766574347498,
+      "level": "ERROR",
+      "message": "Cannot register with NRF - NRF not found in topology",
+      "details": {
+        "suggestion": "Add NRF to the topology first"
+      }
+    },
+    {
+      "id": "log-1766574348215-jd2mv",
+      "nfId": "upf-1766574346677-yz3te",
+      "timestamp": 1766574348215,
+      "level": "ERROR",
+      "message": "UPF startup failed - Cannot operate without required dependencies",
+      "details": {}
+    },
+    {
+      "id": "log-1766574348316-r579q",
+      "nfId": "system",
+      "timestamp": 1766574348316,
+      "level": "SUCCESS",
+      "message": "N3 Interface deployed successfully",
+      "details": {
+        "components": "UE, gNB, UPF, Internet",
+        "protocol": "GTP-U (GPRS Tunneling Protocol - User Plane)",
+        "type": "User Plane",
+        "flow": "UE → gNB (Radio) → UPF (N3 Tunnel) → Internet (N6)",
+        "dataPath": "Complete user data path established",
+        "note": "No connections to service bus - pure data plane"
+      }
+    },
+    {
+      "id": "log-1766574351689-01wvo",
+      "nfId": "upf-1766574346677-yz3te",
+      "timestamp": 1766574351689,
+      "level": "SUCCESS",
+      "message": "UPF-1 is now STABLE and ready for connections",
+      "details": {
+        "previousStatus": "starting",
+        "newStatus": "stable",
+        "uptime": "5 seconds",
+        "readyForConnections": true
+      }
+    },
+    {
+      "id": "log-1766574351865-bzbjt",
+      "nfId": "smf-1766574351864-1s591",
+      "timestamp": 1766574351865,
+      "level": "INFO",
+      "message": "SMF instance created: SMF-1",
+      "details": {}
+    },
+    {
+      "id": "log-1766574352178-d9n5i",
+      "nfId": "smf-1766574351864-1s591",
+      "timestamp": 1766574352178,
+      "level": "INFO",
+      "message": "Initializing SMF services...",
+      "details": {}
+    },
+    {
+      "id": "log-1766574352689-cd7wt",
+      "nfId": "smf-1766574351864-1s591",
+      "timestamp": 1766574352689,
+      "level": "ERROR",
+      "message": "Cannot register with NRF - NRF not found in topology",
+      "details": {
+        "suggestion": "Add NRF to the topology first"
+      }
+    },
+    {
+      "id": "log-1766574352894-dkcaz",
+      "nfId": "smf-1766574351864-1s591",
+      "timestamp": 1766574352894,
+      "level": "WARNING",
+      "message": "UPF not available - Some features may not work",
+      "details": {}
+    },
+    {
+      "id": "log-1766574353093-jeqn5",
+      "nfId": "smf-1766574351864-1s591",
+      "timestamp": 1766574353093,
+      "level": "WARNING",
+      "message": "PCF not available - Some features may not work",
+      "details": {}
+    },
+    {
+      "id": "log-1766574353797-iwjgx",
+      "nfId": "smf-1766574351864-1s591",
+      "timestamp": 1766574353797,
+      "level": "ERROR",
+      "message": "SMF startup failed - Cannot operate without required dependencies",
+      "details": {}
+    },
+    {
+      "id": "log-1766574354110-9skzs",
+      "nfId": "smf-1766574351864-1s591",
+      "timestamp": 1766574354110,
+      "level": "SUCCESS",
+      "message": "Connected to Service Bus service bus",
+      "details": {
+        "busId": "bus-1766574332091-0l6ou",
+        "orientation": "horizontal",
+        "protocol": "HTTP/2"
+      }
+    },
+    {
+      "id": "log-1766574354114-uv7iy",
+      "nfId": "system",
+      "timestamp": 1766574354114,
+      "level": "SUCCESS",
+      "message": "N4 Interface deployed successfully",
+      "details": {
+        "components": "UE, gNB, AMF, SMF, UPF",
+        "protocol": "PFCP (Packet Forwarding Control Protocol)",
+        "type": "Control Plane",
+        "flow": "UE → gNB (N1) → AMF (N2) → SMF (Namf) → UPF (N4/PFCP)",
+        "busConnections": "AMF and SMF connected to Service Bus",
+        "note": "SMF controls UPF packet forwarding via PFCP"
+      }
+    },
+    {
+      "id": "log-1766574355853-i81fk",
+      "nfId": "af-1766574355852-6vl68",
+      "timestamp": 1766574355853,
+      "level": "INFO",
+      "message": "AF instance created: AF-1",
+      "details": {}
+    },
+    {
+      "id": "log-1766574356164-i6fjz",
+      "nfId": "af-1766574355852-6vl68",
+      "timestamp": 1766574356164,
+      "level": "INFO",
+      "message": "Initializing AF services...",
+      "details": {}
+    },
+    {
+      "id": "log-1766574356377-uuokm",
+      "nfId": "pcf-1766574356376-dvjgl",
+      "timestamp": 1766574356377,
+      "level": "INFO",
+      "message": "PCF instance created: PCF-1",
+      "details": {}
+    },
+    {
+      "id": "log-1766574356695-al3s0",
+      "nfId": "pcf-1766574356376-dvjgl",
+      "timestamp": 1766574356695,
+      "level": "INFO",
+      "message": "Initializing PCF services...",
+      "details": {}
+    },
+    {
+      "id": "log-1766574356872-cmnl3",
+      "nfId": "smf-1766574351864-1s591",
+      "timestamp": 1766574356872,
+      "level": "SUCCESS",
+      "message": "SMF-1 is now STABLE and ready for connections",
+      "details": {
+        "previousStatus": "starting",
+        "newStatus": "stable",
+        "uptime": "5 seconds",
+        "readyForConnections": true
+      }
+    },
+    {
+      "id": "log-1766574357191-f7swh",
+      "nfId": "af-1766574355852-6vl68",
+      "timestamp": 1766574357191,
+      "level": "SUCCESS",
+      "message": "Connected to Service Bus service bus",
+      "details": {
+        "busId": "bus-1766574332091-0l6ou",
+        "orientation": "horizontal",
+        "protocol": "HTTP/2"
+      }
+    },
+    {
+      "id": "log-1766574357206-kqepq",
+      "nfId": "pcf-1766574356376-dvjgl",
+      "timestamp": 1766574357206,
+      "level": "ERROR",
+      "message": "Cannot register with NRF - NRF not found in topology",
+      "details": {
+        "suggestion": "Add NRF to the topology first"
+      }
+    },
+    {
+      "id": "log-1766574357508-72xw8",
+      "nfId": "pcf-1766574356376-dvjgl",
+      "timestamp": 1766574357508,
+      "level": "SUCCESS",
+      "message": "Connected to Service Bus service bus",
+      "details": {
+        "busId": "bus-1766574332091-0l6ou",
+        "orientation": "horizontal",
+        "protocol": "HTTP/2"
+      }
+    },
+    {
+      "id": "log-1766574357512-g7is9",
+      "nfId": "system",
+      "timestamp": 1766574357512,
+      "level": "SUCCESS",
+      "message": "N5 Interface deployed successfully",
+      "details": {
+        "components": "AF, PCF",
+        "protocol": "HTTP/2 (Service-Based Interface)",
+        "type": "Control Plane",
+        "interface": "N5 (Npcf_PolicyAuthorization)",
+        "communication": "Via Service Bus",
+        "note": "Applications request policy decisions from PCF"
+      }
+    },
+    {
+      "id": "log-1766574357920-rwwvv",
+      "nfId": "pcf-1766574356376-dvjgl",
+      "timestamp": 1766574357920,
+      "level": "ERROR",
+      "message": "PCF startup failed - Cannot operate without required dependencies",
+      "details": {}
+    },
+    {
+      "id": "log-1766574359281-1scis",
+      "nfId": "system",
+      "timestamp": 1766574359281,
+      "level": "SUCCESS",
+      "message": "N6 Interface deployed successfully",
+      "details": {
+        "components": "Reused existing NFs",
+        "protocol": "IP",
+        "type": "User Plane",
+        "flow": "UE → gNB → UPF → Internet (N6)",
+        "reusedFromN3": true
+      }
+    },
+    {
+      "id": "log-1766574360038-ndqtd",
+      "nfId": "smf-1766574351864-1s591",
+      "timestamp": 1766574360038,
+      "level": "SUCCESS",
+      "message": "Discovered new PCF PCF-1 via Service Bus",
+      "details": {
+        "busId": "bus-1766574332091-0l6ou",
+        "discoveredNfId": "pcf-1766574356376-dvjgl",
+        "discoveryMethod": "Service Bus",
+        "interface": "Npcf"
+      }
+    },
+    {
+      "id": "log-1766574360309-hb3ns",
+      "nfId": "amf-1766574335529-howor",
+      "timestamp": 1766574360309,
+      "level": "SUCCESS",
+      "message": "Discovered new PCF PCF-1 via Service Bus",
+      "details": {
+        "busId": "bus-1766574332091-0l6ou",
+        "discoveredNfId": "pcf-1766574356376-dvjgl",
+        "discoveryMethod": "Service Bus",
+        "interface": "Npcf"
+      }
+    },
+    {
+      "id": "log-1766574360860-x5tnb",
+      "nfId": "af-1766574355852-6vl68",
+      "timestamp": 1766574360860,
+      "level": "SUCCESS",
+      "message": "AF-1 is now STABLE and ready for connections",
+      "details": {
+        "previousStatus": "starting",
+        "newStatus": "stable",
+        "uptime": "5 seconds",
+        "readyForConnections": true
+      }
+    },
+    {
+      "id": "log-1766574361384-9df8r",
+      "nfId": "pcf-1766574356376-dvjgl",
+      "timestamp": 1766574361384,
+      "level": "SUCCESS",
+      "message": "PCF-1 is now STABLE and ready for connections",
+      "details": {
+        "previousStatus": "starting",
+        "newStatus": "stable",
+        "uptime": "5 seconds",
+        "readyForConnections": true
+      }
+    },
+    {
+      "id": "log-1766574364500-d083r",
+      "nfId": "system",
+      "timestamp": 1766574364500,
+      "level": "SUCCESS",
+      "message": "N7 Interface deployed successfully",
+      "details": {
+        "components": "SMF, PCF",
+        "protocol": "HTTP/2 (Service-Based Interface)",
+        "type": "Control Plane",
+        "interface": "N7 (Npcf_SMPolicyControl)",
+        "communication": "Direct connection with Service Bus for discovery",
+        "note": "SMF requests policy decisions from PCF for PDU sessions"
+      }
+    },
+    {
+      "id": "log-1766574961954-6f7zg",
+      "nfId": "udm-1766574961953-ceqpq",
+      "timestamp": 1766574961954,
+      "level": "INFO",
+      "message": "UDM instance created: UDM-1",
+      "details": {}
+    },
+    {
+      "id": "log-1766574962266-ocmuu",
+      "nfId": "udm-1766574961953-ceqpq",
+      "timestamp": 1766574962266,
+      "level": "INFO",
+      "message": "Initializing UDM services...",
+      "details": {}
+    },
+    {
+      "id": "log-1766574962776-jd8z7",
+      "nfId": "udm-1766574961953-ceqpq",
+      "timestamp": 1766574962776,
+      "level": "SUCCESS",
+      "message": "Connected to Service Bus service bus",
+      "details": {
+        "busId": "bus-1766574332091-0l6ou",
+        "orientation": "horizontal",
+        "protocol": "HTTP/2"
+      }
+    },
+    {
+      "id": "log-1766574962782-vvpeg",
+      "nfId": "system",
+      "timestamp": 1766574962782,
+      "level": "SUCCESS",
+      "message": "N8 Interface deployed successfully",
+      "details": {
+        "components": "UE, gNB, AMF, UDM",
+        "protocol": "HTTP/2 (Service-Based Interface)",
+        "type": "Control Plane",
+        "interface": "N8 (Nudm_UECM)",
+        "flow": "UE → gNB → AMF ← N8 → UDM",
+        "busConnections": "AMF and UDM connected to Service Bus",
+        "note": "AMF retrieves subscriber context from UDM"
+      }
+    },
+    {
+      "id": "log-1766574962793-wk0tg",
+      "nfId": "udm-1766574961953-ceqpq",
+      "timestamp": 1766574962793,
+      "level": "ERROR",
+      "message": "Cannot register with NRF - NRF not found in topology",
+      "details": {
+        "suggestion": "Add NRF to the topology first"
+      }
+    },
+    {
+      "id": "log-1766574962994-smbzm",
+      "nfId": "udm-1766574961953-ceqpq",
+      "timestamp": 1766574962994,
+      "level": "WARNING",
+      "message": "MySQL not available - Some features may not work",
+      "details": {}
+    },
+    {
+      "id": "log-1766574963701-0gy0o",
+      "nfId": "udm-1766574961953-ceqpq",
+      "timestamp": 1766574963701,
+      "level": "ERROR",
+      "message": "UDM startup failed - Cannot operate without required dependencies",
+      "details": {}
+    },
+    {
+      "id": "log-1766574965993-bmt8h",
+      "nfId": "smf-1766574351864-1s591",
+      "timestamp": 1766574965993,
+      "level": "SUCCESS",
+      "message": "Discovered new UDM UDM-1 via Service Bus",
+      "details": {
+        "busId": "bus-1766574332091-0l6ou",
+        "discoveredNfId": "udm-1766574961953-ceqpq",
+        "discoveryMethod": "Service Bus",
+        "interface": "Nudm"
+      }
+    },
+    {
+      "id": "log-1766574966179-mk838",
+      "nfId": "amf-1766574335529-howor",
+      "timestamp": 1766574966179,
+      "level": "SUCCESS",
+      "message": "Discovered new UDM UDM-1 via Service Bus",
+      "details": {
+        "busId": "bus-1766574332091-0l6ou",
+        "discoveredNfId": "udm-1766574961953-ceqpq",
+        "discoveryMethod": "Service Bus",
+        "interface": "Nudm"
+      }
+    },
+    {
+      "id": "log-1766574966974-nfyx0",
+      "nfId": "udm-1766574961953-ceqpq",
+      "timestamp": 1766574966974,
+      "level": "SUCCESS",
+      "message": "UDM-1 is now STABLE and ready for connections",
+      "details": {
+        "previousStatus": "starting",
+        "newStatus": "stable",
+        "uptime": "5 seconds",
+        "readyForConnections": true
+      }
+    },
+    {
+      "id": "log-1766574968191-vi60q",
+      "nfId": "system",
+      "timestamp": 1766574968191,
+      "level": "SUCCESS",
+      "message": "N10 Interface deployed successfully",
+      "details": {
+        "components": "SMF, UDM",
+        "protocol": "HTTP/2 (Service-Based Interface)",
+        "type": "Control Plane",
+        "interface": "N10 (Nudm_SDM)",
+        "communication": "Direct connection with Service Bus for discovery",
+        "note": "SMF retrieves session management subscription data from UDM"
+      }
+    },
+    {
+      "id": "log-1766574971785-d841g",
+      "nfId": "system",
+      "timestamp": 1766574971785,
+      "level": "SUCCESS",
+      "message": "N11 Interface deployed successfully",
+      "details": {
+        "components": "AMF, SMF",
+        "protocol": "HTTP/2 (Service-Based Interface)",
+        "type": "Control Plane",
+        "interface": "N11 (Namf_Communication)",
+        "communication": "Direct connection with Service Bus for discovery",
+        "note": "AMF triggers SMF for PDU session management"
+      }
+    },
+    {
+      "id": "log-1766574974456-6due8",
+      "nfId": "ausf-1766574974455-aexwu",
+      "timestamp": 1766574974456,
+      "level": "INFO",
+      "message": "AUSF instance created: AUSF-1",
+      "details": {}
+    },
+    {
+      "id": "log-1766574974760-1m0ed",
+      "nfId": "ausf-1766574974455-aexwu",
+      "timestamp": 1766574974760,
+      "level": "INFO",
+      "message": "Initializing AUSF services...",
+      "details": {}
+    },
+    {
+      "id": "log-1766574975269-js5jg",
+      "nfId": "ausf-1766574974455-aexwu",
+      "timestamp": 1766574975269,
+      "level": "ERROR",
+      "message": "Cannot register with NRF - NRF not found in topology",
+      "details": {
+        "suggestion": "Add NRF to the topology first"
+      }
+    },
+    {
+      "id": "log-1766574975470-24bpr",
+      "nfId": "ausf-1766574974455-aexwu",
+      "timestamp": 1766574975470,
+      "level": "ERROR",
+      "message": "UDM exists but not connected",
+      "details": {
+        "suggestion": "Connect AUSF-1 to UDM"
+      }
+    },
+    {
+      "id": "log-1766574975575-753hp",
+      "nfId": "ausf-1766574974455-aexwu",
+      "timestamp": 1766574975575,
+      "level": "SUCCESS",
+      "message": "Connected to Service Bus service bus",
+      "details": {
+        "busId": "bus-1766574332091-0l6ou",
+        "orientation": "horizontal",
+        "protocol": "HTTP/2"
+      }
+    },
+    {
+      "id": "log-1766574975888-pdy8q",
+      "nfId": "system",
+      "timestamp": 1766574975888,
+      "level": "SUCCESS",
+      "message": "N12 Interface deployed successfully",
+      "details": {
+        "components": "AMF, AUSF",
+        "protocol": "HTTP/2 (Service-Based Interface)",
+        "type": "Control Plane",
+        "interface": "N12 (Nausf_UEAuthentication)",
+        "communication": "Direct connection with Service Bus for discovery",
+        "note": "AMF requests UE authentication from AUSF"
+      }
+    },
+    {
+      "id": "log-1766574976172-seoaf",
+      "nfId": "ausf-1766574974455-aexwu",
+      "timestamp": 1766574976172,
+      "level": "ERROR",
+      "message": "AUSF startup failed - Cannot operate without required dependencies",
+      "details": {}
+    },
+    {
+      "id": "log-1766574976970-bo38e",
+      "nfId": "nrf-1766574976969-ks92i",
+      "timestamp": 1766574976970,
+      "level": "INFO",
+      "message": "NRF instance created: NRF-1",
+      "details": {}
+    },
+    {
+      "id": "log-1766574977274-hr25l",
+      "nfId": "nrf-1766574976969-ks92i",
+      "timestamp": 1766574977274,
+      "level": "INFO",
+      "message": "Initializing NRF services...",
+      "details": {}
+    },
+    {
+      "id": "log-1766574978100-8gjf2",
+      "nfId": "nrf-1766574976969-ks92i",
+      "timestamp": 1766574978100,
+      "level": "SUCCESS",
+      "message": "Connected to Service Bus service bus",
+      "details": {
+        "busId": "bus-1766574332091-0l6ou",
+        "orientation": "horizontal",
+        "protocol": "HTTP/2"
+      }
+    },
+    {
+      "id": "log-1766574978167-yaj0l",
+      "nfId": "ausf-1766574974455-aexwu",
+      "timestamp": 1766574978167,
+      "level": "SUCCESS",
+      "message": "Discovered UDM UDM-1 via Service Bus",
+      "details": {
+        "busId": "bus-1766574332091-0l6ou",
+        "discoveredNfId": "udm-1766574961953-ceqpq",
+        "discoveryMethod": "Service Bus",
+        "interface": "Nudm"
+      }
+    },
+    {
+      "id": "log-1766574978300-jqmov",
+      "nfId": "nrf-1766574976969-ks92i",
+      "timestamp": 1766574978300,
+      "level": "SUCCESS",
+      "message": "NRF is fully operational ✓",
+      "details": {}
+    },
+    {
+      "id": "log-1766574978418-l4sk9",
+      "nfId": "system",
+      "timestamp": 1766574978418,
+      "level": "SUCCESS",
+      "message": "N13 Interface deployed successfully",
+      "details": {
+        "components": "AMF, NRF",
+        "protocol": "HTTP/2 (Service-Based Interface)",
+        "type": "Control Plane",
+        "interface": "N13 (Nnrf_NFDiscovery, Nnrf_NFManagement)",
+        "communication": "Direct connection with Service Bus for discovery",
+        "note": "AMF discovers and registers with NRF"
+      }
+    },
+    {
+      "id": "log-1766574978944-iaxns",
+      "nfId": "amf-1766574335529-howor",
+      "timestamp": 1766574978944,
+      "level": "SUCCESS",
+      "message": "Discovered new AUSF AUSF-1 via Service Bus",
+      "details": {
+        "busId": "bus-1766574332091-0l6ou",
+        "discoveredNfId": "ausf-1766574974455-aexwu",
+        "discoveryMethod": "Service Bus",
+        "interface": "Nausf"
+      }
+    },
+    {
+      "id": "log-1766574979265-42kjz",
+      "nfId": "pcf-1766574356376-dvjgl",
+      "timestamp": 1766574979265,
+      "level": "INFO",
+      "message": "NRF NRF-1 joined Service Bus - Initiating registration",
+      "details": {
+        "busId": "bus-1766574332091-0l6ou",
+        "nrfId": "nrf-1766574976969-ks92i",
+        "discoveryMethod": "Service Bus"
+      }
+    },
+    {
+      "id": "log-1766574979465-z827n",
+      "nfId": "ausf-1766574974455-aexwu",
+      "timestamp": 1766574979465,
+      "level": "SUCCESS",
+      "message": "AUSF-1 is now STABLE and ready for connections",
+      "details": {
+        "previousStatus": "starting",
+        "newStatus": "stable",
+        "uptime": "5 seconds",
+        "readyForConnections": true
+      }
+    },
+    {
+      "id": "log-1766574979863-2oi5j",
+      "nfId": "udm-1766574961953-ceqpq",
+      "timestamp": 1766574979863,
+      "level": "INFO",
+      "message": "NRF NRF-1 joined Service Bus - Initiating registration",
+      "details": {
+        "busId": "bus-1766574332091-0l6ou",
+        "nrfId": "nrf-1766574976969-ks92i",
+        "discoveryMethod": "Service Bus"
+      }
+    },
+    {
+      "id": "log-1766574979880-4oc1f",
+      "nfId": "smf-1766574351864-1s591",
+      "timestamp": 1766574979880,
+      "level": "INFO",
+      "message": "NRF NRF-1 joined Service Bus - Initiating registration",
+      "details": {
+        "busId": "bus-1766574332091-0l6ou",
+        "nrfId": "nrf-1766574976969-ks92i",
+        "discoveryMethod": "Service Bus"
+      }
+    },
+    {
+      "id": "log-1766574980648-mg5je",
+      "nfId": "ausf-1766574974455-aexwu",
+      "timestamp": 1766574980648,
+      "level": "INFO",
+      "message": "NRF NRF-1 joined Service Bus - Initiating registration",
+      "details": {
+        "busId": "bus-1766574332091-0l6ou",
+        "nrfId": "nrf-1766574976969-ks92i",
+        "discoveryMethod": "Service Bus"
+      }
+    },
+    {
+      "id": "log-1766574980682-rl88j",
+      "nfId": "af-1766574355852-6vl68",
+      "timestamp": 1766574980682,
+      "level": "INFO",
+      "message": "NRF NRF-1 joined Service Bus - Initiating registration",
+      "details": {
+        "busId": "bus-1766574332091-0l6ou",
+        "nrfId": "nrf-1766574976969-ks92i",
+        "discoveryMethod": "Service Bus"
+      }
+    },
+    {
+      "id": "log-1766574980778-26fyu",
+      "nfId": "pcf-1766574356376-dvjgl",
+      "timestamp": 1766574980778,
+      "level": "SUCCESS",
+      "message": "Successfully registered with NRF-1 via Service Bus",
+      "details": {
+        "nrfId": "nrf-1766574976969-ks92i",
+        "profileId": "pcf-profile-1766574980778",
         "validity": "3600 seconds",
         "heartbeatInterval": "60 seconds"
       }
     },
     {
-      "id": "log-1766134329651-mvrgq",
-      "nfId": "mysql-1766134328118-y1qwg",
-      "timestamp": 1766134329651,
-      "level": "SUCCESS",
-      "message": "MySQL is fully operational ✓",
-      "details": {}
-    },
-    {
-      "id": "log-1766134329653-v91kf",
-      "nfId": "udm-1766134314799-3audk",
-      "timestamp": 1766134329653,
-      "level": "SUCCESS",
-      "message": "Discovered new UDR UDR-1 via Service Bus",
-      "details": {
-        "busId": "bus-1766134019784-tlsqz",
-        "discoveredNfId": "udr-1766134327111-cpc0w",
-        "discoveryMethod": "Service Bus",
-        "interface": "Nudr"
-      }
-    },
-    {
-      "id": "log-1766134332115-y0rt2",
-      "nfId": "udr-1766134327111-cpc0w",
-      "timestamp": 1766134332115,
-      "level": "SUCCESS",
-      "message": "UDR-1 is now STABLE and ready for connections",
-      "details": {
-        "Status": "stable",
-        "uptime": "5 seconds"
-      }
-    },
-    {
-      "id": "log-1766134332871-68lwg",
-      "nfId": "gnb-1766134332869-2486n",
-      "timestamp": 1766134332871,
-      "level": "SUCCESS",
-      "message": "gNB-1 created successfully",
-      "details": {
-        "ipAddress": "192.168.1.21",
-        "port": 8089,
-        "subnet": "192.168.1.0/24",
-        "protocol": "HTTP/2",
-        "status": "starting",
-        "note": "Service will be stable in 5 seconds"
-      }
-    },
-    {
-      "id": "log-1766134332880-roamb",
-      "nfId": "gnb-1766134332869-2486n",
-      "timestamp": 1766134332880,
+      "id": "log-1766574981031-g92ft",
+      "nfId": "amf-1766574335529-howor",
+      "timestamp": 1766574981031,
       "level": "INFO",
-      "message": "gNB-1 instance created: gNB-1",
+      "message": "NRF NRF-1 joined Service Bus - Initiating registration",
       "details": {
-        "type": "gNodeB",
-        "vendor": "Ericsson/Nokia/Huawei",
-        "version": "5G-NR R16",
-        "endpoint": "https://192.168.1.21:8089/gnb-mgmt/v1",
-        "interfaces": [
-          "N1 (toward UE)",
-          "N2 (toward AMF)",
-          "N3 (toward UPF)",
-          "Xn (toward other gNBs)"
-        ]
+        "busId": "bus-1766574332091-0l6ou",
+        "nrfId": "nrf-1766574976969-ks92i",
+        "discoveryMethod": "Service Bus"
       }
     },
     {
-      "id": "log-1766134333131-nlaco",
-      "nfId": "mysql-1766134328118-y1qwg",
-      "timestamp": 1766134333131,
+      "id": "log-1766574981379-cmick",
+      "nfId": "udm-1766574961953-ceqpq",
+      "timestamp": 1766574981379,
       "level": "SUCCESS",
-      "message": "MySQL-1 is now STABLE and ready for connections",
+      "message": "Successfully registered with NRF-1 via Service Bus",
       "details": {
-        "Status": "stable",
-        "uptime": "5 seconds"
+        "nrfId": "nrf-1766574976969-ks92i",
+        "profileId": "udm-profile-1766574981379",
+        "validity": "3600 seconds",
+        "heartbeatInterval": "60 seconds"
       }
     },
     {
-      "id": "log-1766134333180-s88kj",
-      "nfId": "gnb-1766134332869-2486n",
-      "timestamp": 1766134333180,
-      "level": "INFO",
-      "message": "Initializing radio hardware...",
+      "id": "log-1766574981389-vmbkd",
+      "nfId": "smf-1766574351864-1s591",
+      "timestamp": 1766574981389,
+      "level": "SUCCESS",
+      "message": "Successfully registered with NRF-1 via Service Bus",
       "details": {
-        "frequency": "3.5 GHz (n78)",
-        "bandwidth": "100 MHz",
-        "antennas": "64T64R Massive MIMO"
+        "nrfId": "nrf-1766574976969-ks92i",
+        "profileId": "smf-profile-1766574981389",
+        "validity": "3600 seconds",
+        "heartbeatInterval": "60 seconds"
       }
     },
     {
-      "id": "log-1766134333478-ebgqv",
-      "nfId": "gnb-1766134332869-2486n",
-      "timestamp": 1766134333478,
-      "level": "INFO",
-      "message": "Configuring network interfaces...",
+      "id": "log-1766574981986-k4f1o",
+      "nfId": "nrf-1766574976969-ks92i",
+      "timestamp": 1766574981986,
+      "level": "SUCCESS",
+      "message": "NRF-1 is now STABLE and ready for connections",
       "details": {
-        "N2": "Control plane toward AMF",
-        "N3": "User plane toward UPF",
-        "N1": "Radio interface toward UE"
+        "previousStatus": "starting",
+        "newStatus": "stable",
+        "uptime": "5 seconds",
+        "readyForConnections": true
       }
     },
     {
-      "id": "log-1766134333776-wh9io",
-      "nfId": "gnb-1766134332869-2486n",
-      "timestamp": 1766134333776,
-      "level": "INFO",
-      "message": "Starting cell broadcast...",
+      "id": "log-1766574982162-305hq",
+      "nfId": "ausf-1766574974455-aexwu",
+      "timestamp": 1766574982162,
+      "level": "SUCCESS",
+      "message": "Successfully registered with NRF-1 via Service Bus",
       "details": {
-        "cellId": "0x01A2B3C4",
-        "pci": "150",
-        "tac": "1"
+        "nrfId": "nrf-1766574976969-ks92i",
+        "profileId": "ausf-profile-1766574982162",
+        "validity": "3600 seconds",
+        "heartbeatInterval": "60 seconds"
       }
     },
     {
-      "id": "log-1766134336826-u6mww",
-      "nfId": "mysql-1766134328118-y1qwg",
-      "timestamp": 1766134336826,
+      "id": "log-1766574982184-3gguw",
+      "nfId": "af-1766574355852-6vl68",
+      "timestamp": 1766574982185,
+      "level": "SUCCESS",
+      "message": "Successfully registered with NRF-1 via Service Bus",
+      "details": {
+        "nrfId": "nrf-1766574976969-ks92i",
+        "profileId": "af-profile-1766574982184",
+        "validity": "3600 seconds",
+        "heartbeatInterval": "60 seconds"
+      }
+    },
+    {
+      "id": "log-1766574982520-w3ise",
+      "nfId": "ausf-1766574974455-aexwu",
+      "timestamp": 1766574982520,
       "level": "INFO",
-      "message": "Initiating SQL/REST API connection to UDR-1",
+      "message": "Initiating Nnrf_NFManagement connection to NRF-1",
       "details": {
         "protocol": "HTTP/2",
         "targetIP": "192.168.1.19",
-        "targetPort": 8088
+        "targetPort": 8090
       }
     },
     {
-      "id": "log-1766134336832-4ncku",
-      "nfId": "udr-1766134327111-cpc0w",
-      "timestamp": 1766134336832,
+      "id": "log-1766574982524-s3ij4",
+      "nfId": "nrf-1766574976969-ks92i",
+      "timestamp": 1766574982524,
       "level": "INFO",
-      "message": "Incoming connection request from MySQL-1",
+      "message": "Incoming connection request from AUSF-1",
       "details": {
-        "interface": "SQL/REST API",
-        "sourceIP": "192.168.1.20"
+        "interface": "Nnrf_NFManagement",
+        "sourceIP": "192.168.1.18"
       }
     },
     {
-      "id": "log-1766134336836-gy2bh",
-      "nfId": "mysql-1766134328118-y1qwg",
-      "timestamp": 1766134336836,
-      "level": "SUCCESS",
-      "message": "Database connection established with UDR-1 (interface: SQL/REST API)",
-      "details": {
-        "targetIP": "192.168.1.19"
-      }
-    },
-    {
-      "id": "log-1766134337049-xw746",
-      "nfId": "ue-1766134337046-ehot7",
-      "timestamp": 1766134337049,
-      "level": "SUCCESS",
-      "message": "UE-1 created with subscriber profile",
-      "details": {
-        "IMSI": "001010000000101",
-        "DNN": "5G-Lab",
-        "NSSAI_SST": 1,
-        "IP": "192.168.1.22",
-        "Subnet": "192.168.1.0/24"
-      }
-    },
-    {
-      "id": "log-1766134337064-r2ynd",
-      "nfId": "ue-1766134337046-ehot7",
-      "timestamp": 1766134337064,
+      "id": "log-1766574982526-vjjtj",
+      "nfId": "ausf-1766574974455-aexwu",
+      "timestamp": 1766574982526,
       "level": "INFO",
-      "message": "UE-1 powered on: UE-1",
+      "message": "Auto-connected to NRF-1 (logical connection - no visual line)",
       "details": {
-        "device": "Smartphone",
-        "interfaces": [
-          "N1 (toward AMF via gNB)",
-          "Radio Interface (toward gNB)"
-        ]
+        "targetType": "NRF",
+        "interface": "Nnrf_NFManagement",
+        "autoConnection": true,
+        "visualConnection": false,
+        "subnet": "192.168.1.0/24",
+        "sourceIP": "192.168.1.18",
+        "targetIP": "192.168.1.19",
+        "reason": "5G architecture requirement + subnet restriction",
+        "note": "Connection exists for communication but not shown on canvas"
       }
     },
     {
-      "id": "log-1766134337137-e0az4",
-      "nfId": "mysql-1766134328118-y1qwg",
-      "timestamp": 1766134337137,
+      "id": "log-1766574982528-36k3h",
+      "nfId": "ausf-1766574974455-aexwu",
+      "timestamp": 1766574982528,
+      "level": "INFO",
+      "message": "Initiating Nudm_Authentication connection to UDM-1",
+      "details": {
+        "protocol": "HTTP/2",
+        "targetIP": "192.168.1.17",
+        "targetPort": 8087
+      }
+    },
+    {
+      "id": "log-1766574982531-gg7ye",
+      "nfId": "udm-1766574961953-ceqpq",
+      "timestamp": 1766574982531,
+      "level": "INFO",
+      "message": "Incoming connection request from AUSF-1",
+      "details": {
+        "interface": "Nudm_Authentication",
+        "sourceIP": "192.168.1.18"
+      }
+    },
+    {
+      "id": "log-1766574982533-w5s8d",
+      "nfId": "ausf-1766574974455-aexwu",
+      "timestamp": 1766574982533,
+      "level": "INFO",
+      "message": "Auto-connected to UDM-1 (logical connection - no visual line)",
+      "details": {
+        "targetType": "UDM",
+        "interface": "Nudm_Authentication",
+        "autoConnection": true,
+        "visualConnection": false,
+        "subnet": "192.168.1.0/24",
+        "sourceIP": "192.168.1.18",
+        "targetIP": "192.168.1.17",
+        "reason": "5G architecture requirement + subnet restriction",
+        "note": "Connection exists for communication but not shown on canvas"
+      }
+    },
+    {
+      "id": "log-1766574982534-asynp",
+      "nfId": "ausf-1766574974455-aexwu",
+      "timestamp": 1766574982534,
+      "level": "SUCCESS",
+      "message": "Auto-connection completed: 2 connections created in subnet 192.168.1.0/24",
+      "details": {
+        "connectionsCreated": 2,
+        "connectionsBlocked": 0,
+        "subnet": "192.168.1.0/24",
+        "sameSubnetStableServices": 9,
+        "restriction": "Same-subnet connections only"
+      }
+    },
+    {
+      "id": "log-1766574982538-ymdn1",
+      "nfId": "amf-1766574335529-howor",
+      "timestamp": 1766574982538,
+      "level": "SUCCESS",
+      "message": "Successfully registered with NRF-1 via Service Bus",
+      "details": {
+        "nrfId": "nrf-1766574976969-ks92i",
+        "profileId": "amf-profile-1766574982538",
+        "validity": "3600 seconds",
+        "heartbeatInterval": "60 seconds"
+      }
+    },
+    {
+      "id": "log-1766574982835-wv1ey",
+      "nfId": "ausf-1766574974455-aexwu",
+      "timestamp": 1766574982835,
       "level": "INFO",
       "message": "TLS handshake in progress...",
       "details": {}
     },
     {
-      "id": "log-1766134337144-qo9tj",
-      "nfId": "udr-1766134327111-cpc0w",
-      "timestamp": 1766134337144,
+      "id": "log-1766574982837-k9jvh",
+      "nfId": "nrf-1766574976969-ks92i",
+      "timestamp": 1766574982837,
       "level": "INFO",
       "message": "Accepting TLS connection...",
       "details": {}
     },
     {
-      "id": "log-1766134337360-0jsgy",
-      "nfId": "ue-1766134337046-ehot7",
-      "timestamp": 1766134337360,
-      "level": "INFO",
-      "message": "Searching for available cells...",
-      "details": {
-        "scanningBands": [
-          "n78 (3.5GHz)",
-          "n1 (2.1GHz)"
-        ],
-        "mode": "5G SA"
-      }
-    },
-    {
-      "id": "log-1766134337543-o1ggh",
-      "nfId": "mysql-1766134328118-y1qwg",
-      "timestamp": 1766134337543,
-      "level": "SUCCESS",
-      "message": "TLS handshake complete",
-      "details": {}
-    },
-    {
-      "id": "log-1766134337546-0q15k",
-      "nfId": "udr-1766134327111-cpc0w",
-      "timestamp": 1766134337546,
-      "level": "SUCCESS",
-      "message": "TLS session established",
-      "details": {}
-    },
-    {
-      "id": "log-1766134337659-c7nz0",
-      "nfId": "ue-1766134337046-ehot7",
-      "timestamp": 1766134337659,
-      "level": "INFO",
-      "message": "Cell selection in progress...",
-      "details": {
-        "criteria": "Best RSRP/RSRQ"
-      }
-    },
-    {
-      "id": "log-1766134337843-p5h26",
-      "nfId": "mysql-1766134328118-y1qwg",
-      "timestamp": 1766134337843,
-      "level": "INFO",
-      "message": "HTTP/2 connection upgrade...",
-      "details": {}
-    },
-    {
-      "id": "log-1766134337878-b6rsc",
-      "nfId": "gnb-1766134332869-2486n",
-      "timestamp": 1766134337878,
-      "level": "SUCCESS",
-      "message": "gNB-1 is now STABLE and ready for connections",
-      "details": {
-        "Status": "stable",
-        "uptime": "5 seconds"
-      }
-    },
-    {
-      "id": "log-1766134338341-9t8qi",
-      "nfId": "mysql-1766134328118-y1qwg",
-      "timestamp": 1766134338341,
-      "level": "SUCCESS",
-      "message": "SQL/REST API connection established with UDR-1",
-      "details": {
-        "endpoint": "mysql://192.168.1.20:3306/5g_core_db",
-        "protocol": "HTTP/2",
-        "status": "ACTIVE"
-      }
-    },
-    {
-      "id": "log-1766134338345-637js",
-      "nfId": "udr-1766134327111-cpc0w",
-      "timestamp": 1766134338345,
-      "level": "SUCCESS",
-      "message": "SQL/REST API connection active from MySQL-1",
-      "details": {}
-    },
-    {
-      "id": "log-1766134338858-5f3lq",
-      "nfId": "udr-1766134327111-cpc0w",
-      "timestamp": 1766134338858,
-      "level": "SUCCESS",
-      "message": "All dependencies satisfied - UDR is now fully operational ✓",
-      "details": {
-        "status": "OPERATIONAL",
-        "mode": "FULL",
-        "timestamp": "2025-12-19T08:52:18.858Z"
-      }
-    },
-    {
-      "id": "log-1766134342052-fl1jn",
-      "nfId": "ue-1766134337046-ehot7",
-      "timestamp": 1766134342052,
-      "level": "SUCCESS",
-      "message": "UE-1 is now STABLE and ready for connections",
-      "details": {
-        "Status": "stable",
-        "uptime": "5 seconds"
-      }
-    },
-    {
-      "id": "log-1766134342175-le62i",
-      "nfId": "gnb-1766134332869-2486n",
-      "timestamp": 1766134342175,
-      "level": "SUCCESS",
-      "message": "Auto-connected to AMF-1 (interface: N2)",
-      "details": {
-        "targetType": "AMF",
-        "interface": "N2",
-        "autoConnection": true,
-        "visualConnection": true,
-        "subnet": "192.168.1.0/24",
-        "sourceIP": "192.168.1.21",
-        "targetIP": "192.168.1.11",
-        "reason": "5G architecture requirement + subnet restriction",
-        "note": "Visual interface connection established and shown on canvas"
-      }
-    },
-    {
-      "id": "log-1766134342181-zzvg7",
-      "nfId": "gnb-1766134332869-2486n",
-      "timestamp": 1766134342181,
-      "level": "SUCCESS",
-      "message": "Auto-connected to UPF-1 (interface: N3)",
-      "details": {
-        "targetType": "UPF",
-        "interface": "N3",
-        "autoConnection": true,
-        "visualConnection": true,
-        "subnet": "192.168.1.0/24",
-        "sourceIP": "192.168.1.21",
-        "targetIP": "192.168.1.13",
-        "reason": "5G architecture requirement + subnet restriction",
-        "note": "Visual interface connection established and shown on canvas"
-      }
-    },
-    {
-      "id": "log-1766134342391-xhz29",
-      "nfId": "gnb-1766134332869-2486n",
-      "timestamp": 1766134342391,
-      "level": "INFO",
-      "message": "Initiating NGAP Setup Request to AMF-1...",
-      "details": {
-        "messageType": "NGSetupRequest",
-        "targetIP": "192.168.1.11",
-        "targetPort": 8081
-      }
-    },
-    {
-      "id": "log-1766134342537-jzt38",
-      "nfId": "gnb-1766134332869-2486n",
-      "timestamp": 1766134342537,
-      "level": "INFO",
-      "message": "GTP-U Echo Request sent to UPF-1 on N3 interface",
-      "details": {
-        "protocol": "GTP-U",
-        "sourceIP": "192.168.1.21",
-        "destIP": "192.168.1.13"
-      }
-    },
-    {
-      "id": "log-1766134342588-fat1p",
-      "nfId": "amf-1766134029860-ri9n5",
-      "timestamp": 1766134342588,
-      "level": "INFO",
-      "message": "Received NGAP Setup Request from gNB-1",
-      "details": {
-        "messageType": "NGSetupRequest",
-        "sourceIP": "192.168.1.21",
-        "sourcePort": 8089,
-        "supportedTAList": [
-          "1"
-        ]
-      }
-    },
-    {
-      "id": "log-1766134342751-awqd8",
-      "nfId": "upf-1766134264895-kshnk",
-      "timestamp": 1766134342751,
-      "level": "SUCCESS",
-      "message": "GTP-U Echo Response sent to gNB-1",
-      "details": {
-        "messageType": "Echo Response",
-        "protocol": "GTP-U"
-      }
-    },
-    {
-      "id": "log-1766134342877-wtwho",
-      "nfId": "amf-1766134029860-ri9n5",
-      "timestamp": 1766134342877,
-      "level": "INFO",
-      "message": "Processing NGAP Setup Request...",
-      "details": {
-        "validating": "Global gNB ID, Supported TA List"
-      }
-    },
-    {
-      "id": "log-1766134342935-7i9rs",
-      "nfId": "gnb-1766134332869-2486n",
-      "timestamp": 1766134342935,
-      "level": "SUCCESS",
-      "message": "N3 path verified - GTP-U tunnel ready",
-      "details": {
-        "interface": "N3",
-        "protocol": "GTP-U",
-        "pathStatus": "ACTIVE",
-        "rtt": "2ms"
-      }
-    },
-    {
-      "id": "log-1766134343184-txn8i",
-      "nfId": "amf-1766134029860-ri9n5",
-      "timestamp": 1766134343184,
-      "level": "SUCCESS",
-      "message": "Sending NGAP Setup Response to gNB-1",
-      "details": {
-        "messageType": "NGSetupResponse",
-        "result": "SUCCESS"
-      }
-    },
-    {
-      "id": "log-1766134343235-5o6ok",
-      "nfId": "upf-1766134264895-kshnk",
-      "timestamp": 1766134343235,
-      "level": "INFO",
-      "message": "Creating GTP-U tunnel ",
-      "details": {
-        "interface": "N3",
-        "protocol": "GTP-U"
-      }
-    },
-    {
-      "id": "log-1766134343384-6cwo7",
-      "nfId": "gnb-1766134332869-2486n",
-      "timestamp": 1766134343384,
-      "level": "SUCCESS",
-      "message": "NGAP Setup Response received from AMF-1",
-      "details": {
-        "messageType": "NGSetupResponse",
-        "result": "SUCCESS"
-      }
-    },
-    {
-      "id": "log-1766134343533-9w3g1",
-      "nfId": "gnb-1766134332869-2486n",
-      "timestamp": 1766134343533,
-      "level": "SUCCESS",
-      "message": "GTP-U tunnel established with UPF-1",
-      "details": {
-        "interface": "N3",
-        "status": "ESTABLISHED",
-        "qfi": 9
-      }
-    },
-    {
-      "id": "log-1766134343675-d9fgh",
-      "nfId": "gnb-1766134332869-2486n",
-      "timestamp": 1766134343675,
-      "level": "SUCCESS",
-      "message": "N2 connection established with AMF-1 ✓",
-      "details": {
-        "interface": "N2",
-        "protocol": "NGAP",
-        "amfEndpoint": "https://192.168.1.11:8081/namf-comm/v1",
-        "capabilities": "UE Registration, Context Management, Handover"
-      }
-    },
-    {
-      "id": "log-1766134343680-wnxj9",
-      "nfId": "amf-1766134029860-ri9n5",
-      "timestamp": 1766134343680,
-      "level": "SUCCESS",
-      "message": "N2 connection active with gNB-1 ✓",
-      "details": {
-        "interface": "N2",
-        "protocol": "NGAP"
-      }
-    },
-    {
-      "id": "log-1766134343685-pvr1z",
-      "nfId": "gnb-1766134332869-2486n",
-      "timestamp": 1766134343685,
-      "level": "SUCCESS",
-      "message": "N3 tunnel established with UPF",
-      "details": {
-        "interface": "N3",
-        "protocol": "GTP-U",
-        "teId": "0x12345678"
-      }
-    },
-    {
-      "id": "log-1766134344183-zk5ox",
-      "nfId": "gnb-1766134332869-2486n",
-      "timestamp": 1766134344183,
-      "level": "INFO",
-      "message": "Ready to handle UE registration requests",
-      "details": {
-        "n2Status": "ACTIVE",
-        "n3Status": "ACTIVE",
-        "radioStatus": "Broadcasting",
-        "cellId": "0x7A67C48C"
-      }
-    },
-    {
-      "id": "log-1766134344189-8hhy4",
-      "nfId": "amf-1766134029860-ri9n5",
-      "timestamp": 1766134344189,
-      "level": "INFO",
-      "message": "gNB-1 ready to serve UEs",
-      "details": {
-        "registeredGNBs": 1,
-        "totalCapacity": 1000,
-        "availableServices": [
-          "Registration",
-          "Authentication",
-          "Mobility Management"
-        ]
-      }
-    },
-    {
-      "id": "log-1766134345134-k9be3",
-      "nfId": "upf-1766134264895-kshnk",
-      "timestamp": 1766134345134,
-      "level": "SUCCESS",
-      "message": "N3 GTP-U tunnel active - Data flowing",
-      "details": {
-        "interface": "N3",
-        "protocol": "GTP-U"
-      }
-    },
-    {
-      "id": "log-1766134345137-spl2l",
-      "nfId": "gnb-1766134332869-2486n",
-      "timestamp": 1766134345137,
-      "level": "SUCCESS",
-      "message": "N3 tunnel operational - User data transfer active",
-      "details": {
-        "interface": "N3",
-        "protocol": "GTP-U"
-      }
-    },
-    {
-      "id": "log-1766134345704-o6wf7",
-      "nfId": "ue-1766134337046-ehot7",
-      "timestamp": 1766134345704,
-      "level": "SUCCESS",
-      "message": "Auto-connected to gNB-1 (interface: Radio)",
-      "details": {
-        "targetType": "gNB",
-        "interface": "Radio",
-        "autoConnection": true,
-        "visualConnection": true,
-        "subnet": "192.168.1.0/24",
-        "sourceIP": "192.168.1.22",
-        "targetIP": "192.168.1.21",
-        "reason": "5G architecture requirement + subnet restriction",
-        "note": "Visual interface connection established and shown on canvas"
-      }
-    },
-    {
-      "id": "log-1766134345710-0z98r",
-      "nfId": "ue-1766134337046-ehot7",
-      "timestamp": 1766134345710,
-      "level": "INFO",
-      "message": "Initiating N1 connection to AMF-1",
-      "details": {
-        "protocol": "HTTP/2",
-        "targetIP": "192.168.1.11",
-        "targetPort": 8081
-      }
-    },
-    {
-      "id": "log-1766134345713-ov5o3",
-      "nfId": "amf-1766134029860-ri9n5",
-      "timestamp": 1766134345713,
-      "level": "INFO",
-      "message": "Incoming connection request from UE-1",
-      "details": {
-        "interface": "N1",
-        "sourceIP": "192.168.1.22"
-      }
-    },
-    {
-      "id": "log-1766134345722-wx15h",
-      "nfId": "ue-1766134337046-ehot7",
-      "timestamp": 1766134345722,
-      "level": "SUCCESS",
-      "message": "Auto-connected to AMF-1 (interface: N1)",
-      "details": {
-        "targetType": "AMF",
-        "interface": "N1",
-        "autoConnection": true,
-        "visualConnection": true,
-        "subnet": "192.168.1.0/24",
-        "sourceIP": "192.168.1.22",
-        "targetIP": "192.168.1.11",
-        "reason": "5G architecture requirement + subnet restriction",
-        "note": "Visual interface connection established and shown on canvas"
-      }
-    },
-    {
-      "id": "log-1766134346022-y91td",
-      "nfId": "ue-1766134337046-ehot7",
-      "timestamp": 1766134346022,
+      "id": "log-1766574982840-7bee9",
+      "nfId": "ausf-1766574974455-aexwu",
+      "timestamp": 1766574982840,
       "level": "INFO",
       "message": "TLS handshake in progress...",
       "details": {}
     },
     {
-      "id": "log-1766134346025-2rxgj",
-      "nfId": "amf-1766134029860-ri9n5",
-      "timestamp": 1766134346025,
+      "id": "log-1766574982843-wjnrp",
+      "nfId": "udm-1766574961953-ceqpq",
+      "timestamp": 1766574982843,
       "level": "INFO",
       "message": "Accepting TLS connection...",
       "details": {}
     },
     {
-      "id": "log-1766134346434-2m40i",
-      "nfId": "ue-1766134337046-ehot7",
-      "timestamp": 1766134346434,
+      "id": "log-1766574983227-qq5qw",
+      "nfId": "ausf-1766574974455-aexwu",
+      "timestamp": 1766574983227,
       "level": "SUCCESS",
       "message": "TLS handshake complete",
       "details": {}
     },
     {
-      "id": "log-1766134346439-4dt3k",
-      "nfId": "amf-1766134029860-ri9n5",
-      "timestamp": 1766134346439,
+      "id": "log-1766574983229-u0cbt",
+      "nfId": "nrf-1766574976969-ks92i",
+      "timestamp": 1766574983229,
       "level": "SUCCESS",
       "message": "TLS session established",
       "details": {}
     },
     {
-      "id": "log-1766134346717-e0zto",
-      "nfId": "ue-1766134337046-ehot7",
-      "timestamp": 1766134346717,
+      "id": "log-1766574983233-ejlha",
+      "nfId": "ausf-1766574974455-aexwu",
+      "timestamp": 1766574983233,
       "level": "SUCCESS",
-      "message": "Cell selected - Establishing RRC connection",
-      "details": {
-        "cellId": "0x01A2B3C4",
-        "rsrp": "-85 dBm",
-        "rsrq": "-10 dB",
-        "sinr": "20 dB"
-      }
+      "message": "TLS handshake complete",
+      "details": {}
     },
     {
-      "id": "log-1766134346722-5f4aw",
-      "nfId": "ue-1766134337046-ehot7",
-      "timestamp": 1766134346722,
+      "id": "log-1766574983236-py94p",
+      "nfId": "udm-1766574961953-ceqpq",
+      "timestamp": 1766574983236,
+      "level": "SUCCESS",
+      "message": "TLS session established",
+      "details": {}
+    },
+    {
+      "id": "log-1766574983535-dui00",
+      "nfId": "ausf-1766574974455-aexwu",
+      "timestamp": 1766574983535,
       "level": "INFO",
       "message": "HTTP/2 connection upgrade...",
       "details": {}
     },
     {
-      "id": "log-1766134346727-d1dw9",
-      "nfId": "ue-1766134337046-ehot7",
-      "timestamp": 1766134346727,
+      "id": "log-1766574983539-10ab7",
+      "nfId": "ausf-1766574974455-aexwu",
+      "timestamp": 1766574983539,
       "level": "INFO",
-      "message": "Starting NAS Registration over N1",
-      "details": {
-        "interface": "N1",
-        "registrationType": "Initial Registration"
-      }
+      "message": "HTTP/2 connection upgrade...",
+      "details": {}
     },
     {
-      "id": "log-1766134346946-xj7wl",
-      "nfId": "ue-1766134337046-ehot7",
-      "timestamp": 1766134346946,
-      "level": "INFO",
-      "message": "NAS: Registration Request sent",
-      "details": {
-        "interface": "N1",
-        "suci": "suci-0-001-01-000101",
-        "dnn": "5G-Lab",
-        "requestedSST": 1
-      }
-    },
-    {
-      "id": "log-1766134346958-hmgib",
-      "nfId": "amf-1766134029860-ri9n5",
-      "timestamp": 1766134346958,
-      "level": "INFO",
-      "message": "NAS: Registration Request received from UE",
-      "details": {
-        "interface": "N1",
-        "suci": "suci-0-001-01-000101",
-        "dnn": "5G-Lab",
-        "requestedSST": 1
-      }
-    },
-    {
-      "id": "log-1766134347212-tutoc",
-      "nfId": "ue-1766134337046-ehot7",
-      "timestamp": 1766134347212,
+      "id": "log-1766574984027-7so7h",
+      "nfId": "ausf-1766574974455-aexwu",
+      "timestamp": 1766574984027,
       "level": "SUCCESS",
-      "message": "RRC connection established - Initiating registration",
+      "message": "Nnrf_NFManagement connection established with NRF-1",
       "details": {
-        "rrcState": "RRC_CONNECTED",
-        "registrationType": "Initial Registration"
-      }
-    },
-    {
-      "id": "log-1766134347234-pai4z",
-      "nfId": "ue-1766134337046-ehot7",
-      "timestamp": 1766134347234,
-      "level": "SUCCESS",
-      "message": "N1 connection established with AMF-1",
-      "details": {
-        "endpoint": "https://192.168.1.22:8090/ue-mgmt/v1",
+        "endpoint": "https://192.168.1.18:8089/nausf-auth/v1",
         "protocol": "HTTP/2",
         "status": "ACTIVE"
       }
     },
     {
-      "id": "log-1766134347237-hp2j5",
-      "nfId": "amf-1766134029860-ri9n5",
-      "timestamp": 1766134347237,
+      "id": "log-1766574984029-dz1cb",
+      "nfId": "nrf-1766574976969-ks92i",
+      "timestamp": 1766574984029,
       "level": "SUCCESS",
-      "message": "N1 connection active from UE-1",
+      "message": "Nnrf_NFManagement connection active from AUSF-1",
       "details": {}
     },
     {
-      "id": "log-1766134347333-ke2u9",
-      "nfId": "amf-1766134029860-ri9n5",
-      "timestamp": 1766134347333,
-      "level": "INFO",
-      "message": "NAS: Authentication Request",
-      "details": {
-        "method": "5G-AKA",
-        "rand": "0xfe82e9f8"
-      }
-    },
-    {
-      "id": "log-1766134347336-i524d",
-      "nfId": "ue-1766134337046-ehot7",
-      "timestamp": 1766134347336,
-      "level": "INFO",
-      "message": "NAS: Authentication Request received",
-      "details": {
-        "method": "5G-AKA"
-      }
-    },
-    {
-      "id": "log-1766134347731-i69a9",
-      "nfId": "ue-1766134337046-ehot7",
-      "timestamp": 1766134347731,
+      "id": "log-1766574984041-9skl4",
+      "nfId": "ausf-1766574974455-aexwu",
+      "timestamp": 1766574984041,
       "level": "SUCCESS",
-      "message": "NAS: Authentication Response (RES*)",
+      "message": "Nudm_Authentication connection established with UDM-1",
       "details": {
-        "resStar": "0x75e54f43"
+        "endpoint": "https://192.168.1.18:8089/nausf-auth/v1",
+        "protocol": "HTTP/2",
+        "status": "ACTIVE"
       }
     },
     {
-      "id": "log-1766134347738-77mmz",
-      "nfId": "amf-1766134029860-ri9n5",
-      "timestamp": 1766134347738,
+      "id": "log-1766574984044-0r55z",
+      "nfId": "udm-1766574961953-ceqpq",
+      "timestamp": 1766574984044,
       "level": "SUCCESS",
-      "message": "NAS: Authentication verified",
-      "details": {
-        "result": "SUCCESS"
-      }
+      "message": "Nudm_Authentication connection active from AUSF-1",
+      "details": {}
     },
     {
-      "id": "log-1766134347743-lriva",
-      "nfId": "ue-1766134337046-ehot7",
-      "timestamp": 1766134347743,
+      "id": "log-1766574984537-47ac3",
+      "nfId": "ausf-1766574974455-aexwu",
+      "timestamp": 1766574984537,
       "level": "SUCCESS",
-      "message": "All dependencies satisfied - UE is now fully operational ✓",
+      "message": "All dependencies satisfied - AUSF is now fully operational ✓",
       "details": {
         "status": "OPERATIONAL",
         "mode": "FULL",
-        "timestamp": "2025-12-19T08:52:27.743Z"
+        "timestamp": "2025-12-24T11:16:24.537Z"
       }
     },
     {
-      "id": "log-1766134347754-3x0m5",
-      "nfId": "amf-1766134029860-ri9n5",
-      "timestamp": 1766134347754,
+      "id": "log-1766574984547-gtj4c",
+      "nfId": "ausf-1766574974455-aexwu",
+      "timestamp": 1766574984547,
+      "level": "INFO",
+      "message": "Sending NF registration request to NRF...",
+      "details": {
+        "method": "PUT",
+        "endpoint": "https://192.168.1.18:8089/nausf-auth/v1",
+        "payload": "NF Profile"
+      }
+    },
+    {
+      "id": "log-1766574984551-e7uu6",
+      "nfId": "ausf-1766574974455-aexwu",
+      "timestamp": 1766574984551,
       "level": "SUCCESS",
-      "message": "All dependencies satisfied - AMF is now fully operational ✓",
+      "message": "All dependencies satisfied - AUSF is now fully operational ✓",
       "details": {
         "status": "OPERATIONAL",
         "mode": "FULL",
-        "timestamp": "2025-12-19T08:52:27.754Z"
+        "timestamp": "2025-12-24T11:16:24.550Z"
       }
     },
     {
-      "id": "log-1766134348146-dlcaq",
-      "nfId": "amf-1766134029860-ri9n5",
-      "timestamp": 1766134348146,
+      "id": "log-1766574984553-bl3ks",
+      "nfId": "udm-1766574961953-ceqpq",
+      "timestamp": 1766574984553,
+      "level": "SUCCESS",
+      "message": "All dependencies satisfied - UDM is now fully operational ✓",
+      "details": {
+        "status": "OPERATIONAL",
+        "mode": "FULL",
+        "timestamp": "2025-12-24T11:16:24.553Z"
+      }
+    },
+    {
+      "id": "log-1766574985239-q1x3f",
+      "nfId": "nrf-1766574976969-ks92i",
+      "timestamp": 1766574985239,
       "level": "INFO",
-      "message": "NAS: Security Mode Command",
+      "message": "Processing registration from AUSF-1",
       "details": {
-        "ciphering": "128-NEA2",
-        "integrity": "128-NIA2"
+        "nfType": "AUSF",
+        "nfInstanceId": "ausf-1766574974455-aexwu"
       }
     },
     {
-      "id": "log-1766134348154-hyj9k",
-      "nfId": "ue-1766134337046-ehot7",
-      "timestamp": 1766134348154,
+      "id": "log-1766574985245-vt0ea",
+      "nfId": "nrf-1766574976969-ks92i",
+      "timestamp": 1766574985245,
       "level": "SUCCESS",
-      "message": "NAS: Security Mode Complete",
+      "message": "AUSF-1 registered successfully",
       "details": {
-        "selectedAlgorithms": {
-          "ciphering": "NEA2",
-          "integrity": "NIA2"
-        }
-      }
-    },
-    {
-      "id": "log-1766134348537-kyauf",
-      "nfId": "amf-1766134029860-ri9n5",
-      "timestamp": 1766134348537,
-      "level": "SUCCESS",
-      "message": "NAS: Registration Accept",
-      "details": {
-        "guti": "5g-guti-z9ed5i",
-        "allowedNSSAI": [
-          {
-            "sst": 1
-          }
-        ],
-        "dnn": "5G-Lab"
-      }
-    },
-    {
-      "id": "log-1766134348541-6ptrc",
-      "nfId": "ue-1766134337046-ehot7",
-      "timestamp": 1766134348541,
-      "level": "SUCCESS",
-      "message": "NAS: Registration Complete",
-      "details": {
-        "guti": "5g-guti-z9ed5i",
+        "profileId": "profile-49ach3pkj",
+        "validity": "3600 seconds",
         "status": "REGISTERED"
       }
     },
     {
-      "id": "log-1766134348949-ut677",
-      "nfId": "ue-1766134337046-ehot7",
-      "timestamp": 1766134348949,
+      "id": "log-1766574985247-vinod",
+      "nfId": "ausf-1766574974455-aexwu",
+      "timestamp": 1766574985247,
       "level": "SUCCESS",
-      "message": "PDU session established",
+      "message": "Successfully registered with NRF",
       "details": {
-        "sessionId": "pdu-1766134348947-8xazq",
-        "upfName": "UPF-1",
-        "upfId": "upf-1766134264895-kshnk",
-        "assignedIP": "10.0.0.2",
-        "tun0Network": "10.0.0.0/28",
-        "upfGateway": "10.0.0.1",
-        "sessionStatus": "established"
-      }
-    },
-    {
-      "id": "log-1766134348957-j9gm4",
-      "nfId": "ue-1766134337046-ehot7",
-      "timestamp": 1766134348957,
-      "level": "SUCCESS",
-      "message": "Network interface tun_ue1 created",
-      "details": {
-        "interface": "tun_ue1",
-        "ipAddress": "10.0.0.2",
-        "netmask": "255.255.255.0",
-        "gateway": "10.0.0.1",
-        "network": "10.0.0.0/24",
-        "mtu": 1500,
-        "purpose": "User plane data connection to UPF",
-        "note": "Can ping gateway 10.0.0.1 and access internet via UPF"
+        "profileId": "profile-49ach3pkj",
+        "nrfAddress": "192.168.1.19",
+        "heartbeatInterval": "60 seconds"
       }
     }
   ]

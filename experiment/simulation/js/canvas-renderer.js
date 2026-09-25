@@ -123,64 +123,66 @@ class CanvasRenderer {
         allBuses.forEach(bus => this.drawBus(bus));
         allBusConnections.forEach(conn => this.drawBusConnection(conn));
 
-        // Draw regular connections
-        allConnections.forEach(conn => this.drawConnection(conn));
-
-        // Draw NFs on top
-        allNFs.forEach(nf => this.drawNF(nf));
-
-        // Draw UE IP labels for active PDU sessions
-        allNFs.forEach(nf => {
-            if (nf.type === 'UE' && nf.config?.pduSession?.assignedIP) {
-                this.drawUEIPLabel(nf);
+        // Draw regular connections (dedupe overlapping gNB↔AMF labels)
+        const drawnConnectionKeys = new Set();
+        allConnections.forEach(conn => {
+            const key = this.getConnectionDrawKey(conn);
+            if (key && drawnConnectionKeys.has(key)) {
+                return;
             }
+            if (key) {
+                drawnConnectionKeys.add(key);
+            }
+            this.drawConnection(conn);
         });
 
-        // Draw animated packets (from PacketAnimator)
-        if (window.packetAnimator && window.packetAnimator.getPackets().length > 0) {
-            window.packetAnimator.drawPackets(this.ctx);
+        // Draw N9 Interface if deployed (loopback on UPF)
+        if (window.interfaceManager && window.interfaceManager.isInterfaceDeployed('N9')) {
+            const upf = allNFs.find(nf => nf.type === 'UPF');
+            if (upf) {
+                this.drawN9Interface(upf);
+            }
         }
 
-        console.log('✅ Render complete');
+        // Draw NFs on top (with special handling for Data Network)
+allNFs.forEach(nf => {
+    if (nf.type === 'DataNetwork') {
+        this.drawDataNetwork(nf);
+    } else {
+        this.drawNF(nf);
     }
+});
+
+console.log('✅ Render complete');
+}
 
     /**
-     * Draw UE IP label when PDU session is active
-     * @param {Object} nf - UE Network Function
+     * Draw N9 Interface (loopback on UPF)
      */
-    drawUEIPLabel(nf) {
-        const x = nf.position.x;
-        const y = nf.position.y;
-        const ip = nf.config.pduSession.assignedIP;
+    drawN9Interface(upf) {
+        const x = upf.position.x;
+        const y = upf.position.y;
+        const width = 40;
+        const height = 40;
 
-        // Draw IP label below the NF name
-        this.ctx.save();
-        
-        // Background
-        this.ctx.fillStyle = 'rgba(155, 89, 182, 0.9)';
-        this.ctx.strokeStyle = '#8e44ad';
-        this.ctx.lineWidth = 1;
-        
-        const labelText = `📶 ${ip}`;
-        this.ctx.font = 'bold 10px Arial';
-        const labelWidth = this.ctx.measureText(labelText).width + 10;
-        const labelHeight = 16;
-        const labelX = x + 20 - labelWidth / 2;
-        const labelY = y + 56;
-        
-        // Draw rounded rectangle
+        // Draw loopback (U-shape) around UPF (down side)
+        this.ctx.strokeStyle = '#95a5a6';
+        this.ctx.lineWidth = 3;
         this.ctx.beginPath();
-        this.ctx.roundRect(labelX, labelY, labelWidth, labelHeight, 4);
-        this.ctx.fill();
-        this.ctx.stroke();
         
-        // Draw text
-        this.ctx.fillStyle = '#ffffff';
+        // U-shaped loopback at bottom (down)
+        this.ctx.moveTo(x + 5, y + height + 5);
+        this.ctx.lineTo(x + 5, y + height + 15);
+        this.ctx.lineTo(x + width - 5, y + height + 15);
+        this.ctx.lineTo(x + width - 5, y + height + 5);
+        this.ctx.stroke();
+
+        // Draw N9 label below
+        this.ctx.fillStyle = '#95a5a6';
+        this.ctx.font = 'bold 10px Arial';
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
-        this.ctx.fillText(labelText, x + 20, labelY + labelHeight / 2);
-        
-        this.ctx.restore();
+        this.ctx.fillText('N9', x + width / 2, y + height + 25);
     }
 
     /**
@@ -373,6 +375,35 @@ class CanvasRenderer {
     //     this.ctx.fill();
     // }
 
+/**
+ * Draw Data Network (ext-dn) node
+ */
+drawDataNetwork(dn) {
+    const x = dn.position.x;
+    const y = dn.position.y;
+    const size = 50;
+
+    // Draw cloud shape for Internet
+    this.ctx.fillStyle = dn.color + '40';
+    this.ctx.strokeStyle = dn.color;
+    this.ctx.lineWidth = 3;
+
+    // Simple cloud representation
+    this.ctx.beginPath();
+    this.ctx.arc(x + 15, y + 15, 12, 0, Math.PI * 2);
+    this.ctx.arc(x + 35, y + 15, 12, 0, Math.PI * 2);
+    this.ctx.arc(x + 25, y + 5, 15, 0, Math.PI * 2);
+    this.ctx.fill();
+    this.ctx.stroke();
+
+    // Draw label
+    this.ctx.fillStyle = '#ecf0f1';
+    this.ctx.font = 'bold 12px Arial';
+    this.ctx.textAlign = 'center';
+    const label = dn.name || 'ext-dn';
+    this.ctx.fillText(`🌐 ${label}`, x + 25, y + 45);
+}
+
     /**
      * Draw fallback icon (circle with letter)
      * @param {Object} nf - Network Function object
@@ -400,110 +431,99 @@ class CanvasRenderer {
     }
 
     /**
-     * Draw a connection between two NFs (only if showVisual is true)
-     * @param {Object} conn - Connection object
-     */
-    drawConnection(conn) {
-        // Only draw visual connections (manual connections)
-        if (!conn.showVisual) {
-            return; // Skip auto-connections - they exist only for communication/logs
-        }
+ * Draw a connection between two NFs (only if showVisual is true)
+ * @param {Object} conn - Connection object
+ */
+drawConnection(conn) {
+    if (!conn.showVisual) {
+        return;
+    }
 
-        const sourceNF = window.dataStore.getNFById(conn.sourceId);
-        const targetNF = window.dataStore.getNFById(conn.targetId);
+    const sourceNF = window.dataStore.getNFById(conn.sourceId);
+    const targetNF = window.dataStore.getNFById(conn.targetId);
 
-        if (!sourceNF || !targetNF) {
-            console.warn('⚠️ Connection references missing NF');
-            return;
-        }
+    if (!sourceNF || !targetNF) {
+        console.warn('⚠️ Connection references missing NF');
+        return;
+    }
 
-        // Hide connection line between NRF and UDM
-        if ((sourceNF.type === 'NRF' && targetNF.type === 'UDM') || 
-            (sourceNF.type === 'UDM' && targetNF.type === 'NRF')) {
-            return; // Don't show NRF-UDM connection line
-        }
+    let sourceX = sourceNF.position.x + 20;
+    let sourceY = sourceNF.position.y + 20;
+    let targetX = targetNF.position.x + 20;
+    let targetY = targetNF.position.y + 20;
 
-        // Calculate center points of NF boxes (40x40 size)
-        const sourceX = sourceNF.position.x + 20;
-        const sourceY = sourceNF.position.y + 20;
-        const targetX = targetNF.position.x + 20;
-        const targetY = targetNF.position.y + 20;
-
-        // Draw connection line
-        this.ctx.beginPath();
-        this.ctx.moveTo(sourceX, sourceY);
-        this.ctx.lineTo(targetX, targetY);
-        this.ctx.strokeStyle = '#3498db';
-        this.ctx.lineWidth = 3;
-        this.ctx.stroke();
-
-        // Draw arrow at target end
+    // Apply line offset for parallel lines (if specified)
+    if (conn.options?.lineOffset) {
         const angle = Math.atan2(targetY - sourceY, targetX - sourceX);
-        const arrowSize = 2;
+        const perpAngle = angle + Math.PI / 2;
+        const offset = conn.options.lineOffset;
 
-        this.ctx.beginPath();
-        this.ctx.moveTo(targetX, targetY);
-        this.ctx.lineTo(
-            targetX - arrowSize * Math.cos(angle - Math.PI / 6),
-            targetY - arrowSize * Math.sin(angle - Math.PI / 6)
+        sourceX += offset * Math.cos(perpAngle);
+        sourceY += offset * Math.sin(perpAngle);
+        targetX += offset * Math.cos(perpAngle);
+        targetY += offset * Math.sin(perpAngle);
+    }
+
+    // Set line style
+    if (conn.options?.style === 'dashed') {
+        this.ctx.setLineDash([8, 4]);
+    } else {
+        this.ctx.setLineDash([]);
+    }
+
+    // Draw connection line
+    this.ctx.beginPath();
+    this.ctx.moveTo(sourceX, sourceY);
+    this.ctx.lineTo(targetX, targetY);
+    this.ctx.strokeStyle = conn.options?.color || '#3498db';
+    this.ctx.lineWidth = conn.options?.lineWidth || 3;
+    this.ctx.stroke();
+
+    this.ctx.setLineDash([]);
+
+    // Draw arrow
+    this.drawArrow(sourceX, sourceY, targetX, targetY, conn.options?.color || '#3498db');
+
+    const displayLabel = this.getConnectionDisplayLabel(conn);
+    if (displayLabel) {
+        this.drawConnectionLabel(
+            sourceX,
+            sourceY,
+            targetX,
+            targetY,
+            displayLabel,
+            conn.options?.color || '#3498db'
         );
-        this.ctx.moveTo(targetX, targetY);
-        this.ctx.lineTo(
-            targetX - arrowSize * Math.cos(angle + Math.PI / 6),
-            targetY - arrowSize * Math.sin(angle + Math.PI / 6)
-        );
-        this.ctx.strokeStyle = '#3498db';
-        this.ctx.lineWidth = 3;
-        this.ctx.stroke();
+    }
+}
 
-        // Draw interface name label at midpoint
-        if (conn.interfaceName) {
-            const midX = (sourceX + targetX) / 2;
-            const midY = (sourceY + targetY) / 2;
+    /**
+     * Single connection label text (no duplicate N prefix from interfaceType)
+     */
+    getConnectionDisplayLabel(conn) {
+        const label = (conn.options?.label || '').trim();
+        const ifType = (conn.options?.interfaceType || '').trim();
 
-            // Different colors for different interface types
-            let bgColor, borderColor;
-            if (['N1', 'N2', 'N3', 'N4'].includes(conn.interfaceName)) {
-                // Special highlighting for core 5G interfaces
-                bgColor = 'rgba(231, 76, 60, 0.95)';  // Red for core interfaces
-                borderColor = '#c0392b';
-            } else if (conn.interfaceName === 'Radio') {
-                // Special color for radio interface
-                bgColor = 'rgba(155, 89, 182, 0.95)';  // Purple for radio
-                borderColor = '#8e44ad';
-            } else if (conn.interfaceName.includes('SQL') || conn.interfaceName.includes('API')) {
-                // Database/API interfaces
-                bgColor = 'rgba(230, 126, 34, 0.95)';  // Orange for database
-                borderColor = '#d35400';
-            } else {
-                // Default blue for other interfaces
-                bgColor = 'rgba(52, 152, 219, 0.95)';
-                borderColor = '#2980b9';
+        if (label) {
+            if (ifType && label.startsWith(ifType)) {
+                return label;
             }
-
-            this.ctx.fillStyle = bgColor;
-            this.ctx.strokeStyle = borderColor;
-            this.ctx.lineWidth = 1;
-            this.ctx.font = 'bold 12px Arial';  // Slightly larger font
-            const labelWidth = this.ctx.measureText(conn.interfaceName).width + 14;
-            const labelHeight = 18;
-
-            const labelRect = {
-                x: midX - labelWidth / 2,
-                y: midY - labelHeight / 2,
-                width: labelWidth,
-                height: labelHeight
-            };
-
-            this.ctx.fillRect(labelRect.x, labelRect.y, labelRect.width, labelRect.height);
-            this.ctx.strokeRect(labelRect.x, labelRect.y, labelRect.width, labelRect.height);
-
-            // Label text
-            this.ctx.fillStyle = '#ffffff';
-            this.ctx.textAlign = 'center';
-            this.ctx.textBaseline = 'middle';
-            this.ctx.fillText(conn.interfaceName, midX, midY);
+            if (ifType === 'N2' && (label === 'N2 (NGAP)' || label === 'NGAP')) {
+                return 'N2 (NGAP)';
+            }
+            return label;
         }
+
+        if (ifType === 'N2') {
+            return 'N2 (NGAP)';
+        }
+        if (ifType === 'N1' || ifType === 'N1-extended') {
+            return 'N1';
+        }
+        if (/^N\d+/.test(ifType)) {
+            return ifType;
+        }
+        return ifType;
     }
 
     /**
@@ -840,6 +860,7 @@ class CanvasRenderer {
         this.ctx.arc(busX, busY, 5, 0, Math.PI * 2);
         this.ctx.fill();
 
+         /*
         // Draw interface name label at midpoint
         if (connection.interfaceName) {
             const midX = (nfCenterX + busX) / 2;
@@ -869,8 +890,11 @@ class CanvasRenderer {
             this.ctx.textBaseline = 'middle';
             this.ctx.fillText(connection.interfaceName, midX, midY);
         }
+         */
+
     }
 
+    
     /**
      * Draw Bus-to-Bus connection
      */
@@ -906,11 +930,11 @@ class CanvasRenderer {
         this.ctx.beginPath();
         this.ctx.moveTo(sourceX, sourceY);
         this.ctx.lineTo(targetX, targetY);
-        this.ctx.strokeStyle = '#ff9800'; // Orange for bus-to-bus
+        this.ctx.strokeStyle = '#ff9800';
         this.ctx.lineWidth = 4;
-        this.ctx.setLineDash([10, 5]); // Different dash pattern
+        this.ctx.setLineDash([10, 5]);
         this.ctx.stroke();
-        this.ctx.setLineDash([]); // Reset to solid line
+        this.ctx.setLineDash([]);
 
         // Draw connection points on both buses
         this.ctx.fillStyle = '#ff9800';
@@ -926,7 +950,6 @@ class CanvasRenderer {
         const midX = (sourceX + targetX) / 2;
         const midY = (sourceY + targetY) / 2;
 
-        // Background for label with border
         this.ctx.fillStyle = 'rgba(255, 152, 0, 0.95)';
         this.ctx.strokeStyle = '#e67e22';
         this.ctx.lineWidth = 1;
@@ -945,10 +968,85 @@ class CanvasRenderer {
         this.ctx.fillRect(labelRect.x, labelRect.y, labelRect.width, labelRect.height);
         this.ctx.strokeRect(labelRect.x, labelRect.y, labelRect.width, labelRect.height);
 
-        // Label text
         this.ctx.fillStyle = '#ffffff';
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
         this.ctx.fillText(labelText, midX, midY);
     }
-}
+
+    /**
+     * Draw arrow on connection
+     */
+    drawArrow(x1, y1, x2, y2, color) {
+        const headLength = 12;
+        const angle = Math.atan2(y2 - y1, x2 - x1);
+
+        const arrowX = x2 - 35 * Math.cos(angle);
+        const arrowY = y2 - 35 * Math.sin(angle);
+
+        this.ctx.beginPath();
+        this.ctx.moveTo(arrowX, arrowY);
+        this.ctx.lineTo(
+            arrowX - headLength * Math.cos(angle - Math.PI / 6),
+            arrowY - headLength * Math.sin(angle - Math.PI / 6)
+        );
+        this.ctx.lineTo(
+            arrowX - headLength * Math.cos(angle + Math.PI / 6),
+            arrowY - headLength * Math.sin(angle + Math.PI / 6)
+        );
+        this.ctx.closePath();
+
+        this.ctx.fillStyle = color;
+        this.ctx.fill();
+    }
+
+    /**
+     * Dedupe key for parallel links between same NFs
+     */
+    getConnectionDrawKey(conn) {
+        if (!conn?.sourceId || !conn?.targetId) {
+            return null;
+        }
+        const ids = [conn.sourceId, conn.targetId].sort().join('|');
+        const iface = conn.options?.interfaceType || conn.options?.label || '';
+        return `${ids}|${iface}`;
+    }
+
+    /**
+     * Draw connection label (single box, full text)
+     */
+    drawConnectionLabel(x1, y1, x2, y2, label, color) {
+        const midX = (x1 + x2) / 2;
+        const midY = (y1 + y2) / 2;
+
+        this.ctx.font = 'bold 12px Arial';
+        const textMetrics = this.ctx.measureText(label);
+        const padding = 6;
+        const bgWidth = textMetrics.width + padding * 2;
+        const bgHeight = 20;
+
+        this.ctx.fillStyle = 'rgba(26, 37, 47, 0.95)';
+        this.ctx.fillRect(
+            midX - bgWidth / 2,
+            midY - bgHeight / 2,
+            bgWidth,
+            bgHeight
+        );
+
+        this.ctx.strokeStyle = color;
+        this.ctx.lineWidth = 2;
+        this.ctx.strokeRect(
+            midX - bgWidth / 2,
+            midY - bgHeight / 2,
+            bgWidth,
+            bgHeight
+        );
+
+        this.ctx.fillStyle = color;
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+        this.ctx.fillText(label, midX, midY);
+    }
+}  
+
+console.log('✅ CanvasRenderer class loaded');

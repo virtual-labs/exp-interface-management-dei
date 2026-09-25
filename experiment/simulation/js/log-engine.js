@@ -156,16 +156,11 @@ class LogEngine {
             'UDR': '/nudr-dr/v1',
             'gNB': '/gnb-mgmt/v1',
             'UE': '/ue-mgmt/v1',
-            'MySQL': '', // MySQL uses different format
-            'ext-dn': '' // ext-dn doesn't use HTTP endpoints
+            'MySQL': '' // MySQL uses different format
         };
 
         if (nf.type === 'MySQL') {
             return `mysql://${ip}:${port}/5g_core_db`;
-        }
-
-        if (nf.type === 'ext-dn') {
-            return `ext-dn://${ip}/internet`;
         }
 
         const path = endpointPaths[nf.type] || '/api/v1';
@@ -258,12 +253,12 @@ class LogEngine {
         // FINAL STATUS
         // ==================================
         if (scenario.final_status) {
-            const depInfo = this.dependencies?.[nf.type];
+            const depInfo = this.dependencies[nf.type];
             let hasErrors = false;
             let hasWarnings = false;
 
             // Check all required dependencies
-            (depInfo?.required || []).forEach(reqType => {
+            depInfo.required.forEach(reqType => {
                 const exists = this.checkNFTypeExists(reqType);
                 const isConnected = this.hasConnectionToType(nf, reqType);
                 if (!exists || !isConnected) {
@@ -272,7 +267,7 @@ class LogEngine {
             });
 
             // Check optional dependencies
-            (depInfo?.optional || []).forEach(optType => {
+            depInfo.optional.forEach(optType => {
                 const exists = this.checkNFTypeExists(optType);
                 const isConnected = this.hasConnectionToType(nf, optType);
                 if (!exists || !isConnected) {
@@ -376,15 +371,6 @@ class LogEngine {
 
         console.log('📋 LogEngine: Connection Created');
 
-        // ========================================
-        // SPECIAL CASE: AMF-gNB NGAP Connection
-        // ========================================
-        if ((sourceNF.type === 'AMF' && targetNF.type === 'gNB') ||
-            (sourceNF.type === 'gNB' && targetNF.type === 'AMF')) {
-            this.simulateNGAPSetup(sourceNF, targetNF);
-            return; // Skip default logs
-        }
-
         // Check if we have custom scenario
         const hasCustom = this.logScenarios &&
             this.logScenarios[sourceNF.type] &&
@@ -468,354 +454,6 @@ class LogEngine {
 
             }, 1500);
         }
-
-        // Trigger NGAP/GTP-U simulation for reference point connections
-        try {
-            const src = window.dataStore.getNFById(connection.sourceId);
-            const dst = window.dataStore.getNFById(connection.targetId);
-
-            // gNB -> AMF (N2)
-            if (src && dst && ((src.type === 'gNB' && dst.type === 'AMF') || (src.type === 'AMF' && dst.type === 'gNB'))) {
-                const gNB = src.type === 'gNB' ? src : dst;
-                const AMF = src.type === 'AMF' ? src : dst;
-                // ensure not to double-trigger for AMF->gNB direction
-                setTimeout(() => this.simulateNGAP(gNB, AMF), 100);
-            }
-
-            // gNB -> UPF (N3) — trigger only when both gNB and UPF are involved
-            if (src && dst && ((src.type === 'gNB' && dst.type === 'UPF') || (src.type === 'UPF' && dst.type === 'gNB'))) {
-                const gNB = src.type === 'gNB' ? src : dst;
-                const UPF = src.type === 'UPF' ? src : dst;
-                setTimeout(() => this.simulateGTPU(gNB, UPF), 150);
-            }
-        } catch (e) {
-            console.error('Error triggering NGAP/GTP-U simulation:', e);
-        }
-    }
-
-    /**
-     * Simulate NGAP Setup between AMF and gNB
-     */
-    simulateNGAPSetup(nf1, nf2) {
-        // Determine which is AMF and which is gNB
-        const amf = nf1.type === 'AMF' ? nf1 : nf2;
-        const gnb = nf1.type === 'gNB' ? nf1 : nf2;
-
-        console.log('Simulating NGAP Setup between', gnb.name, 'and', amf.name);
-
-        // Generate unique IDs for this NGAP session
-        const globalGNBId = `0x${Math.random().toString(16).substr(2, 8).toUpperCase()}`;
-        const ranUENGAPId = Math.floor(Math.random() * 90000) + 10000;
-        const amfUENGAPId = Math.floor(Math.random() * 90000) + 10000;
-
-        // Step 1: gNB initiates NGAP Setup Request
-        setTimeout(() => {
-            this.addLog(gnb.id, 'INFO',
-                `Initiating NGAP Setup Request to ${amf.name}...`, {
-                messageType: 'NGSetupRequest',
-                targetIP: amf.config.ipAddress, targetPort: amf.config.port
-            });
-        }, 200);
-
-        // Step 2: AMF receives NGAP Setup Request
-        setTimeout(() => {
-            this.addLog(amf.id, 'INFO',
-                `Received NGAP Setup Request from ${gnb.name}`, {
-                messageType: 'NGSetupRequest',
-                sourceIP: gnb.config.ipAddress, sourcePort: gnb.config.port,
-                supportedTAList: ['1']
-            });
-        }, 400);
-
-        // Step 3: AMF processes and validates
-        setTimeout(() => {
-            this.addLog(amf.id, 'INFO',
-                'Processing NGAP Setup Request...', {
-                validating: 'Global gNB ID, Supported TA List',
-            });
-        }, 700);
-
-        // Step 4: AMF sends NGAP Setup Response
-        setTimeout(() => {
-            this.addLog(amf.id, 'SUCCESS',
-                `Sending NGAP Setup Response to ${gnb.name}`, {
-                messageType: 'NGSetupResponse',
-                result: 'SUCCESS'
-            });
-        }, 1000);
-
-        // Step 5: gNB receives NGAP Setup Response
-        setTimeout(() => {
-            this.addLog(gnb.id, 'SUCCESS',
-                `NGAP Setup Response received from ${amf.name}`, {
-                messageType: 'NGSetupResponse',
-                result: 'SUCCESS'
-            });
-        }, 1200);
-
-        // Step 6: N2 Connection established
-        setTimeout(() => {
-            this.addLog(gnb.id, 'SUCCESS',
-                `N2 connection established with ${amf.name} ✓`, {
-                interface: 'N2',
-                protocol: 'NGAP',
-                amfEndpoint: `https://${amf.config.ipAddress}:${amf.config.port}/namf-comm/v1`,
-                capabilities: 'UE Registration, Context Management, Handover'
-            });
-
-            this.addLog(amf.id, 'SUCCESS',
-                `N2 connection active with ${gnb.name} ✓`, {
-                interface: 'N2',
-                protocol: 'NGAP',
-            });
-        }, 1500);
-
-        // Step 7: Ready for UE registrations
-        setTimeout(() => {
-            this.addLog(gnb.id, 'INFO',
-                'Ready to handle UE registration requests', {
-                n2Status: 'ACTIVE',
-                n3Status: window.dataStore?.getConnectionsForNF(gnb.id).some(c => {
-                    const other = window.dataStore?.getNFById(c.sourceId === gnb.id ? c.targetId : c.sourceId);
-                    return other?.type === 'UPF';
-                }) ? 'ACTIVE' : 'NOT_CONNECTED',
-                radioStatus: 'Broadcasting',
-                cellId: globalGNBId
-            });
-
-            this.addLog(amf.id, 'INFO',
-                `${gnb.name} ready to serve UEs`, {
-                registeredGNBs: 1,
-                totalCapacity: 1000,
-                availableServices: ['Registration', 'Authentication', 'Mobility Management']
-            });
-        }, 2000);
-    }
-
-    // -------------------------
-    // NGAP Simulation (gNB <-> AMF)
-    // -------------------------
-    simulateNGAP(gNB, AMF) {
-        // gNB & AMF are NF objects from dataStore
-        if (!gNB || !AMF) return;
-
-        // NG Setup Request from gNB to AMF
-        setTimeout(() => {
-            this.addLog(gNB.id, 'INFO', 'NGAP: NG Setup Request sent to AMF', {
-                procedure: 'NG Setup',
-            });
-        }, 300);
-
-        // NG Setup Response at AMF
-        setTimeout(() => {
-            this.addLog(AMF.id, 'SUCCESS', 'NGAP: NG Setup Response (successful) from gNB', {
-                procedure: 'NG Setup',
-                gnbId: gNB.name
-            });
-        }, 700);
-
-        // Initial UE Message (gNB -> AMF) simulating a registration request
-        setTimeout(() => {
-            this.addLog(gNB.id, 'INFO', 'NGAP: Initial UE Message (Registration Request) forwarded to AMF', {
-                procedure: 'Initial UE Message',
-                ue: 'UE-1',
-                cause: 'Registration'
-            });
-        }, 1100);
-
-        // AMF processing + Registration Accept
-        setTimeout(() => {
-            this.addLog(AMF.id, 'INFO', 'AMF: Authentication and Registration processing', {
-                procedure: 'Registration',
-                ue: 'UE-1',
-                auth: 'EAP-AKA\''
-            });
-        }, 1600);
-
-        setTimeout(() => {
-            this.addLog(AMF.id, 'SUCCESS', 'NGAP: Registration Accept sent to gNB', {
-                procedure: 'Registration Accept',
-                ue: 'UE-1'
-            });
-        }, 2000);
-
-        // Final: NGAP session established
-        setTimeout(() => {
-            this.addLog(gNB.id, 'SUCCESS', 'NGAP: UE context established at gNB', {
-                ue: 'UE-1',
-                status: 'REGISTERED'
-            });
-        }, 2400);
-    }
-
-    // -------------------------
-    // GTP-U Simulation (gNB <-> UPF) - Enhanced N3 Interface
-    // -------------------------
-    simulateGTPU(gNB, UPF) {
-        if (!gNB || !UPF) return;
-
-        // Generate unique identifiers for this GTP-U session
-        const teidGNB = `0x${Math.floor(Math.random() * 0xFFFFFF).toString(16).toUpperCase().padStart(6, '0')}`;
-        const teidUPF = `0x${Math.floor(Math.random() * 0xFFFFFF).toString(16).toUpperCase().padStart(6, '0')}`;
-        const sequenceNum = Math.floor(Math.random() * 65535);
-
-        console.log('📡 Simulating GTP-U on N3 interface between', gNB.name, 'and', UPF.name);
-
-        // Step 1: GTP-U Echo Request (Path Management)
-        setTimeout(() => {
-            this.addLog(gNB.id, 'INFO',
-                `GTP-U Echo Request sent to ${UPF.name} on N3 interface`, {
-                protocol: 'GTP-U',
-                sourceIP: gNB.config.ipAddress,
-                destIP: UPF.config.ipAddress,
-            });
-        }, 200);
-
-        // Step 2: GTP-U Echo Response
-        setTimeout(() => {
-            this.addLog(UPF.id, 'SUCCESS',
-                `GTP-U Echo Response sent to ${gNB.name}`, {
-                messageType: 'Echo Response',
-                protocol: 'GTP-U',
-            });
-        }, 400);
-
-        // Step 3: N3 Path Established
-        setTimeout(() => {
-            this.addLog(gNB.id, 'SUCCESS',
-                `N3 path verified - GTP-U tunnel ready`, {
-                interface: 'N3',
-                protocol: 'GTP-U',
-                pathStatus: 'ACTIVE',
-                rtt: '2ms'
-            });
-        }, 600);
-
-        // Step 4: GTP-U Tunnel Setup Request (from SMF via N4, simulated here)
-        setTimeout(() => {
-            this.addLog(UPF.id, 'INFO',
-                `Creating GTP-U tunnel `, {
-                interface: 'N3',
-                protocol: 'GTP-U',
-            });
-        }, 900);
-
-        // Step 5: GTP-U Tunnel Setup Response
-        setTimeout(() => {
-            this.addLog(gNB.id, 'SUCCESS',
-                `GTP-U tunnel established with ${UPF.name}`, {
-                interface: 'N3',
-                status: 'ESTABLISHED',
-                qfi: 9
-            });
-        }, 1200);
-
-
-        // Step 10: Continuous data flow indication
-        setTimeout(() => {
-            const totalThroughput = Math.round(500 + Math.random() * 1500);
-            this.addLog(UPF.id, 'SUCCESS',
-                `N3 GTP-U tunnel active - Data flowing`, {
-                interface: 'N3',
-                protocol: 'GTP-U',
-            });
-
-            this.addLog(gNB.id, 'SUCCESS',
-                `N3 tunnel operational - User data transfer active`, {
-                interface: 'N3',
-                protocol: 'GTP-U',
-            });
-        }, 2800);
-    }
-
-    /**
-     * Simulate NAS Registration over N1 (UE <-> AMF) including SUCI exchange
-     * @param {Object} ue - UE NF object
-     * @param {Object} amf - AMF NF object
-     * @param {Object} params - { imsi, dnn, nssai_sst }
-     */
-    simulateNASRegistration(ue, amf, params = {}) {
-        if (!ue || !amf) return;
-
-        const imsi = params.imsi || '001010000000101';
-        const suci = `suci-0-001-01-${imsi.slice(-6)}`;
-        const dnn = params.dnn || '5G-Lab';
-        const sst = params.nssai_sst ?? 1;
-
-        // Preconditions
-        this.addLog(ue.id, 'INFO', 'Starting NAS Registration over N1', {
-            interface: 'N1',
-            registrationType: 'Initial Registration'
-        });
-
-        // 1) Registration Request (UE -> AMF) with SUCI
-        setTimeout(() => {
-            this.addLog(ue.id, 'INFO', 'NAS: Registration Request sent', {
-                interface: 'N1',
-                suci: suci,
-                dnn: dnn,
-                requestedSST: sst
-            });
-            this.addLog(amf.id, 'INFO', 'NAS: Registration Request received from UE', {
-                interface: 'N1',
-                suci: suci,
-                dnn: dnn,
-                requestedSST: sst
-            });
-        }, 200);
-
-        // 2) Authentication Request (AMF -> UE)
-        setTimeout(() => {
-            this.addLog(amf.id, 'INFO', 'NAS: Authentication Request', {
-                method: '5G-AKA',
-                rand: `0x${Math.random().toString(16).substr(2, 8)}`
-            });
-            this.addLog(ue.id, 'INFO', 'NAS: Authentication Request received', {
-                method: '5G-AKA'
-            });
-        }, 600);
-
-        // 3) Authentication Response (UE -> AMF)
-        setTimeout(() => {
-            this.addLog(ue.id, 'SUCCESS', 'NAS: Authentication Response (RES*)', {
-                resStar: `0x${Math.random().toString(16).substr(2, 8)}`
-            });
-            this.addLog(amf.id, 'SUCCESS', 'NAS: Authentication verified', {
-                result: 'SUCCESS'
-            });
-        }, 1000);
-
-        // 4) Security Mode Command/Complete
-        setTimeout(() => {
-            this.addLog(amf.id, 'INFO', 'NAS: Security Mode Command', {
-                ciphering: '128-NEA2',
-                integrity: '128-NIA2'
-            });
-            this.addLog(ue.id, 'SUCCESS', 'NAS: Security Mode Complete', {
-                selectedAlgorithms: { ciphering: 'NEA2', integrity: 'NIA2' }
-            });
-        }, 1400);
-
-        // 5) Registration Accept / Complete
-        setTimeout(() => {
-            const guti = `5g-guti-${Math.random().toString(36).substr(2, 6)}`;
-            this.addLog(amf.id, 'SUCCESS', 'NAS: Registration Accept', {
-                guti: guti,
-                allowedNSSAI: [{ sst }],
-                dnn: dnn
-            });
-            this.addLog(ue.id, 'SUCCESS', 'NAS: Registration Complete', {
-                guti: guti,
-                status: 'REGISTERED'
-            });
-        }, 1800);
-
-        // 6) Trigger PDU Session Establishment path (delegated to NFManager)
-        setTimeout(() => {
-            if (window.nfManager) {
-                window.nfManager.registerUEAndEstablishPDU(ue.id);
-            }
-        }, 2200);
     }
 
     /**
@@ -830,7 +468,7 @@ class LogEngine {
                 payload: 'NF Profile'
             });
         }, 500);
-    
+
         setTimeout(() => {
             const profileId = `profile-${Math.random().toString(36).substr(2, 9)}`;
 
@@ -963,11 +601,6 @@ class LogEngine {
             return true;
         }
 
-        // MySQL and ext-dn ONLY support direct connections, NOT service bus
-        if (nf.type === 'MySQL' || nf.type === 'ext-dn') {
-            return false;
-        }
-
         // Check bus connections - if both NFs are on the same bus, consider them connected
         const busConnections = window.dataStore?.getBusConnectionsForNF(nf.id) || [];
 
@@ -1002,11 +635,6 @@ class LogEngine {
 
         if (hasDirectConnection) {
             return 'direct';
-        }
-
-        // MySQL and ext-dn ONLY support direct connections, NOT service bus
-        if (nf.type === 'MySQL' || nf.type === 'ext-dn') {
-            return 'none';
         }
 
         // Check bus connections
